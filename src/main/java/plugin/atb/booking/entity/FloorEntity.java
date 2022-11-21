@@ -17,6 +17,11 @@ public class FloorEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "office_id")
+    @ToString.Exclude
+    private OfficeEntity office;
+
     private Integer floorNumber;
 
     private String mapFloor;

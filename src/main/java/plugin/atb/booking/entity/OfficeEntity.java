@@ -2,9 +2,9 @@ package plugin.atb.booking.entity;
 
 import java.time.*;
 
-import lombok.*;
-
 import javax.persistence.*;
+
+import lombok.*;
 
 @Data
 @Entity
@@ -17,6 +17,11 @@ public class OfficeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "city_id")
+    @ToString.Exclude
+    private CityEntity city;
 
     private String address;
 

@@ -18,6 +18,11 @@ public class TeamEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id")
+    @ToString.Exclude
+    private EmployeeEntity leader;
+
     private String name;
 
 }

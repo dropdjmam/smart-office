@@ -20,6 +20,21 @@ public class BookingEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "holder_id")
+    @ToString.Exclude
+    private EmployeeEntity holder;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "maker_id")
+    @ToString.Exclude
+    private EmployeeEntity maker;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workplace_id")
+    @ToString.Exclude
+    private WorkPlaceEntity workPlace;
+
     private LocalDateTime dateTimeOfStart;
 
     private LocalDateTime dateTimeOfEnd;
