@@ -7,5 +7,10 @@ import plugin.atb.booking.entity.*;
 @Repository
 public interface OfficeRepository extends JpaRepository<OfficeEntity, Long> {
 
-}
+    OfficeEntity findByAddress(String address);
 
+    OfficeEntity findByWorkNumber(String workNumber);
+
+    boolean existsByAddress(String address);
+
+}
