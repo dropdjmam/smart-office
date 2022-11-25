@@ -21,10 +21,13 @@ public class WorkPlaceTypeService {
         boolean exists = workPlaceTypeRepository.existsByName(name);
 
         if (exists) {
-            throw new AlreadyExistsException(String.format("Такой тип места уже существует: %s", name));
+            throw new AlreadyExistsException(
+                String.format("Такой тип места уже существует: %s", name));
         }
 
-        workPlaceTypeRepository.save(new WorkPlaceTypeEntity(null, name));
+        WorkPlaceTypeEntity type = new WorkPlaceTypeEntity();
+        type.setName(name);
+        workPlaceTypeRepository.save(type);
     }
 
     public List<WorkPlaceTypeEntity> getAll() {
@@ -33,13 +36,11 @@ public class WorkPlaceTypeService {
     }
 
     public WorkPlaceTypeEntity getById(Long id) {
-        return workPlaceTypeRepository
-            .findById(id)
-            .orElseThrow(() -> new NotFoundException(String.format("Типа места с данным id не существует: %s", id)));
+        return workPlaceTypeRepository.findById(id).orElse(null);
     }
 
-    public WorkPlaceTypeEntity getByName(String name) {
-        return workPlaceTypeRepository.findByName(name);
+    public List<WorkPlaceTypeEntity> getAllByName(String name) {
+        return workPlaceTypeRepository.findAllByNameContainingOrderByName(name);
     }
 
     public void updateWorkPlaceType(WorkPlaceTypeEntity workPlaceType) {
@@ -58,7 +59,8 @@ public class WorkPlaceTypeService {
     public void deleteWorkPlaceType(Long id) {
 
         if (getById(id) == null) {
-            throw new NotFoundException(String.format("Типа места с данным id не существует: %s", id));
+            throw new NotFoundException(
+                String.format("Типа места с данным id не существует: %s", id));
         }
 
         workPlaceTypeRepository.deleteById(id);
