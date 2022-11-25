@@ -29,6 +29,6 @@ public class WorkPlaceEntity {
     @ToString.Exclude
     private FloorEntity floor;
 
-    private String capacity;
+    private Integer capacity;
 
 }
