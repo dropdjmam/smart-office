@@ -9,6 +9,8 @@ import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
 
+import static org.springframework.data.domain.Sort.Direction.*;
+
 @Service
 @RequiredArgsConstructor
 public class CityService {
@@ -29,7 +31,8 @@ public class CityService {
     }
 
     public List<CityEntity> getAll() {
-        return cityRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
+        var sort = Sort.by(ASC, "name");
+        return cityRepository.findAll(sort);
     }
 
     public CityEntity getById(Long id) {
