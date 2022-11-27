@@ -5,6 +5,7 @@ import java.time.*;
 import javax.persistence.*;
 
 import lombok.*;
+import lombok.experimental.*;
 
 @Entity
 @Getter
@@ -12,6 +13,7 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Accessors(chain = true)
 @Table(name = "bookings")
 public class BookingEntity {
 
