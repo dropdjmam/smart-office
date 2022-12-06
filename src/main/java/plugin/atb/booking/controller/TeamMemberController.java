@@ -1,10 +1,18 @@
 package plugin.atb.booking.controller;
 
+import javax.validation.*;
+import javax.validation.constraints.*;
+
 import lombok.*;
+import org.springdoc.api.annotations.*;
+import org.springframework.data.domain.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
+import plugin.atb.booking.entity.*;
+import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
+import plugin.atb.booking.repository.*;
 import plugin.atb.booking.service.*;
 
 @RestController
@@ -21,90 +29,85 @@ public class TeamMemberController {
     private final TeamService teamService;
 
     @PostMapping("/")
-    public ResponseEntity<String> createTeamMember(@RequestBody TeamMemberDto dto) {
+    public ResponseEntity<String> createTeamMember(@Valid @RequestBody TeamMemberCreateDto dto) {
 
         var employee = employeeService.getById(dto.getEmployeeId());
 
-        var booking = bookingService.getById(dto.getBookingId());
+        var team = teamService.getById(dto.getTeamId());
 
-        conferenceMemberService
-            .add(conferenceMemberMapper.createDtoToConferee(dto, employee, booking));
+        teamMemberService
+            .add(teamMemberMapper.dtoToCreateMember(team, employee));
 
-        return ResponseEntity.ok(String.format(
-            "Участник переговоров успешно зарегестрирован на бронь: %s, %s",
-            employee, booking));
+        return ResponseEntity.ok(String.format("%s успешно добавлен в команду: %s"
+            , employee.getFullName(), team.getName()));
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Page<ConferenceMemberCreateDto>> getConferenceMember(
+    public ResponseEntity<Page<TeamMemberDto>> getAll(
         @ParameterObject Pageable pageable
     ) {
-
-        var conferee = conferenceMemberService.getAll(
+        var page = teamMemberService.getAll(
             pageable);
-
-        var dto = conferee.stream()
-            .map(conferenceMemberMapper::confereeToCreateDto)
-            .toList();
-
-        return ResponseEntity.ok(new PageImpl<>(
-            dto, conferee.getPageable(), conferee.getTotalElements())
-        );
-
-    }
-
-    @GetMapping("/all/booking")
-    public ResponseEntity<Page<ConferenceMemberCreateDto>> getAllByBooking(
-        @RequestBody BookingEntity booking,
-        @ParameterObject Pageable pageable
-    ) {
-        var page = conferenceMemberService.getAllByBooking(
-            booking, pageable);
 
         var dto = page
             .stream()
-            .map(conferenceMemberMapper::confereeToCreateDto)
+            .map(teamMemberMapper::memberToDto)
             .toList();
 
         return ResponseEntity.ok(new PageImpl<>(
             dto, page.getPageable(), page.getTotalElements()));
     }
 
-    @GetMapping("/employee/{id}")
-    public ResponseEntity<ConferenceMemberDto> getByEmployeeId(@PathVariable Long id) {
-
-        var conferee = conferenceMemberService.getByEmployeeId(id);
-
-        if (conferee == null) {
-            throw new NotFoundException(String.format("Сотрудник не найден: %s", id));
-        }
-
-        return ResponseEntity.ok(conferenceMemberMapper.confereeToDto(conferee));
-    }
-
-    @GetMapping("/booking/{id}")
-    public ResponseEntity<ConferenceMemberDto> getByBookingId(@PathVariable Long id) {
-
-        var conferee = conferenceMemberService.getByBookingId(id);
-
-        if (conferee == null) {
-            throw new NotFoundException(String.format("Бронь не найдена: %s", id));
-        }
-
-        return ResponseEntity.ok(conferenceMemberMapper.confereeToDto(conferee));
-    }
-
-    @GetMapping("/all/{id}")
-    public ResponseEntity<Page<ConferenceMemberDto>> getAllById(
-        @PathVariable Long id,
+    @GetMapping("/all/teamId")
+    public ResponseEntity<Page<TeamMemberDto>> getAllTeamMemberByTeamId(
+        @Valid
+        @NotNull(message = "Вы ничего не ввели")
+        @RequestParam Long teamId,
         @ParameterObject Pageable pageable
     ) {
-        var page = conferenceMemberService.getAllById(
-            id, pageable);
+        var page = teamMemberService.getAllTeamMemberByTeamId(
+            teamId, pageable);
 
         var dto = page
             .stream()
-            .map(conferenceMemberMapper::confereeToDto)
+            .map(teamMemberMapper::memberToDto)
+            .toList();
+
+        return ResponseEntity.ok(new PageImpl<>(
+            dto, page.getPageable(), page.getTotalElements()));
+    }
+
+    @GetMapping("/all/teamName")
+    public ResponseEntity<Page<TeamMemberDto>> getAllTeamMemberByTeamName(
+        @Valid
+        @NotBlank(message = "Название команды не может быть пустым или состоять только из пробелов")
+        @RequestParam String name,
+        @ParameterObject Pageable pageable
+    ) {
+        var page = teamMemberService.getAllTeamMemberByTeamName(
+            name, pageable);
+
+        var dto = page
+            .stream()
+            .map(teamMemberMapper::memberToDto)
+            .toList();
+
+        return ResponseEntity.ok(new PageImpl<>(
+            dto, page.getPageable(), page.getTotalElements()));
+    }
+
+    @GetMapping("/team")
+    public ResponseEntity<Page<TeamMemberDto>> getByTeam(
+        @RequestBody TeamEntity team,
+        @ParameterObject Pageable pageable
+    ) {
+
+        var page = teamMemberService.getByTeam(
+            team, pageable);
+
+        var dto = page
+            .stream()
+            .map(teamMemberMapper::memberToDto)
             .toList();
 
         return ResponseEntity.ok(new PageImpl<>(
@@ -112,37 +115,37 @@ public class TeamMemberController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ConferenceMemberCreateDto> getById(@PathVariable Long id) {
+    public ResponseEntity<TeamMemberDto> getById(@PathVariable Long id) {
 
-        var conferee = conferenceMemberService.getById(id);
+        var member = teamMemberService.getById(id);
 
-        if (conferee == null) {
-            throw new NotFoundException("Не найден участник переговоров с id: " + id);
+        if (member == null) {
+            throw new NotFoundException(String.format("Не найден участник команды с id: %s", id));
         }
 
-        return ResponseEntity.ok(conferenceMemberMapper.confereeToCreateDto(conferee));
+        return ResponseEntity.ok(teamMemberMapper.memberToDto(member));
     }
 
     @PutMapping("/")
-    public ResponseEntity<String> update(@RequestBody ConferenceMemberUpdateDto dto) {
+    public ResponseEntity<String> update(@Valid @RequestBody TeamMemberDto dto) {
 
         var employee = employeeService.getById(dto.getEmployeeId());
 
-        var booking = bookingService.getById(dto.getBookingId());
+        var team = teamService.getById(dto.getTeamId());
 
-        conferenceMemberService
-            .update(conferenceMemberMapper.dtoToUpdateConferee(dto, employee, booking));
+        teamMemberService
+            .update(teamMemberMapper.dtoToMember(dto, team, employee));
 
         return ResponseEntity.ok(String.format(
-            "Данные участника переговоров успешно измененны: %s, %s", employee, booking));
+            "Данные участника команды успешно измененны: %s, %s", employee, team));
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
 
-        conferenceMemberService.delete(id);
+        teamMemberService.delete(id);
 
-        return ResponseEntity.ok("Участник переговоров успешно удален");
+        return ResponseEntity.ok("Участник команды успешно удален");
     }
 
 }

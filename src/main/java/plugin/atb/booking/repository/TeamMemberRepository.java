@@ -8,9 +8,11 @@ import plugin.atb.booking.entity.*;
 @Repository
 public interface TeamMemberRepository extends JpaRepository<TeamMemberEntity, Long> {
 
-    Page<TeamMemberEntity> findAllByEmployee(EmployeeEntity employee, Pageable pageable);
-
     Page<TeamMemberEntity> findByTeam(TeamEntity team, Pageable pageable);
+
+    Page<TeamMemberEntity> findAllTeamMemberByTeamId(Long teamId, Pageable pageable);
+
+    Page<TeamMemberEntity> findAllTeamMemberByTeamName(String name, Pageable pageable);
 
     boolean existsByEmployeeAndTeam(EmployeeEntity employee, TeamEntity team);
 

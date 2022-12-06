@@ -7,10 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @AllArgsConstructor
-public class TeamMemberDto {
-
-    @NotNull
-    private Long id;
+public class TeamMemberCreateDto {
 
     @NotNull
     private Long teamId;
