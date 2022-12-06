@@ -12,7 +12,6 @@ import plugin.atb.booking.dto.*;
 import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
-import plugin.atb.booking.repository.*;
 import plugin.atb.booking.service.*;
 
 @RestController
@@ -38,8 +37,8 @@ public class TeamMemberController {
         teamMemberService
             .add(teamMemberMapper.dtoToCreateMember(team, employee));
 
-        return ResponseEntity.ok(String.format("%s успешно добавлен в команду: %s"
-            , employee.getFullName(), team.getName()));
+        return ResponseEntity.ok(String.format("%s успешно добавлен в команду: %s",
+            employee.getFullName(), team.getName()));
     }
 
     @GetMapping("/all")
