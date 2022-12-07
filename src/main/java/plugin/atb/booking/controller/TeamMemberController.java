@@ -95,6 +95,25 @@ public class TeamMemberController {
             dto, page.getPageable(), page.getTotalElements()));
     }
 
+    @GetMapping("/all/employeeId")
+    public ResponseEntity<Page<TeamMemberDto>> getAllTeamByEmployeeId(
+        @Valid
+        @NotNull(message = "Вы ничего не ввели")
+        @RequestParam Long employeeId,
+        @ParameterObject Pageable pageable
+    ) {
+        var page = teamMemberService.getAllTeamByEmployeeId(
+            employeeId, pageable);
+
+        var dto = page
+            .stream()
+            .map(teamMemberMapper::memberToDto)
+            .toList();
+
+        return ResponseEntity.ok(new PageImpl<>(
+            dto, page.getPageable(), page.getTotalElements()));
+    }
+
     @GetMapping("/team")
     public ResponseEntity<Page<TeamMemberDto>> getByTeam(
         @RequestBody TeamEntity team,
