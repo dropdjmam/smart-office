@@ -34,17 +34,23 @@ public class TeamMemberController {
 
         var team = teamService.getById(dto.getTeamId());
 
-        teamMemberService
-            .add(teamMemberMapper.dtoToCreateMember(team, employee));
+        var teamMember = teamMemberMapper.dtoToCreateMember(team, employee);
 
-        return ResponseEntity.ok(String.format("%s успешно добавлен в команду: %s",
-            employee.getFullName(), team.getName()));
+        teamMemberService.add(teamMember);
+
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .build();
     }
 
     @GetMapping("/all")
     public ResponseEntity<Page<TeamMemberDto>> getAll(
         @ParameterObject Pageable pageable
     ) {
+        if (pageable.getPageSize() > 50) {
+            throw new IncorrectArgumentException(
+                "Большое количество запрашиваемых элементов. Не более 50!");
+        }
         var page = teamMemberService.getAll(
             pageable);
 
@@ -156,8 +162,9 @@ public class TeamMemberController {
 
         var team = teamService.getById(dto.getTeamId());
 
-        teamMemberService
-            .update(teamMemberMapper.dtoToMember(dto, team, employee));
+        var teamMember = teamMemberMapper.dtoToMember(dto, team, employee);
+
+        teamMemberService.add(teamMember);
 
         return ResponseEntity.ok(String.format(
             "Данные участника команды успешно измененны: %s, %s", employee, team));
