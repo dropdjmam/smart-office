@@ -61,6 +61,7 @@ public class TeamMemberController {
     public ResponseEntity<Page<TeamMemberDto>> getAllTeamMemberByTeamId(
         @Valid
         @NotNull(message = "Вы ничего не ввели")
+        @Min(value = 1L, message = "id не может быть меньше единицы")
         @RequestParam Long teamId,
         @ParameterObject Pageable pageable
     ) {
@@ -99,6 +100,7 @@ public class TeamMemberController {
     public ResponseEntity<Page<TeamMemberDto>> getAllTeamByEmployeeId(
         @Valid
         @NotNull(message = "Вы ничего не ввели")
+        @Min(value = 1L, message = "id не может быть меньше единицы")
         @RequestParam Long employeeId,
         @ParameterObject Pageable pageable
     ) {
@@ -133,7 +135,10 @@ public class TeamMemberController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TeamMemberDto> getById(@PathVariable Long id) {
+    public ResponseEntity<TeamMemberDto> getById(
+        @Min(value = 1L, message = "id не может быть меньше единицы")
+        @PathVariable Long id
+    ) {
 
         var member = teamMemberService.getById(id);
 
