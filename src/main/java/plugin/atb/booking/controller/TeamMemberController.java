@@ -3,6 +3,7 @@ package plugin.atb.booking.controller;
 import javax.validation.*;
 import javax.validation.constraints.*;
 
+import io.swagger.v3.oas.annotations.*;
 import lombok.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
@@ -47,9 +48,10 @@ public class TeamMemberController {
     public ResponseEntity<Page<TeamMemberDto>> getAll(
         @ParameterObject Pageable pageable
     ) {
-        if (pageable.getPageSize() > 50) {
-            throw new IncorrectArgumentException(
-                "Большое количество запрашиваемых элементов. Не более 50!");
+        var size = pageable.getPageSize();
+        if (size > 20 || size < 1) {
+            throw new IncorrectArgumentException(String.format(
+                "Неккоректное количество запрашиваемых элементов: 1 < %s < 20", size));
         }
         var page = teamMemberService.getAll(
             pageable);
@@ -63,6 +65,7 @@ public class TeamMemberController {
             dto, page.getPageable(), page.getTotalElements()));
     }
 
+    @Operation(summary = "Получить всех участников команды по id команды")
     @GetMapping("/all/teamId")
     public ResponseEntity<Page<TeamMemberDto>> getAllTeamMemberByTeamId(
         @Valid
@@ -71,6 +74,11 @@ public class TeamMemberController {
         @RequestParam Long teamId,
         @ParameterObject Pageable pageable
     ) {
+        var size = pageable.getPageSize();
+        if (size > 20 || size < 1) {
+            throw new IncorrectArgumentException(String.format(
+                "Неккоректное количество запрашиваемых элементов: 1 < %s < 20", size));
+        }
         var page = teamMemberService.getAllTeamMemberByTeamId(
             teamId, pageable);
 
@@ -83,6 +91,7 @@ public class TeamMemberController {
             dto, page.getPageable(), page.getTotalElements()));
     }
 
+    @Operation(summary = "Получить всех участников команды по названию команды")
     @GetMapping("/all/teamName")
     public ResponseEntity<Page<TeamMemberDto>> getAllTeamMemberByTeamName(
         @Valid
@@ -90,6 +99,11 @@ public class TeamMemberController {
         @RequestParam String name,
         @ParameterObject Pageable pageable
     ) {
+        var size = pageable.getPageSize();
+        if (size > 20 || size < 1) {
+            throw new IncorrectArgumentException(String.format(
+                "Неккоректное количество запрашиваемых элементов: 1 < %s < 20", size));
+        }
         var page = teamMemberService.getAllTeamMemberByTeamName(
             name, pageable);
 
@@ -102,6 +116,7 @@ public class TeamMemberController {
             dto, page.getPageable(), page.getTotalElements()));
     }
 
+    @Operation(summary = "Получить все команды по id сотрудника")
     @GetMapping("/all/employeeId")
     public ResponseEntity<Page<TeamMemberDto>> getAllTeamByEmployeeId(
         @Valid
@@ -110,6 +125,11 @@ public class TeamMemberController {
         @RequestParam Long employeeId,
         @ParameterObject Pageable pageable
     ) {
+        var size = pageable.getPageSize();
+        if (size > 20 || size < 1) {
+            throw new IncorrectArgumentException(String.format(
+                "Неккоректное количество запрашиваемых элементов: 1 < %s < 20", size));
+        }
         var page = teamMemberService.getAllTeamByEmployeeId(
             employeeId, pageable);
 
@@ -127,6 +147,11 @@ public class TeamMemberController {
         @RequestBody TeamEntity team,
         @ParameterObject Pageable pageable
     ) {
+        var size = pageable.getPageSize();
+        if (size > 20 || size < 1) {
+            throw new IncorrectArgumentException(String.format(
+                "Неккоректное количество запрашиваемых элементов: 1 < %s < 20", size));
+        }
 
         var page = teamMemberService.getByTeam(
             team, pageable);
