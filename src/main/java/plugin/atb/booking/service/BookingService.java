@@ -31,7 +31,7 @@ public class BookingService {
 
         if (!validTimeInterval) {
             throw new IllegalArgumentException(String.format(
-                "Конец брони не может быть раньше начала: %s < $s",
+                "Конец брони не может быть раньше начала: %s < %s",
                 end, start
             ));
         }
@@ -41,7 +41,7 @@ public class BookingService {
 
         if (!bookingsInTime) {
             throw new AlreadyExistsException(String.format(
-                "Невозможно забронировать данное место на данное время: %s - $s",
+                "Невозможно забронировать данное место на данное время: %s - %s",
                 start, end
             ));
         }

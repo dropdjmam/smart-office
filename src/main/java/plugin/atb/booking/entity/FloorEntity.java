@@ -3,13 +3,16 @@ package plugin.atb.booking.entity;
 import javax.persistence.*;
 
 import lombok.*;
+import lombok.experimental.*;
 
-@Data
 @Entity
-@AllArgsConstructor
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
+@AllArgsConstructor
+@Accessors(chain = true)
 @Table(name = "floors")
-
 public class FloorEntity {
 
     @Id

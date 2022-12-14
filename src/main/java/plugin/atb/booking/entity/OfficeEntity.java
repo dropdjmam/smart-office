@@ -5,11 +5,15 @@ import java.time.*;
 import javax.persistence.*;
 
 import lombok.*;
+import lombok.experimental.*;
 
-@Data
 @Entity
-@AllArgsConstructor
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
+@AllArgsConstructor
+@Accessors(chain = true)
 @Table(name = "offices")
 public class OfficeEntity {
 

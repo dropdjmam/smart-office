@@ -1,23 +1,26 @@
 package plugin.atb.booking.service;
 
-import java.util.*;
-
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
 import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
+import plugin.atb.booking.utils.*;
 
 @Service
 @RequiredArgsConstructor
 public class EmployeeService {
 
-    private static final int PAGE_LIMIT = 8;
-
     private final EmployeeRepository employeeRepository;
 
     public void add(EmployeeEntity employee) {
+
+        validate(employee);
+
+        if (employee.getLogin() == null) {
+            throw new IncorrectArgumentException("Логин сотрудника не указан");
+        }
 
         boolean exists = employeeRepository.existsEmployeeByLoginOrEmail(
             employee.getLogin(),
@@ -25,88 +28,93 @@ public class EmployeeService {
         );
 
         if (exists) {
-            throw new AlreadyExistsException(
-                "Пользователь с таким логином или почтой уже существует: " +
-                employee.getLogin() + ", " + employee.getEmail()
-            );
+            throw new AlreadyExistsException(String.format(
+                "Пользователь с таким логином или почтой уже существует: %s, %s",
+                employee.getLogin(), employee.getEmail()));
         }
 
         employeeRepository.save(employee);
 
     }
 
-    public List<EmployeeEntity> getPage(Integer pageNumber) {
-        Sort sort = Sort.by(Sort.Direction.ASC, "fullName");
+    public Page<EmployeeEntity> getPage(Pageable pageable) {
 
-        PageRequest request = PageRequest.of(pageNumber, PAGE_LIMIT, sort);
-
-        Page<EmployeeEntity> page = employeeRepository.findAll(request);
-
-        if (!page.hasContent()) {
-            return new ArrayList<>();
-        }
-        return page.getContent();
+        return employeeRepository.findAll(pageable);
     }
 
-    public List<EmployeeEntity> getPageByName(Integer pageNumber, String name) {
-        PageRequest request = PageRequest.of(pageNumber, PAGE_LIMIT);
+    public Page<EmployeeEntity> getPageByName(String name, Pageable pageable) {
 
-        Page<EmployeeEntity> page;
-        page = employeeRepository.findByFullNameContainingOrderByFullName(name, request);
-
-        if (page.isEmpty()) {
-            return new ArrayList<>();
+        if (name.isBlank()) {
+            throw new IncorrectArgumentException(
+                "Имя не может быть пустым или состоять только из пробелов");
         }
-        return page.getContent();
+
+        return employeeRepository.findByFullNameContaining(name, pageable);
     }
 
     public EmployeeEntity getById(Long id) {
+
+        if (id == null) {
+            throw new IncorrectArgumentException("Id не указан");
+        }
+
+        ValidationUtils.checkId(id);
+
         return employeeRepository.findById(id).orElse(null);
     }
 
     public EmployeeEntity getByLogin(String login) {
+
+        if (login.isBlank()) {
+            throw new IncorrectArgumentException(
+                "Логин не может быть пустым или состоять только из пробелов");
+        }
+
         return employeeRepository.findByLogin(login);
     }
 
-    public EmployeeEntity update(EmployeeEntity employee) {
+    public void update(EmployeeEntity employee) {
 
-        EmployeeEntity updatedEmployee = getById(employee.getId());
-
-        if (updatedEmployee == null) {
-            throw new NotFoundException("Пользователь с id " + employee.getId() + " не найден!");
+        if (getById(employee.getId()) == null) {
+            throw new NotFoundException("Не найден сотрудник с id: " + employee.getId());
         }
 
-        if (employee.getRole() != null) {
-            updatedEmployee.setRole(employee.getRole());
-        }
-        if (employee.getFullName() != null) {
-            updatedEmployee.setFullName(employee.getFullName());
-        }
-        if (employee.getPassword() != null) {
-            updatedEmployee.setPassword(employee.getPassword());
-        }
-        if (employee.getEmail() != null) {
-            updatedEmployee.setEmail(employee.getEmail());
-        }
-        if (employee.getPhoneNumber() != null) {
-            updatedEmployee.setPhoneNumber(employee.getPhoneNumber());
-        }
-        if (employee.getPhoto() != null) {
-            updatedEmployee.setPhoto(employee.getPhoto());
+        if (employee.getRole() == null) {
+            throw new IncorrectArgumentException("Роль сотрудника не указана");
         }
 
-        employeeRepository.save(updatedEmployee);
+        validate(employee);
 
-        return updatedEmployee;
+        employeeRepository.save(employee);
+
     }
 
     public void delete(Long id) {
 
         if (getById(id) == null) {
-            throw new NotFoundException("Пользователь с id " + id + " не найден!");
+            throw new NotFoundException("Не найден сотрудник с id: " + id);
         }
 
+        ValidationUtils.checkId(id);
+
         employeeRepository.deleteById(id);
+    }
+
+    private void validate(EmployeeEntity employee) {
+
+        if (employee.getFullName() == null) {
+            throw new IncorrectArgumentException("Полное имя сотрудника не указано");
+        }
+        if (employee.getPassword() == null) {
+            throw new IncorrectArgumentException("Пароль сотрудника не указан");
+        }
+        if (employee.getEmail() == null) {
+            throw new IncorrectArgumentException("Почта сотрудника не указана");
+        }
+        if (employee.getPhoneNumber() == null) {
+            throw new IncorrectArgumentException("Телефон сотрудника не указан");
+        }
+
     }
 
 }
