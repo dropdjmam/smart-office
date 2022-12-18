@@ -8,6 +8,6 @@ import plugin.atb.booking.entity.*;
 @Repository
 public interface WorkPlaceRepository extends JpaRepository<WorkPlaceEntity, Long> {
 
-    Page<WorkPlaceEntity> findAllByFloorOrderByFloor(Pageable request, FloorEntity floor);
+    Page<WorkPlaceEntity> findAllByFloor(FloorEntity floor, Pageable pageable);
 
 }

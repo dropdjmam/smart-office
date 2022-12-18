@@ -8,10 +8,11 @@ import lombok.experimental.*;
 @Data
 @Builder
 @Entity
+@NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
 @Table(name = "workplaces")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+
 public class WorkPlaceEntity {
 
     @Id

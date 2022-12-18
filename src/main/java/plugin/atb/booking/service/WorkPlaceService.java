@@ -1,7 +1,5 @@
 package plugin.atb.booking.service;
 
-import java.util.*;
-
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
@@ -13,68 +11,48 @@ import plugin.atb.booking.repository.*;
 @RequiredArgsConstructor
 public class WorkPlaceService {
 
-    private static final int PAGE_LIMIT = 10;
-
     private final WorkPlaceRepository workPlaceRepository;
 
     public void add(WorkPlaceEntity workPlace) {
-        if (workPlace.getFloor() == null) {
-            throw new NotFoundException("Этаж расположения места не найден.");
-        }
-        if (workPlace.getCapacity() < 1) {
-            throw new IllegalArgumentException(
-                "Вместимость рабочего места не может быть меньше 1!"
-            );
-        }
 
-        if (workPlace.getType() == null) {
-            throw new NotFoundException("Тип рабочего места не найден.");
-        }
+        validate(workPlace);
+
         workPlaceRepository.save(workPlace);
     }
 
-    public List<WorkPlaceEntity> getPage(Integer pageNumber) {
-        var sort = Sort.by(Sort.Direction.ASC, "id");
-        return workPlaceRepository.findAll(sort);
+    public Page<WorkPlaceEntity> getPage(Pageable pageable) {
+        return workPlaceRepository.findAll(pageable);
     }
 
-    public List<WorkPlaceEntity> getAllByFloor(Integer pageNumber, FloorEntity floor) {
-        PageRequest request = PageRequest.of(pageNumber, PAGE_LIMIT);
+    public Page<WorkPlaceEntity> getPageByFloor(FloorEntity floor, Pageable pageable) {
 
-        Page<WorkPlaceEntity> workPlaces;
-        workPlaces = workPlaceRepository.findAllByFloorOrderByFloor(request, floor);
-
-        if (workPlaces.isEmpty()) {
-            return new ArrayList<>();
+        if (floor == null) {
+            throw new IncorrectArgumentException("Id не указан");
         }
-        return workPlaces.getContent();
+
+        return workPlaceRepository.findAllByFloor(floor, pageable);
     }
 
     public WorkPlaceEntity getById(Long id) {
-        return workPlaceRepository.findById(id).orElse(null);
 
+        if (id == null) {
+            throw new IncorrectArgumentException("Id не указан");
+        }
+
+        if (id < 1) {
+            throw new IncorrectArgumentException("Id не может быть меньше 1");
+        }
+
+        return workPlaceRepository.findById(id).orElse(null);
     }
 
     public void update(WorkPlaceEntity workPlace) {
-        WorkPlaceEntity updateWorkPlace = getById(workPlace.getId());
 
-        if (updateWorkPlace == null) {
-            throw new NotFoundException(
-                "Рабочее место с id " + workPlace.getId() + " не найдено."
-            );
+        if (getById(workPlace.getId()) == null) {
+            throw new NotFoundException("Не найдено место с id: " + workPlace.getId());
         }
 
-        if (workPlace.getFloor() != null) {
-            updateWorkPlace.setFloor(workPlace.getFloor());
-        }
-
-        if (workPlace.getType() != null) {
-            updateWorkPlace.setType(workPlace.getType());
-        }
-
-        if (workPlace.getCapacity() > 0) {
-            updateWorkPlace.setCapacity(workPlace.getCapacity());
-        }
+        validate(workPlace);
 
         workPlaceRepository.save(workPlace);
     }
@@ -82,10 +60,37 @@ public class WorkPlaceService {
     public void delete(Long id) {
 
         if (getById(id) == null) {
-            throw new NotFoundException("Рабочее место с id " + id + " не найдено!");
+            throw new NotFoundException("Не найдено место с id: " + id);
         }
 
         workPlaceRepository.deleteById(id);
+    }
+
+    private void validate(WorkPlaceEntity workPlace) {
+
+        if (workPlace.getType() == null) {
+            throw new IncorrectArgumentException("Не указан тип места");
+        }
+
+        if (workPlace.getCapacity() == null) {
+            throw new IncorrectArgumentException("Не указана вместимость места");
+        }
+
+        if (workPlace.getCapacity() < 1) {
+            throw new IncorrectArgumentException("Вместимость места не может быть меньше 1");
+        }
+
+        if (workPlace.getType().getId() == 1 && workPlace.getCapacity() != 1) {
+            throw new IncorrectArgumentException("Вместимость одиночного места не равна 1");
+        }
+
+        if (workPlace.getType().getId() != 1 && workPlace.getCapacity() == 1) {
+            throw new IncorrectArgumentException("Вместимость не одиночного места равна 1");
+        }
+
+        if (workPlace.getFloor() == null) {
+            throw new IncorrectArgumentException("Этаж расположения места не указан");
+        }
     }
 
 }
