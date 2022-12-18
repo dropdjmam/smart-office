@@ -31,6 +31,13 @@ public class TeamMemberService {
         return teamMemberRepository.findAll(pageable);
     }
 
+    public TeamMemberEntity getByEmployeeAndTeam(
+        EmployeeEntity employee, TeamEntity team
+    ) {
+
+        return teamMemberRepository.findTeamMemberByEmployeeAndTeam(employee, team);
+    }
+
     public Page<TeamMemberEntity> getAllTeamMemberByTeamId(Long teamId, Pageable pageable) {
 
         return teamMemberRepository.findAllTeamMemberByTeamId(teamId, pageable);
@@ -67,11 +74,19 @@ public class TeamMemberService {
     public void delete(Long id) {
 
         if (getById(id) == null) {
-            throw new NotFoundException(String.format(
-                "Участник команды не найден: %s", id));
+            throw new NotFoundException(String.format("Участник команды не найден: %s", id));
         }
 
         teamMemberRepository.deleteById(id);
+    }
+
+    public void delete(TeamMemberEntity teamMember) {
+
+        if (teamMember == null) {
+            throw new IncorrectArgumentException("Участник команды не указан");
+        }
+
+        teamMemberRepository.delete(teamMember);
     }
 
 }

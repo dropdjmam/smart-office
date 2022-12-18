@@ -7,7 +7,7 @@ import plugin.atb.booking.entity.*;
 @Component
 public class TeamMemberMapper {
 
-    public TeamMemberDto memberToDto(TeamMemberEntity member) {
+    public TeamMemberDto teamMemberToDto(TeamMemberEntity member) {
         var dto = new TeamMemberDto(
             member.getId(),
             member.getTeam().getId(),
@@ -15,7 +15,7 @@ public class TeamMemberMapper {
         return dto;
     }
 
-    public TeamMemberEntity dtoToMember(
+    public TeamMemberEntity dtoToTeamMember(
         TeamMemberDto dto, TeamEntity team, EmployeeEntity employee
     ) {
         var member = new TeamMemberEntity()
@@ -25,14 +25,14 @@ public class TeamMemberMapper {
         return member;
     }
 
-    public TeamMemberCreateDto createMemberToDto(TeamMemberEntity member) {
+    public TeamMemberCreateDto createTeamMemberToDto(TeamMemberEntity member) {
         var dto = new TeamMemberCreateDto(
             member.getTeam().getId(),
             member.getEmployee().getId());
         return dto;
     }
 
-    public TeamMemberEntity dtoToCreateMember(
+    public TeamMemberEntity dtoToCreateTeamMember(
         TeamEntity team, EmployeeEntity employee
     ) {
         var member = new TeamMemberEntity()

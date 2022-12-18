@@ -14,6 +14,7 @@ import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
+import plugin.atb.booking.utils.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,7 +36,7 @@ public class TeamMemberController {
 
         var team = teamService.getById(dto.getTeamId());
 
-        var teamMember = teamMemberMapper.dtoToCreateMember(team, employee);
+        var teamMember = teamMemberMapper.dtoToCreateTeamMember(team, employee);
 
         teamMemberService.add(teamMember);
 
@@ -48,17 +49,14 @@ public class TeamMemberController {
     public ResponseEntity<Page<TeamMemberDto>> getAll(
         @ParameterObject Pageable pageable
     ) {
-        var size = pageable.getPageSize();
-        if (size > 20 || size < 1) {
-            throw new IncorrectArgumentException(String.format(
-                "Неккоректное количество запрашиваемых элементов: 1 < %s < 20", size));
-        }
+        ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
+
         var page = teamMemberService.getAll(
             pageable);
 
         var dto = page
             .stream()
-            .map(teamMemberMapper::memberToDto)
+            .map(teamMemberMapper::teamMemberToDto)
             .toList();
 
         return ResponseEntity.ok(new PageImpl<>(
@@ -68,23 +66,17 @@ public class TeamMemberController {
     @Operation(summary = "Получить всех участников команды по id команды")
     @GetMapping("/all/teamId")
     public ResponseEntity<Page<TeamMemberDto>> getAllTeamMemberByTeamId(
-        @Valid
-        @NotNull(message = "Вы ничего не ввели")
-        @Min(value = 1L, message = "id не может быть меньше единицы")
         @RequestParam Long teamId,
         @ParameterObject Pageable pageable
     ) {
-        var size = pageable.getPageSize();
-        if (size > 20 || size < 1) {
-            throw new IncorrectArgumentException(String.format(
-                "Неккоректное количество запрашиваемых элементов: 1 < %s < 20", size));
-        }
+        ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
+        ValidationUtils.checkId(teamId);
         var page = teamMemberService.getAllTeamMemberByTeamId(
             teamId, pageable);
 
         var dto = page
             .stream()
-            .map(teamMemberMapper::memberToDto)
+            .map(teamMemberMapper::teamMemberToDto)
             .toList();
 
         return ResponseEntity.ok(new PageImpl<>(
@@ -99,17 +91,14 @@ public class TeamMemberController {
         @RequestParam String name,
         @ParameterObject Pageable pageable
     ) {
-        var size = pageable.getPageSize();
-        if (size > 20 || size < 1) {
-            throw new IncorrectArgumentException(String.format(
-                "Неккоректное количество запрашиваемых элементов: 1 < %s < 20", size));
-        }
+        ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
+
         var page = teamMemberService.getAllTeamMemberByTeamName(
             name, pageable);
 
         var dto = page
             .stream()
-            .map(teamMemberMapper::memberToDto)
+            .map(teamMemberMapper::teamMemberToDto)
             .toList();
 
         return ResponseEntity.ok(new PageImpl<>(
@@ -119,23 +108,18 @@ public class TeamMemberController {
     @Operation(summary = "Получить все команды по id сотрудника")
     @GetMapping("/all/employeeId")
     public ResponseEntity<Page<TeamMemberDto>> getAllTeamByEmployeeId(
-        @Valid
-        @NotNull(message = "Вы ничего не ввели")
-        @Min(value = 1L, message = "id не может быть меньше единицы")
         @RequestParam Long employeeId,
         @ParameterObject Pageable pageable
     ) {
-        var size = pageable.getPageSize();
-        if (size > 20 || size < 1) {
-            throw new IncorrectArgumentException(String.format(
-                "Неккоректное количество запрашиваемых элементов: 1 < %s < 20", size));
-        }
+        ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
+        ValidationUtils.checkId(employeeId);
+
         var page = teamMemberService.getAllTeamByEmployeeId(
             employeeId, pageable);
 
         var dto = page
             .stream()
-            .map(teamMemberMapper::memberToDto)
+            .map(teamMemberMapper::teamMemberToDto)
             .toList();
 
         return ResponseEntity.ok(new PageImpl<>(
@@ -147,18 +131,15 @@ public class TeamMemberController {
         @RequestBody TeamEntity team,
         @ParameterObject Pageable pageable
     ) {
-        var size = pageable.getPageSize();
-        if (size > 20 || size < 1) {
-            throw new IncorrectArgumentException(String.format(
-                "Неккоректное количество запрашиваемых элементов: 1 < %s < 20", size));
-        }
+
+        ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
 
         var page = teamMemberService.getByTeam(
             team, pageable);
 
         var dto = page
             .stream()
-            .map(teamMemberMapper::memberToDto)
+            .map(teamMemberMapper::teamMemberToDto)
             .toList();
 
         return ResponseEntity.ok(new PageImpl<>(
@@ -167,17 +148,16 @@ public class TeamMemberController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TeamMemberDto> getById(
-        @Min(value = 1L, message = "id не может быть меньше единицы")
         @PathVariable Long id
     ) {
-
+        ValidationUtils.checkId(id);
         var member = teamMemberService.getById(id);
 
         if (member == null) {
             throw new NotFoundException(String.format("Не найден участник команды с id: %s", id));
         }
 
-        return ResponseEntity.ok(teamMemberMapper.memberToDto(member));
+        return ResponseEntity.ok(teamMemberMapper.teamMemberToDto(member));
     }
 
     @PutMapping("/")
@@ -187,7 +167,7 @@ public class TeamMemberController {
 
         var team = teamService.getById(dto.getTeamId());
 
-        var teamMember = teamMemberMapper.dtoToMember(dto, team, employee);
+        var teamMember = teamMemberMapper.dtoToTeamMember(dto, team, employee);
 
         teamMemberService.add(teamMember);
 
@@ -195,10 +175,27 @@ public class TeamMemberController {
             "Данные участника команды успешно измененны: %s, %s", employee, team));
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    @DeleteMapping("/{employeeId}/{teamId}")
+    public ResponseEntity<String> delete(
+        @PathVariable Long employeeId,
+        @PathVariable Long teamId
+    ) {
 
-        teamMemberService.delete(id);
+        var employee = employeeService.getById(employeeId);
+        if (employee == null) {
+            throw new NotFoundException(String.format("Не найден сотрудник с id: %s", employeeId));
+        }
+        var team = teamService.getById(teamId);
+        if (team == null) {
+            throw new NotFoundException(String.format("Не найдена команда с id: %s", teamId));
+        }
+        var teamMember = teamMemberService.getByEmployeeAndTeam(employee, team);
+        if (teamMember == null) {
+            throw new NotFoundException(String.format(
+                "Не найдена участник команды по сотруднику с id: %s, команде с id: %s",
+                employeeId, teamId));
+        }
+        teamMemberService.delete(teamMember);
 
         return ResponseEntity.ok("Участник команды успешно удален");
     }
