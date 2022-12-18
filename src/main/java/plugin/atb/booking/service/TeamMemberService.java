@@ -56,8 +56,8 @@ public class TeamMemberService {
         return teamMemberRepository.findById(id).orElse(null);
     }
 
-    public Page<TeamMemberEntity> getByTeam(TeamEntity team, Pageable pageable) {
-        return teamMemberRepository.findByTeam(team, pageable);
+    public TeamMemberEntity getByTeamId(Long teamId) {
+        return teamMemberRepository.findByTeamId(teamId);
     }
 
     public void update(TeamMemberEntity team) {

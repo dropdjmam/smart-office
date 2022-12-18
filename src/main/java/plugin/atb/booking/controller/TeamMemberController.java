@@ -45,6 +45,7 @@ public class TeamMemberController {
             .build();
     }
 
+    @Operation(summary = "Получить всех участников команд")
     @GetMapping("/all")
     public ResponseEntity<Page<TeamMemberDto>> getAll(
         @ParameterObject Pageable pageable
@@ -126,24 +127,20 @@ public class TeamMemberController {
             dto, page.getPageable(), page.getTotalElements()));
     }
 
+    @Operation(summary = "Получить участника команды по id команды")
     @GetMapping("/team")
-    public ResponseEntity<Page<TeamMemberDto>> getByTeam(
-        @RequestBody TeamEntity team,
-        @ParameterObject Pageable pageable
+    public ResponseEntity<TeamMemberDto> getByTeamId(
+        @RequestBody Long teamId
     ) {
+        ValidationUtils.checkId(teamId);
+        var teamMember = teamMemberService.getByTeamId(teamId);
 
-        ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
+        if (teamMember == null) {
+            throw new NotFoundException(String.format(
+                "Не найдена команда с id: %s", teamId));
+        }
 
-        var page = teamMemberService.getByTeam(
-            team, pageable);
-
-        var dto = page
-            .stream()
-            .map(teamMemberMapper::teamMemberToDto)
-            .toList();
-
-        return ResponseEntity.ok(new PageImpl<>(
-            dto, page.getPageable(), page.getTotalElements()));
+        return ResponseEntity.ok(teamMemberMapper.teamMemberToDto(teamMember));
     }
 
     @GetMapping("/{id}")
