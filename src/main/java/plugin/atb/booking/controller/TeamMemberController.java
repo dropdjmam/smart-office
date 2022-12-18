@@ -143,6 +143,21 @@ public class TeamMemberController {
         return ResponseEntity.ok(teamMemberMapper.teamMemberToDto(teamMember));
     }
 
+    @Operation(summary = "Получить участника команды по названию команды")
+    @GetMapping("/team")
+    public ResponseEntity<TeamMemberDto> getByTeamName(
+        @RequestParam String name
+    ) {
+        var teamMember = teamMemberService.getByTeamName(name);
+
+        if (teamMember == null) {
+            throw new NotFoundException(String.format(
+                "Не найдена команда с id: %s", name));
+        }
+
+        return ResponseEntity.ok(teamMemberMapper.teamMemberToDto(teamMember));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<TeamMemberDto> getById(
         @PathVariable Long id

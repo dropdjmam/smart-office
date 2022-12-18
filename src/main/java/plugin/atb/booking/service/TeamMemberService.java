@@ -60,6 +60,10 @@ public class TeamMemberService {
         return teamMemberRepository.findByTeamId(teamId);
     }
 
+    public TeamMemberEntity getByTeamName(String name) {
+        return teamMemberRepository.findByTeamName(name);
+    }
+
     public void update(TeamMemberEntity team) {
         TeamMemberEntity updateTeamMember = getById(team.getId());
 
