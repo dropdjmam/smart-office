@@ -128,7 +128,7 @@ public class TeamMemberController {
     }
 
     @Operation(summary = "Получить участника команды по id команды")
-    @GetMapping("/team")
+    @GetMapping("/teamId")
     public ResponseEntity<TeamMemberDto> getByTeamId(
         @RequestBody Long teamId
     ) {
@@ -144,7 +144,7 @@ public class TeamMemberController {
     }
 
     @Operation(summary = "Получить участника команды по названию команды")
-    @GetMapping("/team")
+    @GetMapping("/teamName")
     public ResponseEntity<TeamMemberDto> getByTeamName(
         @RequestParam String name
     ) {
