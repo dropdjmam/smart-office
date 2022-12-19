@@ -19,8 +19,8 @@ public class ConferenceMemberService {
             conferee.getEmployee(), conferee.getBooking());
         if (exists) {
             throw new AlreadyExistsException(String.format(
-                "Участник уже зарегестрирован на бронь: %s",
-                conferee.getEmployee()));
+                "Участник уже зарегестрирован на бронь: %s, $s",
+                conferee.getEmployee(), conferee.getBooking()));
         }
 
         if (conferee.getEmployee() == null) {
@@ -36,8 +36,19 @@ public class ConferenceMemberService {
         conferenceMemberRepository.save(conferee);
     }
 
-    public Page<ConferenceMemberEntity> getAllByBookingId(Long bookingId, Pageable pageable) {
+    public Page<ConferenceMemberEntity> getAllByBookingId(
+        Long bookingId,
+        Pageable pageable
+    ) {
         return conferenceMemberRepository.findAllByBookingId(bookingId, pageable);
+    }
+
+    public ConferenceMemberEntity getByBookingId(Long bookingId) {
+        return conferenceMemberRepository.findByBookingId(bookingId);
+    }
+
+    public ConferenceMemberEntity getByEmployeeId(Long employeeId) {
+        return conferenceMemberRepository.findByEmployeeId(employeeId);
     }
 
     public Page<ConferenceMemberEntity> getAll(Pageable pageable) {
@@ -46,10 +57,6 @@ public class ConferenceMemberService {
 
     public ConferenceMemberEntity getById(Long id) {
         return conferenceMemberRepository.findById(id).orElse(null);
-    }
-
-    public Page<ConferenceMemberEntity> getAllByEmployeeId(Long employeeId, Pageable pageable) {
-        return conferenceMemberRepository.findAllByEmployeeId(employeeId, pageable);
     }
 
     public void update(ConferenceMemberEntity conferee) {

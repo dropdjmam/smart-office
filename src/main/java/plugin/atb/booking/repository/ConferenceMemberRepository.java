@@ -10,7 +10,9 @@ public interface ConferenceMemberRepository extends JpaRepository<ConferenceMemb
 
     Page<ConferenceMemberEntity> findAllByBookingId(Long bookingId, Pageable pageable);
 
-    Page<ConferenceMemberEntity> findAllByEmployeeId(Long employeeId, Pageable pageable);
+    ConferenceMemberEntity findByBookingId(Long bookingId);
+
+    ConferenceMemberEntity findByEmployeeId(Long employeeId);
 
     boolean existsByEmployeeAndBooking(EmployeeEntity employee, BookingEntity booking);
 
