@@ -1,28 +1,30 @@
 package plugin.atb.booking.mapper;
 
-import lombok.*;
 import org.springframework.stereotype.*;
 import plugin.atb.booking.dto.*;
 import plugin.atb.booking.entity.*;
 
 @Component
-@RequiredArgsConstructor
 public class WorkPlaceTypeMapper {
 
-    public WorkPlaceTypeDto typeToDto(WorkPlaceTypeEntity workPlaceType) {
-
-        return new WorkPlaceTypeDto(
-            workPlaceType.getId(),
-            workPlaceType.getName()
-        );
+    public WorkPlaceTypeDto typeToDto(WorkPlaceTypeEntity type) {
+        var dto = new WorkPlaceTypeDto(
+            type.getId(),
+            type.getName());
+        return dto;
     }
 
-    public WorkPlaceTypeEntity dtoToType(WorkPlaceTypeDto workPlaceTypeDto) {
+    public WorkPlaceTypeEntity dtoToType(WorkPlaceTypeDto dto) {
+        var type = new WorkPlaceTypeEntity()
+            .setId(dto.getId())
+            .setName(dto.getName());
+        return type;
+    }
 
-        return new WorkPlaceTypeEntity(
-            workPlaceTypeDto.getId(),
-            workPlaceTypeDto.getName()
-        );
+    public WorkPlaceTypeEntity createDtoToType(WorkPlaceTypeCreateDto dto) {
+        var type = new WorkPlaceTypeEntity()
+            .setName(dto.getName());
+        return type;
     }
 
 }

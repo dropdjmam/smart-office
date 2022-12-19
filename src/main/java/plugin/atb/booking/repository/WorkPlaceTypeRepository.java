@@ -1,7 +1,6 @@
 package plugin.atb.booking.repository;
 
-import java.util.*;
-
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.*;
 import plugin.atb.booking.entity.*;
@@ -9,7 +8,7 @@ import plugin.atb.booking.entity.*;
 @Repository
 public interface WorkPlaceTypeRepository extends JpaRepository<WorkPlaceTypeEntity, Long> {
 
-    List<WorkPlaceTypeEntity> findAllByNameContainingOrderByName(String name);
+    Page<WorkPlaceTypeEntity> findByName(String name, Pageable pageable);
 
     boolean existsByName(String name);
 

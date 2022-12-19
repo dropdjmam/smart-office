@@ -1,15 +1,11 @@
 package plugin.atb.booking.service;
 
-import java.util.*;
-
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
 import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
-
-import static org.springframework.data.domain.Sort.Direction.*;
 
 @Service
 @RequiredArgsConstructor
@@ -30,33 +26,44 @@ public class WorkPlaceTypeService {
         workPlaceTypeRepository.save(type);
     }
 
-    public List<WorkPlaceTypeEntity> getAll() {
-        var sort = Sort.by(ASC, "name");
-        return workPlaceTypeRepository.findAll(sort);
+    public Page<WorkPlaceTypeEntity> getAll(Pageable pageable) {
+
+        return workPlaceTypeRepository.findAll(pageable);
     }
 
     public WorkPlaceTypeEntity getById(Long id) {
         return workPlaceTypeRepository.findById(id).orElse(null);
     }
 
-    public List<WorkPlaceTypeEntity> getAllByName(String name) {
-        return workPlaceTypeRepository.findAllByNameContainingOrderByName(name);
+    public Page<WorkPlaceTypeEntity> getByName(String name, Pageable pageable) {
+        return workPlaceTypeRepository.findByName(name, pageable);
     }
 
-    public void updateWorkPlaceType(WorkPlaceTypeEntity workPlaceType) {
-        WorkPlaceTypeEntity updateWorkPlaceType = getById(workPlaceType.getId());
+    public void update(WorkPlaceTypeEntity type) {
+        String newName = type.getName();
 
-        if (updateWorkPlaceType == null) {
-            throw new NotFoundException("Тип места не найден.");
+        boolean exists = workPlaceTypeRepository.existsByName(newName);
+
+        if (exists) {
+            throw new AlreadyExistsException(String.format(
+                "Тип места уже существует: %s", newName));
         }
 
-        if (workPlaceType.getName() != null) {
-            updateWorkPlaceType.setName(workPlaceType.getName());
+        WorkPlaceTypeEntity updateType = getById(type.getId());
+
+        if (updateType == null) {
+            throw new NotFoundException(String.format(
+                "Тип места не найден: %s", type.getName()));
         }
-        workPlaceTypeRepository.save(updateWorkPlaceType);
+
+        if (type.getName() != null) {
+            updateType.setName(type.getName());
+        }
+
+        workPlaceTypeRepository.save(type);
     }
 
-    public void deleteWorkPlaceType(Long id) {
+    public void delete(Long id) {
 
         if (getById(id) == null) {
             throw new NotFoundException(

@@ -6,10 +6,10 @@ import lombok.*;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
 public class WorkPlaceTypeDto {
 
+    @NotNull
     private Long id;
 
     @NotBlank
