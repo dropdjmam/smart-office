@@ -10,9 +10,7 @@ public interface TeamRepository extends JpaRepository<TeamEntity, Long> {
 
     Page<TeamEntity> findAllByName(String name, Pageable pageable);
 
-    Page<TeamEntity> findAllById(Long id, Pageable pageable);
-
-    TeamEntity findByLeaderId(Long id);
+    Page<TeamEntity> findAllByLeaderId(Long leaderId, Pageable pageable);
 
     boolean existsByNameAndLeader(String name, EmployeeEntity leader);
 

@@ -3,6 +3,7 @@ package plugin.atb.booking.entity;
 import javax.persistence.*;
 
 import lombok.*;
+import lombok.experimental.*;
 
 @Entity
 @Getter
@@ -11,6 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "teams")
+@Accessors(chain = true)
 public class TeamEntity {
 
     @Id

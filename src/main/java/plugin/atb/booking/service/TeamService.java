@@ -24,8 +24,7 @@ public class TeamService {
         }
 
         if (team.getLeader() == null) {
-            throw new NotFoundException(String.format(
-                "Лидер не найден: %s", team.getLeader()));
+            throw new NotFoundException("Лидер не найден.");
         }
 
         teamRepository.save(team);
@@ -41,17 +40,12 @@ public class TeamService {
         return teamRepository.findAllByName(name, pageable);
     }
 
-    public Page<TeamEntity> getAllById(Long id, Pageable pageable) {
-
-        return teamRepository.findAllById(id, pageable);
-    }
-
     public TeamEntity getById(Long id) {
         return teamRepository.findById(id).orElse(null);
     }
 
-    public TeamEntity getByLeaderId(Long id) {
-        return teamRepository.findByLeaderId(id);
+    public Page<TeamEntity> getAllByLeaderId(Long leaderId, Pageable pageable) {
+        return teamRepository.findAllByLeaderId(leaderId, pageable);
     }
 
     public void update(TeamEntity team) {
