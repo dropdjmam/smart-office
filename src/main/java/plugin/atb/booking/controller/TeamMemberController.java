@@ -10,7 +10,6 @@ import org.springframework.data.domain.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
@@ -65,9 +64,9 @@ public class TeamMemberController {
     }
 
     @Operation(summary = "Получить всех участников команды по id команды")
-    @GetMapping("/all/teamId")
+    @GetMapping("/all/team/{teamId}")
     public ResponseEntity<Page<TeamMemberDto>> getAllTeamMemberByTeamId(
-        @RequestParam Long teamId,
+        @PathVariable Long teamId,
         @ParameterObject Pageable pageable
     ) {
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
@@ -85,7 +84,7 @@ public class TeamMemberController {
     }
 
     @Operation(summary = "Получить всех участников команды по названию команды")
-    @GetMapping("/all/teamName")
+    @GetMapping("/all/team/name")
     public ResponseEntity<Page<TeamMemberDto>> getAllTeamMemberByTeamName(
         @Valid
         @NotBlank(message = "Название команды не может быть пустым или состоять только из пробелов")
@@ -107,9 +106,9 @@ public class TeamMemberController {
     }
 
     @Operation(summary = "Получить все команды по id сотрудника")
-    @GetMapping("/all/employeeId")
+    @GetMapping("/all/employee/{employeeId}")
     public ResponseEntity<Page<TeamMemberDto>> getAllTeamByEmployeeId(
-        @RequestParam Long employeeId,
+        @PathVariable Long employeeId,
         @ParameterObject Pageable pageable
     ) {
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
@@ -128,9 +127,9 @@ public class TeamMemberController {
     }
 
     @Operation(summary = "Получить участника команды по id команды")
-    @GetMapping("/teamId")
+    @GetMapping("/team/{teamId}")
     public ResponseEntity<TeamMemberDto> getByTeamId(
-        @RequestBody Long teamId
+        @PathVariable Long teamId
     ) {
         ValidationUtils.checkId(teamId);
         var teamMember = teamMemberService.getByTeamId(teamId);
@@ -144,7 +143,7 @@ public class TeamMemberController {
     }
 
     @Operation(summary = "Получить участника команды по названию команды")
-    @GetMapping("/teamName")
+    @GetMapping("/team/name")
     public ResponseEntity<TeamMemberDto> getByTeamName(
         @RequestParam String name
     ) {
@@ -187,7 +186,7 @@ public class TeamMemberController {
             "Данные участника команды успешно измененны: %s, %s", employee, team));
     }
 
-    @DeleteMapping("/{employeeId}/{teamId}")
+    @DeleteMapping("/employee/{employeeId}/team/{teamId}")
     public ResponseEntity<String> delete(
         @PathVariable Long employeeId,
         @PathVariable Long teamId
