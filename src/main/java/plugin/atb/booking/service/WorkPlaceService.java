@@ -1,11 +1,15 @@
 package plugin.atb.booking.service;
 
+import java.time.*;
+import java.util.*;
+
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
 import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
+import plugin.atb.booking.utils.*;
 
 @Service
 @RequiredArgsConstructor
@@ -24,13 +28,48 @@ public class WorkPlaceService {
         return workPlaceRepository.findAll(pageable);
     }
 
-    public Page<WorkPlaceEntity> getPageByFloor(FloorEntity floor, Pageable pageable) {
+    public Page<WorkPlaceEntity> getPageByFloorAndType(
+        FloorEntity floor,
+        WorkPlaceTypeEntity type,
+        Pageable pageable
+    ) {
 
         if (floor == null) {
-            throw new IncorrectArgumentException("Id не указан");
+            throw new IncorrectArgumentException("Этаж не указан");
         }
 
-        return workPlaceRepository.findAllByFloor(floor, pageable);
+        if (type == null) {
+            throw new IncorrectArgumentException("Тип места не указан");
+        }
+
+        return workPlaceRepository.findAllByFloorAndType(floor, type, pageable);
+    }
+
+    public List<WorkPlaceEntity> getAllFreeInPeriod(
+        List<WorkPlaceEntity> floorPlaces,
+        LocalDateTime start,
+        LocalDateTime end
+    ) {
+
+        if (floorPlaces.isEmpty()) {
+            throw new IncorrectArgumentException("Места этажа не указаны");
+        }
+
+        if (start == null) {
+            throw new IncorrectArgumentException("Начало интервала не указано");
+        }
+
+        if (end == null) {
+            throw new IncorrectArgumentException("Конец интервала не указан");
+        }
+
+        if (start.isAfter(end)) {
+            throw new IncorrectArgumentException(String.format(
+                "Начало интервала не может быть позже конца: %s < %s",
+                end, start));
+        }
+
+        return workPlaceRepository.findAllFreeInPeriod(floorPlaces, start, end);
     }
 
     public WorkPlaceEntity getById(Long id) {
@@ -39,9 +78,7 @@ public class WorkPlaceService {
             throw new IncorrectArgumentException("Id не указан");
         }
 
-        if (id < 1) {
-            throw new IncorrectArgumentException("Id не может быть меньше 1");
-        }
+        ValidationUtils.checkId(id);
 
         return workPlaceRepository.findById(id).orElse(null);
     }

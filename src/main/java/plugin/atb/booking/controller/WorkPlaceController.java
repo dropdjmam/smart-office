@@ -1,5 +1,7 @@
 package plugin.atb.booking.controller;
 
+import java.util.stream.*;
+
 import javax.validation.*;
 
 import io.swagger.v3.oas.annotations.*;
@@ -34,9 +36,9 @@ public class WorkPlaceController {
     @Operation(summary = "Создание рабочего места", description = "Все поля обязательны")
     public ResponseEntity<String> createWorkPlace(@Valid @RequestBody WorkPlaceCreateDto dto) {
 
-        var type = typeValidate(dto.getTypeId());
+        var type = validateType(dto.getTypeId());
 
-        var floor = floorValidate(dto.getFloorId());
+        var floor = validateFloor(dto.getFloorId());
 
         workPlaceService.add(workPlaceMapper.dtoToWorkPlace(type, floor, dto.getCapacity()));
 
@@ -62,20 +64,63 @@ public class WorkPlaceController {
     @Operation(summary = "Все рабочие места на указанном этаже", description = "1 <= size <= 20 (default 20)")
     public ResponseEntity<Page<WorkPlaceGetDto>> getPageByFloor(
         @RequestParam Long floorId,
+        @RequestParam Long typeId,
         @ParameterObject Pageable pageable
     ) {
 
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
 
-        var floor = floorValidate(floorId);
+        var type = validateType(typeId);
 
-        var page = workPlaceService.getPageByFloor(floor, pageable);
+        var floor = validateFloor(floorId);
+
+        var page = workPlaceService.getPageByFloorAndType(floor, type, pageable);
 
         var dto = page.stream()
             .map(workPlaceMapper::workPlaceToDto)
             .toList();
 
         return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+    }
+
+    @GetMapping("/allIsFreeByFloor")
+    @Operation(summary = "Все свободные места одного типа на указанном этаже",
+        description = "Для запроса необходим id этажа, id типа места, " +
+                      "начало временного интервала и конец, а также " +
+                      "параметры пагинации. 1 <= size <= 20 (default 20)")
+    public ResponseEntity<Page<PlaceAvailabilityResponseDto>> getIsFreeByFloor(
+        @Valid @ModelAttribute @ParameterObject PlaceAvailabilityRequestDto dto,
+        @ParameterObject Pageable pageable
+    ) {
+        ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
+
+        var type = validateType(dto.getTypeId());
+
+        var floor = validateFloor(dto.getFloorId());
+
+        var floorPlaces = workPlaceService.getPageByFloorAndType(floor, type, pageable);
+
+        if (floorPlaces.isEmpty()) {
+            return ResponseEntity.ok(Page.empty(floorPlaces.getPageable()));
+        }
+
+        var freePlaces = workPlaceService.getAllFreeInPeriod(
+            floorPlaces.getContent(),
+            dto.getStart(),
+            dto.getEnd());
+
+        var freeIds = freePlaces.stream()
+            .map(WorkPlaceEntity::getId)
+            .collect(Collectors.toSet());
+
+        var responseDtos = floorPlaces.stream()
+            .map(p -> workPlaceMapper.placeToPlaceAvailabilityDto(p, freeIds.contains(p.getId())))
+            .toList();
+
+        return ResponseEntity.ok(new PageImpl<>(
+            responseDtos,
+            floorPlaces.getPageable(),
+            floorPlaces.getTotalElements()));
     }
 
     @GetMapping("/{id}")
@@ -94,9 +139,9 @@ public class WorkPlaceController {
     @Operation(summary = "Изменение указанного места", description = "Все поля обязательны")
     public ResponseEntity<String> update(@Valid @RequestBody WorkPlaceUpdateDto dto) {
 
-        var type = typeValidate(dto.getTypeId());
+        var type = validateType(dto.getTypeId());
 
-        var floor = floorValidate(dto.getFloorId());
+        var floor = validateFloor(dto.getFloorId());
 
         workPlaceService.update(workPlaceMapper.dtoToWorkPlace(dto, type, floor));
 
@@ -112,7 +157,7 @@ public class WorkPlaceController {
         return ResponseEntity.ok("Место успешно удалено");
     }
 
-    private FloorEntity floorValidate(long id) {
+    private FloorEntity validateFloor(long id) {
         var floor = floorService.getById(id);
         if (floor == null) {
             throw new NotFoundException("Не найден этаж с id: " + id);
@@ -120,7 +165,7 @@ public class WorkPlaceController {
         return floor;
     }
 
-    private WorkPlaceTypeEntity typeValidate(long id) {
+    private WorkPlaceTypeEntity validateType(long id) {
         var type = workPlaceTypeService.getById(id);
         if (type == null) {
             throw new NotFoundException("Не найден тип места с id: " + id);

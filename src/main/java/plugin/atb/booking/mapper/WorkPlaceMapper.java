@@ -49,4 +49,21 @@ public class WorkPlaceMapper {
 
     }
 
+    public PlaceAvailabilityResponseDto placeToPlaceAvailabilityDto(
+        WorkPlaceEntity workPlace,
+        Boolean isFree
+    ) {
+
+        var dto = new PlaceAvailabilityResponseDto(
+            workPlace.getId(),
+            workPlace.getType().getName(),
+            workPlace.getFloor().getId(),
+            workPlace.getCapacity(),
+            isFree
+        );
+
+        return dto;
+
+    }
+
 }
