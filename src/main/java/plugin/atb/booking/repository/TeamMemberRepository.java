@@ -22,4 +22,6 @@ public interface TeamMemberRepository extends JpaRepository<TeamMemberEntity, Lo
 
     boolean existsByEmployeeAndTeam(EmployeeEntity employee, TeamEntity team);
 
+    boolean existsByTeam(TeamEntity team);
+
 }

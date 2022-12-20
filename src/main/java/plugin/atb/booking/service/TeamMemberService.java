@@ -20,7 +20,7 @@ public class TeamMemberService {
         if (exists) {
             throw new AlreadyExistsException(String.format(
                 "Участник уже состоит в данной команде: %s, %s",
-                team.getEmployee().getFullName(), team.getTeam().getName()));
+                team.getEmployee(), team.getTeam()));
         }
 
         teamMemberRepository.save(team);
@@ -64,15 +64,24 @@ public class TeamMemberService {
         return teamMemberRepository.findByTeamName(name);
     }
 
-    public void update(TeamMemberEntity team) {
-        TeamMemberEntity updateTeamMember = getById(team.getId());
+    public void update(TeamMemberEntity member) {
+        TeamEntity newTeam = member.getTeam();
 
-        if (updateTeamMember == null) {
-            throw new NotFoundException(String.format(
-                "Участник команды не найден: %s", team.getId()));
+        boolean exists = teamMemberRepository.existsByTeam(newTeam);
+        if (exists) {
+            throw new AlreadyExistsException(String.format(
+                "Участник уже состоит в данной команде: %s, %s",
+                member.getEmployee(), member.getTeam()));
+        }
+        TeamMemberEntity teamMemberUpdate = getById(member.getId());
+
+        if (teamMemberUpdate == null) {
+            throw new NotFoundException("Не найдена роль с id: " + member.getId());
         }
 
-        teamMemberRepository.save(team);
+        teamMemberUpdate.setTeam(newTeam);
+
+        teamMemberRepository.save(teamMemberUpdate);
     }
 
     public void delete(Long id) {
