@@ -8,6 +8,7 @@ import org.springframework.stereotype.*;
 import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
+import plugin.atb.booking.utils.*;
 
 @Service
 @RequiredArgsConstructor
@@ -33,32 +34,30 @@ public class RoleService {
     }
 
     public RoleEntity getById(Long id) {
+
+        if (id == null) {
+            throw new IncorrectArgumentException("Не указан id для поиска роли");
+        }
+
+        ValidationUtils.checkId(id);
+
         return roleRepository.findById(id).orElse(null);
     }
 
-    public List<RoleEntity> getAllByName(String name) {
-        return roleRepository.findAllByNameContainingOrderByName(name);
-    }
-
     public void update(RoleEntity role) {
-        String newName = role.getName();
 
-        boolean exists = roleRepository.existsByName(newName);
+        if (role.getName().isBlank()) {
+            throw new IncorrectArgumentException("Не указано имя роли");
+        }
+
+        boolean exists = roleRepository.existsByName(role.getName());
 
         if (exists) {
             throw new AlreadyExistsException(
-                "Роль уже существует: " + newName);
+                "Роль уже существует: " + role.getName());
         }
 
-        RoleEntity roleUpdate = getById(role.getId());
-
-        if (roleUpdate == null) {
-            throw new NotFoundException("Не найдена роль с id: " + role.getId());
-        }
-
-        roleUpdate.setName(newName);
-
-        roleRepository.save(roleUpdate);
+        roleRepository.save(role);
     }
 
     public void delete(Long id) {
