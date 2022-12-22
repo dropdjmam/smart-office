@@ -17,11 +17,11 @@ public class WorkPlaceService {
 
     private final WorkPlaceRepository workPlaceRepository;
 
-    public void add(WorkPlaceEntity workPlace) {
+    public Long add(WorkPlaceEntity workPlace) {
 
         validate(workPlace);
 
-        workPlaceRepository.save(workPlace);
+        return workPlaceRepository.save(workPlace).getId();
     }
 
     public Page<WorkPlaceEntity> getPage(Pageable pageable) {
@@ -45,7 +45,7 @@ public class WorkPlaceService {
         return workPlaceRepository.findAllByFloorAndType(floor, type, pageable);
     }
 
-    public List<WorkPlaceEntity> getAllFreeInPeriod(
+    public List<WorkPlaceEntity> getAllBookedInPeriod(
         List<WorkPlaceEntity> floorPlaces,
         LocalDateTime start,
         LocalDateTime end
@@ -69,7 +69,7 @@ public class WorkPlaceService {
                 end, start));
         }
 
-        return workPlaceRepository.findAllFreeInPeriod(floorPlaces, start, end);
+        return workPlaceRepository.findAllBookedInPeriod(floorPlaces, start, end);
     }
 
     public WorkPlaceEntity getById(Long id) {

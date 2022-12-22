@@ -14,7 +14,7 @@ public class FloorService {
 
     private final FloorRepository floorRepository;
 
-    public void add(FloorEntity floor) {
+    public Long add(FloorEntity floor) {
 
         validate(floor);
 
@@ -26,7 +26,7 @@ public class FloorService {
                 "Этаж №%s в офисе %s уже существует", floor.getFloorNumber(), floor.getOffice()));
         }
 
-        floorRepository.save(floor);
+        return floorRepository.save(floor).getId();
     }
 
     public Page<FloorEntity> getAllByOffice(OfficeEntity office, Pageable pageable) {
@@ -51,11 +51,15 @@ public class FloorService {
 
     public void update(FloorEntity floor) {
 
-        validate(floor);
+        if (floor.getId() == null) {
+            throw new IncorrectArgumentException("Не указан id этажа");
+        }
 
         if (getById(floor.getId()) == null) {
             throw new NotFoundException("Не найден этаж с id: " + floor.getId());
         }
+
+        validate(floor);
 
         floorRepository.save(floor);
     }
@@ -70,14 +74,6 @@ public class FloorService {
     }
 
     private void validate(FloorEntity floor) {
-
-        if (floor == null) {
-            throw new IncorrectArgumentException("Этаж не указан");
-        }
-
-        if (floor.getId() == null) {
-            throw new IncorrectArgumentException("Не указан id этажа");
-        }
 
         ValidationUtils.checkId(floor.getId());
 

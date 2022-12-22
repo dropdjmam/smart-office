@@ -20,11 +20,13 @@ public interface WorkPlaceRepository extends JpaRepository<WorkPlaceEntity, Long
     );
 
     /**
-     * Возвращает список сущностей (свободных мест),
+     * Возвращает список сущностей (занятых мест),
      * для которого выполняется следующие условия:
      * <ul>
      * <li> Рабочее место присутствует в указанном списке (параметр floorPlaces)
-     * <li> У данного места нет брони удовлетворяющей следующим двум условиям:
+     * <li> Бронь по искомому месту актуальна (время окончания брони позже данного момента)
+     * <li> Статус об удалении брони - false (не удалена)
+     * <li> У данного места есть бронь удовлетворяющая следующим двум условиям:
      * <ul>
      *     <li> Начало интервала раньше конца брони из БД (т.е. start < dateTimeOfEnd)
      *     <li> Конец интервала позже начала брони из БД (т.е. end > dateTimeOfStart)
@@ -42,9 +44,11 @@ public interface WorkPlaceRepository extends JpaRepository<WorkPlaceEntity, Long
                    "from WorkPlaceEntity place " +
                    "left join BookingEntity booking on place.id = booking.workPlace.id " +
                    "where place in :floorPlaces " +
-                   "and not (booking.dateTimeOfStart < :end and booking.dateTimeOfEnd > :start) " +
+                   "and booking.dateTimeOfEnd > current_timestamp " +
+                   "and booking.isDeleted is false " +
+                   "and booking.dateTimeOfStart < :end and booking.dateTimeOfEnd > :start " +
                    "group by place.id")
-    List<WorkPlaceEntity> findAllFreeInPeriod(
+    List<WorkPlaceEntity> findAllBookedInPeriod(
         @Param("floorPlaces") List<WorkPlaceEntity> floorPlaces,
         @Param("start") LocalDateTime startOfPeriod,
         @Param("end") LocalDateTime endOfPeriod

@@ -34,15 +34,18 @@ public class WorkPlaceController {
 
     @PostMapping("/")
     @Operation(summary = "Создание рабочего места", description = "Все поля обязательны")
-    public ResponseEntity<String> createWorkPlace(@Valid @RequestBody WorkPlaceCreateDto dto) {
+    public ResponseEntity<Long> createWorkPlace(@Valid @RequestBody WorkPlaceCreateDto dto) {
 
         var type = validateType(dto.getTypeId());
 
         var floor = validateFloor(dto.getFloorId());
 
-        workPlaceService.add(workPlaceMapper.dtoToWorkPlace(type, floor, dto.getCapacity()));
+        var newId = workPlaceService.add(workPlaceMapper.dtoToWorkPlace(
+            type,
+            floor,
+            dto.getCapacity()));
 
-        return ResponseEntity.ok("Место успешно добавлено");
+        return ResponseEntity.ok(newId);
     }
 
     @GetMapping("/all")
@@ -84,7 +87,7 @@ public class WorkPlaceController {
     }
 
     @GetMapping("/allIsFreeByFloor")
-    @Operation(summary = "Все свободные места одного типа на указанном этаже",
+    @Operation(summary = "Все места одного типа на указанном этаже помеченные как занятые/свободные",
         description = "Для запроса необходим id этажа, id типа места, " +
                       "начало временного интервала и конец, а также " +
                       "параметры пагинации. 1 <= size <= 20 (default 20)")
@@ -104,17 +107,19 @@ public class WorkPlaceController {
             return ResponseEntity.ok(Page.empty(floorPlaces.getPageable()));
         }
 
-        var freePlaces = workPlaceService.getAllFreeInPeriod(
+        var freePlaces = workPlaceService.getAllBookedInPeriod(
             floorPlaces.getContent(),
             dto.getStart(),
             dto.getEnd());
 
-        var freeIds = freePlaces.stream()
+        var bookedIds = freePlaces.stream()
             .map(WorkPlaceEntity::getId)
             .collect(Collectors.toSet());
 
         var responseDtos = floorPlaces.stream()
-            .map(p -> workPlaceMapper.placeToPlaceAvailabilityDto(p, freeIds.contains(p.getId())))
+            .map(p -> workPlaceMapper.placeToPlaceAvailabilityDto(
+                p,
+                !bookedIds.contains(p.getId())))
             .toList();
 
         return ResponseEntity.ok(new PageImpl<>(

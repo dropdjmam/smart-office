@@ -14,7 +14,7 @@ public class OfficeService {
 
     private final OfficeRepository officeRepository;
 
-    public void add(OfficeEntity office) {
+    public Long add(OfficeEntity office) {
 
         boolean exists = officeRepository.existsByAddress(office.getAddress());
 
@@ -25,7 +25,7 @@ public class OfficeService {
 
         validate(office);
 
-        officeRepository.save(office);
+        return officeRepository.save(office).getId();
     }
 
     public Page<OfficeEntity> getAll(Pageable pageable) {

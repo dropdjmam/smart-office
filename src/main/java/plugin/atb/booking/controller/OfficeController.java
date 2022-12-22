@@ -29,7 +29,7 @@ public class OfficeController {
 
     @PostMapping("/")
     @Operation(summary = "Создание офиса", description = "Все поля обязательны")
-    public ResponseEntity<String> createOffice(@Valid @RequestBody OfficeCreateDto dto) {
+    public ResponseEntity<Long> createOffice(@Valid @RequestBody OfficeCreateDto dto) {
 
         var city = cityService.getById(dto.getCityId());
 
@@ -37,9 +37,9 @@ public class OfficeController {
             throw new NotFoundException("Не найден город с id: " + dto.getCityId());
         }
 
-        officeService.add(officeMapper.dtoToOffice(dto, city));
+        var newId = officeService.add(officeMapper.dtoToOffice(dto, city));
 
-        return ResponseEntity.ok("Офис успешно создан");
+        return ResponseEntity.ok(newId);
     }
 
     @GetMapping("/all")

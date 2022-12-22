@@ -30,13 +30,13 @@ public class FloorController {
 
     @PostMapping("/")
     @Operation(summary = "Добавление этажа", description = "Все поля кроме карты обязательны")
-    public ResponseEntity<String> createFloor(@Valid @RequestBody FloorCreateDto dto) {
+    public ResponseEntity<Long> createFloor(@Valid @RequestBody FloorCreateDto dto) {
 
         var office = validateOffice(dto.getOfficeId());
 
-        floorService.add(floorMapper.dtoToFloor(dto, office));
+        var newId = floorService.add(floorMapper.dtoToFloor(dto, office));
 
-        return ResponseEntity.ok("Этаж успешно создан");
+        return ResponseEntity.ok(newId);
     }
 
     @GetMapping("/all")
