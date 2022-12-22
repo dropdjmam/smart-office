@@ -15,6 +15,25 @@ public class TeamMemberMapper {
         return dto;
     }
 
+    public TeamMemberInfoDto teamMemberToInfoDto(TeamMemberEntity member) {
+        var dto = new TeamMemberInfoDto(
+            member.getId(),
+            member.getTeam().getId(),
+            member.getEmployee().getId(),
+            member.getEmployee().getFullName(),
+            member.getEmployee().getRole().getName());
+        return dto;
+    }
+
+    public TeamMemberInfoTeamDto teamMemberToInfoTeamDto(TeamMemberEntity member) {
+        var dto = new TeamMemberInfoTeamDto(
+            member.getTeam().getId(),
+            member.getTeam().getLeader().getId(),
+            member.getTeam().getLeader().getFullName(),
+            member.getTeam().getName());
+        return dto;
+    }
+
     public TeamMemberEntity dtoToTeamMember(
         TeamMemberDto dto, TeamEntity team, EmployeeEntity employee
     ) {

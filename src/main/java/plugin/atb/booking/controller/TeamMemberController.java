@@ -32,9 +32,15 @@ public class TeamMemberController {
     public ResponseEntity<String> createTeamMember(@Valid @RequestBody TeamMemberCreateDto dto) {
 
         var employee = employeeService.getById(dto.getEmployeeId());
-
+        if (employee == null) {
+            throw new NotFoundException(String.format(
+                "Сотрудник с id:%s не найден", dto.getEmployeeId()));
+        }
         var team = teamService.getById(dto.getTeamId());
-
+        if (team == null) {
+            throw new NotFoundException(String.format(
+                "Команда с id:%s не найдена", dto.getTeamId()));
+        }
         var teamMember = teamMemberMapper.dtoToCreateTeamMember(team, employee);
 
         teamMemberService.add(teamMember);
@@ -65,7 +71,7 @@ public class TeamMemberController {
 
     @Operation(summary = "Получить всех участников команды по id команды")
     @GetMapping("/all/team/{teamId}")
-    public ResponseEntity<Page<TeamMemberDto>> getAllTeamMemberByTeamId(
+    public ResponseEntity<Page<TeamMemberInfoDto>> getAllTeamMemberByTeamId(
         @PathVariable Long teamId,
         @ParameterObject Pageable pageable
     ) {
@@ -74,13 +80,13 @@ public class TeamMemberController {
         var page = teamMemberService.getAllTeamMemberByTeamId(
             teamId, pageable);
 
-        var dto = page
+        var infoDto = page
             .stream()
-            .map(teamMemberMapper::teamMemberToDto)
+            .map(teamMemberMapper::teamMemberToInfoDto)
             .toList();
 
         return ResponseEntity.ok(new PageImpl<>(
-            dto, page.getPageable(), page.getTotalElements()));
+            infoDto, page.getPageable(), page.getTotalElements()));
     }
 
     @Operation(summary = "Получить всех участников команды по названию команды")
@@ -107,7 +113,7 @@ public class TeamMemberController {
 
     @Operation(summary = "Получить все команды по id сотрудника")
     @GetMapping("/all/employee/{employeeId}")
-    public ResponseEntity<Page<TeamMemberDto>> getAllTeamByEmployeeId(
+    public ResponseEntity<Page<TeamMemberInfoTeamDto>> getAllTeamByEmployeeId(
         @PathVariable Long employeeId,
         @ParameterObject Pageable pageable
     ) {
@@ -119,7 +125,7 @@ public class TeamMemberController {
 
         var dto = page
             .stream()
-            .map(teamMemberMapper::teamMemberToDto)
+            .map(teamMemberMapper::teamMemberToInfoTeamDto)
             .toList();
 
         return ResponseEntity.ok(new PageImpl<>(
@@ -171,16 +177,24 @@ public class TeamMemberController {
         return ResponseEntity.ok(teamMemberMapper.teamMemberToDto(member));
     }
 
+    @Operation(summary = "Изменить данные(команду/сотрудника) участника команды")
     @PutMapping("/")
     public ResponseEntity<String> update(@Valid @RequestBody TeamMemberDto dto) {
 
         var employee = employeeService.getById(dto.getEmployeeId());
-
+        if (employee == null) {
+            throw new NotFoundException(String.format(
+                "Сотрудник с id:%s не найден", dto.getEmployeeId()));
+        }
         var team = teamService.getById(dto.getTeamId());
+        if (team == null) {
+            throw new NotFoundException(String.format(
+                "Команда с id:%s не найдена", dto.getTeamId()));
+        }
 
         var teamMember = teamMemberMapper.dtoToTeamMember(dto, team, employee);
 
-        teamMemberService.add(teamMember);
+        teamMemberService.update(teamMember);
 
         return ResponseEntity.ok(String.format(
             "Данные участника команды успешно измененны: %s, %s", employee, team));

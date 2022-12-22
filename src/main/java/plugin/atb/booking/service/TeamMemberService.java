@@ -13,17 +13,17 @@ public class TeamMemberService {
 
     private final TeamMemberRepository teamMemberRepository;
 
-    public void add(TeamMemberEntity team) {
+    public void add(TeamMemberEntity member) {
 
         boolean exists = teamMemberRepository.existsByEmployeeAndTeam(
-            team.getEmployee(), team.getTeam());
+            member.getEmployee(), member.getTeam());
         if (exists) {
             throw new AlreadyExistsException(String.format(
-                "Участник уже состоит в данной команде: %s, %s",
-                team.getEmployee().getFullName(), team.getTeam().getName()));
+                "Участник с id:%s уже состоит в команде с id:%s",
+                member.getEmployee().getId(), member.getTeam().getId()));
         }
 
-        teamMemberRepository.save(team);
+        teamMemberRepository.save(member);
     }
 
     public Page<TeamMemberEntity> getAll(Pageable pageable) {
@@ -64,15 +64,21 @@ public class TeamMemberService {
         return teamMemberRepository.findByTeamName(name);
     }
 
-    public void update(TeamMemberEntity team) {
-        TeamMemberEntity updateTeamMember = getById(team.getId());
+    public void update(TeamMemberEntity member) {
 
-        if (updateTeamMember == null) {
-            throw new NotFoundException(String.format(
-                "Участник команды не найден: %s", team.getId()));
+        if (getById(member.getId()) == null) {
+            throw new NotFoundException("Не найдена роль с id: " + member.getId());
         }
 
-        teamMemberRepository.save(team);
+        boolean exists = teamMemberRepository.existsByEmployeeAndTeam(
+            member.getEmployee(), member.getTeam());
+        if (exists) {
+            throw new AlreadyExistsException(String.format(
+                "Участник с id:%s уже состоит в команде с id:%s",
+                member.getEmployee().getId(), member.getTeam().getId()));
+        }
+
+        teamMemberRepository.save(member);
     }
 
     public void delete(Long id) {
