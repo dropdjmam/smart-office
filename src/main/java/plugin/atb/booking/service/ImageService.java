@@ -34,17 +34,23 @@ public class ImageService {
     }
 
     public void update(ImageEntity image) {
-        ImageEntity updateImage = getById(image.getId());
 
-        if (updateImage == null) {
-            throw new NotFoundException("Изображение не найдено");
+        byte[] newImage = image.getContent();
+
+        boolean exists = imageRepository.existsByContent(newImage);
+        if (exists) {
+            throw new AlreadyExistsException("Нельзя заменить на такое же изображение");
         }
 
-        if (image.getContent() != null) {
-            updateImage.setContent(image.getContent());
+        ImageEntity imageUpdate = getById(image.getId());
+
+        if (imageUpdate == null) {
+            throw new NotFoundException("Изображение не найдено.");
         }
 
-        imageRepository.save(updateImage);
+        imageUpdate.setContent(newImage);
+
+        imageRepository.save(imageUpdate);
     }
 
     public void delete(Long id) {

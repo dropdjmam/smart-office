@@ -1,9 +1,12 @@
 package plugin.atb.booking.entity;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 import lombok.*;
 import lombok.experimental.*;
+import org.hibernate.annotations.*;
 
 @Entity
 @Getter
@@ -21,6 +24,7 @@ public class ImageEntity {
     private Long id;
 
     @Lob
+    @Type(type="org.hibernate.type.BinaryType")
     private byte[] content;
 
     private String name;
