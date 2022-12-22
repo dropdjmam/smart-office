@@ -1,8 +1,9 @@
 package plugin.atb.booking.controller;
 
-import java.util.*;
-
+import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import org.springframework.data.domain.*;
 import org.springframework.http.*;
 import org.springframework.security.core.context.*;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +14,8 @@ import plugin.atb.booking.service.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping
+@RequestMapping("/profile")
+@Tag(name = "Профиль сотрудника")
 public class ProfileController {
 
     private final EmployeeMapper employeeMapper;
@@ -24,7 +26,10 @@ public class ProfileController {
 
     private final BookingService bookingService;
 
-    @GetMapping("/profile")
+    @GetMapping
+    @Operation(summary = "Получение всей информации своего профиля сотрудника",
+        description = "Включает в себя данные о сотруднике, его актуальные брони и команды," +
+                      "в которых он состоит")
     public ResponseEntity<ProfileDto> getProfile() {
 
         String login = SecurityContextHolder.getContext()
@@ -33,16 +38,12 @@ public class ProfileController {
 
         EmployeeEntity self = employeeService.getByLogin(login);
 
-        List<BookingGetDto> bookings;
-
-        bookings = bookingService.getAllActual(self.getId())
+        var bookings = bookingService.getAllActual(self, Pageable.ofSize(20))
             .stream()
             .map(bookingMapper::bookingToDto)
             .toList();
 
-        ProfileDto profile = new ProfileDto(
-            employeeMapper.employeeToDto(self),
-            bookings);
+        var profile = new ProfileDto(employeeMapper.employeeToDto(self), bookings);
 
         return ResponseEntity.ok(profile);
     }

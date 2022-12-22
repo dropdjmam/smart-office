@@ -21,6 +21,6 @@ public class BookingGetDto {
 
     private LocalDateTime end;
 
-    private int guests;
+    private Integer guests;
 
 }

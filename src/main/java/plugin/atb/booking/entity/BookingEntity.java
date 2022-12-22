@@ -14,7 +14,16 @@ import lombok.experimental.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Table(name = "bookings")
+@Table(name = "bookings",
+    indexes = {@Index(name = "holder", columnList = "holder_id"),
+               @Index(name = "maker", columnList = "maker_id"),
+               @Index(name = "workplace", columnList = "workplace_id"),
+               @Index(name = "booking_start", columnList = "date_time_of_start"),
+               @Index(name = "booking_end", columnList = "date_time_of_end"),
+               @Index(name = "in_period",
+                   columnList = "workplace_id, date_time_of_start, date_time_of_end, is_deleted"),
+               @Index(name = "actual",
+                   columnList = "holder_id, date_time_of_start, date_time_of_end, is_deleted")})
 public class BookingEntity {
 
     @Id
@@ -37,10 +46,16 @@ public class BookingEntity {
     @ToString.Exclude
     private WorkPlaceEntity workPlace;
 
+    @Column(name = "date_time_of_start")
     private LocalDateTime dateTimeOfStart;
 
+    @Column(name = "date_time_of_end")
     private LocalDateTime dateTimeOfEnd;
 
-    private int guests;
+    @Column(columnDefinition = "integer default 0")
+    private Integer guests;
+
+    @Column(name = "is_deleted", columnDefinition = "boolean default false")
+    private Boolean isDeleted = false;
 
 }

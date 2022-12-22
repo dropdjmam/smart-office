@@ -21,7 +21,7 @@ public class EmployeeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id")
+    @JoinColumn(name = "role_id", columnDefinition = "bigint default 1")
     @ToString.Exclude
     private RoleEntity role;
 

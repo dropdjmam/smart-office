@@ -7,42 +7,46 @@ import plugin.atb.booking.entity.*;
 @Component
 public class BookingMapper {
 
-    public BookingEntity dtoToEntity(
+    public BookingEntity dtoToBooking(
         BookingCreateDto dto,
         EmployeeEntity holder,
         EmployeeEntity maker,
         WorkPlaceEntity workPlace
     ) {
-        BookingEntity booking = new BookingEntity()
+        var booking = new BookingEntity()
             .setHolder(holder)
             .setMaker(maker)
             .setWorkPlace(workPlace)
             .setDateTimeOfStart(dto.getStart())
             .setDateTimeOfEnd(dto.getEnd())
-            .setGuests(dto.getGuests());
+            .setGuests(dto.getGuests())
+            .setIsDeleted(false);
 
         return booking;
     }
 
-    public BookingEntity dtoToEntity(
+    public BookingEntity dtoToBooking(
         BookingUpdateDto dto,
+        EmployeeEntity holder,
         EmployeeEntity maker,
         WorkPlaceEntity workPlace
     ) {
-
-        BookingEntity booking = new BookingEntity()
+        var booking = new BookingEntity()
+            .setId(dto.getId())
+            .setHolder(holder)
             .setMaker(maker)
             .setWorkPlace(workPlace)
-            .setDateTimeOfStart(dto.getNewStart())
-            .setDateTimeOfEnd(dto.getNewEnd())
-            .setGuests(dto.getGuests());
+            .setDateTimeOfStart(dto.getStart())
+            .setDateTimeOfEnd(dto.getEnd())
+            .setGuests(dto.getGuests())
+            .setIsDeleted(false);
 
         return booking;
     }
 
     public BookingGetDto bookingToDto(BookingEntity booking) {
 
-        BookingGetDto dto = new BookingGetDto(
+        var dto = new BookingGetDto(
             booking.getId(),
             booking.getHolder().getId(),
             booking.getMaker().getId(),
