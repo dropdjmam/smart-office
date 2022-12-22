@@ -29,9 +29,13 @@ public class AdministrationController {
     public ResponseEntity<String> createAdmin(@RequestBody AdministrationDto dto) {
 
         var employee = employeeService.getById(dto.getEmployeeId());
-
+        if (employee == null) {
+            throw new NotFoundException("Не найден сотрудник с id: " + dto.getEmployeeId());
+        }
         var office = officeService.getById(dto.getOfficeId());
-
+        if (office == null) {
+            throw new NotFoundException("Не найден офис с id: " + dto.getOfficeId());
+        }
         var admin = administrationMapper.createDtoToAdmin(employee, office);
 
         administrationService.add(admin);
@@ -61,9 +65,9 @@ public class AdministrationController {
     }
 
     @Operation(summary = "Получить все офисы по id администартора")
-    @GetMapping("/allOffice/adminId")
+    @GetMapping("/allOffice/{id}")
     public ResponseEntity<Page<AdministrationDto>> getAllOfficeById(
-        @RequestParam Long id,
+        @PathVariable Long id,
         @ParameterObject Pageable pageable
     ) {
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
@@ -81,9 +85,9 @@ public class AdministrationController {
     }
 
     @Operation(summary = "Получить всех администраторов по id офиса")
-    @GetMapping("/allAdmin/officeId")
+    @GetMapping("/allAdministration/office/{officeId}")
     public ResponseEntity<Page<AdministrationDto>> getAllAdministrationByOfficeId(
-        @RequestParam Long officeId,
+        @PathVariable Long officeId,
         @ParameterObject Pageable pageable
     ) {
 
@@ -118,9 +122,13 @@ public class AdministrationController {
     public ResponseEntity<String> update(@RequestBody AdministrationDto dto) {
 
         var employee = employeeService.getById(dto.getEmployeeId());
-
+        if (employee == null) {
+            throw new NotFoundException("Не найден сотрудник с id: " + dto.getEmployeeId());
+        }
         var office = officeService.getById(dto.getOfficeId());
-
+        if (office == null) {
+            throw new NotFoundException("Не найден офис с id: " + dto.getOfficeId());
+        }
         var admin = administrationMapper.createDtoToAdmin(employee, office);
 
         administrationService.update(admin);

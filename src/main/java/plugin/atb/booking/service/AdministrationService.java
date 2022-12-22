@@ -19,8 +19,8 @@ public class AdministrationService {
             admin.getOffice(), admin.getEmployee());
         if (exists) {
             throw new AlreadyExistsException(String.format(
-                "Администратор для данного офиса закреплен: %s, %s",
-                admin.getOffice(), admin.getEmployee()));
+                "Администратор с id:%s для офиса с id:%s уже закреплен.",
+                admin.getEmployee().getId(), admin.getOffice().getId()));
         }
 
         if (admin.getOffice() == null) {
@@ -57,19 +57,19 @@ public class AdministrationService {
     }
 
     public void update(AdministratingEntity admin) {
-        AdministratingEntity updateAdmin = getById(admin.getId());
 
-        if (updateAdmin == null) {
-            throw new NotFoundException(String.format(
-                "Администрация не найдена: %s", admin.getEmployee().getFullName()));
+        if (getById(admin.getId()) == null) {
+            throw new NotFoundException("Не найден администратор с id: " + admin.getId());
         }
 
-        if (admin.getEmployee() != null) {
-            updateAdmin.setEmployee(admin.getEmployee());
-        }
+        var newEmployee = admin.getEmployee();
+        var newOffice = admin.getOffice();
 
-        if (admin.getOffice() != null) {
-            updateAdmin.setOffice(admin.getOffice());
+        boolean exists = administrationRepository.existsByOfficeAndEmployee(newOffice, newEmployee);
+        if (exists) {
+            throw new AlreadyExistsException(String.format(
+                "Администратор уже является администратором офиса с id: %s",
+                admin.getOffice().getId()));
         }
 
         administrationRepository.save(admin);
@@ -79,7 +79,7 @@ public class AdministrationService {
 
         if (getById(id) == null) {
             throw new NotFoundException(String.format(
-                "Команда не найдена: %s", id));
+                "Администратор не найден: %s", id));
         }
 
         administrationRepository.deleteById(id);
