@@ -1,14 +1,17 @@
 package plugin.atb.booking.entity;
 
 import javax.persistence.*;
+import javax.validation.constraints.*;
 
 import lombok.*;
+import lombok.experimental.*;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Accessors(chain = true)
 @Table(name = "team_members")
 public class TeamMemberEntity {
 
@@ -19,10 +22,12 @@ public class TeamMemberEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")
-    @NonNull private EmployeeEntity employee;
+    @NotNull
+    private EmployeeEntity employee;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
-    @NonNull private TeamEntity team;
+    @NotNull
+    private TeamEntity team;
 
 }

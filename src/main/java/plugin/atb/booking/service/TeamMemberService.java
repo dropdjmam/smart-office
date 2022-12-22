@@ -20,7 +20,7 @@ public class TeamMemberService {
         if (exists) {
             throw new AlreadyExistsException(String.format(
                 "Участник уже состоит в данной команде: %s, %s",
-                team.getEmployee(), team.getTeam()));
+                team.getEmployee().getFullName(), team.getTeam().getName()));
         }
 
         teamMemberRepository.save(team);
@@ -31,17 +31,37 @@ public class TeamMemberService {
         return teamMemberRepository.findAll(pageable);
     }
 
-    public Page<TeamMemberEntity> getAllByEmployee(EmployeeEntity employee, Pageable pageable) {
+    public TeamMemberEntity getByEmployeeAndTeam(
+        EmployeeEntity employee, TeamEntity team
+    ) {
 
-        return teamMemberRepository.findAllByEmployee(employee, pageable);
+        return teamMemberRepository.findTeamMemberByEmployeeAndTeam(employee, team);
+    }
+
+    public Page<TeamMemberEntity> getAllTeamMemberByTeamId(Long teamId, Pageable pageable) {
+
+        return teamMemberRepository.findAllTeamMemberByTeamId(teamId, pageable);
+    }
+
+    public Page<TeamMemberEntity> getAllTeamMemberByTeamName(String name, Pageable pageable) {
+
+        return teamMemberRepository.findAllTeamMemberByTeamName(name, pageable);
+    }
+
+    public Page<TeamMemberEntity> getAllTeamByEmployeeId(Long employeeId, Pageable pageable) {
+        return teamMemberRepository.findAllTeamByEmployeeId(employeeId, pageable);
     }
 
     public TeamMemberEntity getById(Long id) {
         return teamMemberRepository.findById(id).orElse(null);
     }
 
-    public Page<TeamMemberEntity> getByTeam(TeamEntity team, Pageable pageable) {
-        return teamMemberRepository.findByTeam(team, pageable);
+    public TeamMemberEntity getByTeamId(Long teamId) {
+        return teamMemberRepository.findByTeamId(teamId);
+    }
+
+    public TeamMemberEntity getByTeamName(String name) {
+        return teamMemberRepository.findByTeamName(name);
     }
 
     public void update(TeamMemberEntity team) {
@@ -52,25 +72,25 @@ public class TeamMemberService {
                 "Участник команды не найден: %s", team.getId()));
         }
 
-        if (team.getEmployee() != null) {
-            updateTeamMember.setEmployee(team.getEmployee());
-        }
-
-        if (team.getTeam() != null) {
-            updateTeamMember.setTeam(team.getTeam());
-        }
-
         teamMemberRepository.save(team);
     }
 
     public void delete(Long id) {
 
         if (getById(id) == null) {
-            throw new NotFoundException(String.format(
-                "Участник команды не найден: %s", id));
+            throw new NotFoundException(String.format("Участник команды не найден: %s", id));
         }
 
         teamMemberRepository.deleteById(id);
+    }
+
+    public void delete(TeamMemberEntity teamMember) {
+
+        if (teamMember == null) {
+            throw new IncorrectArgumentException("Участник команды не указан");
+        }
+
+        teamMemberRepository.delete(teamMember);
     }
 
 }
