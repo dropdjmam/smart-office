@@ -3,12 +3,14 @@ package plugin.atb.booking.entity;
 import javax.persistence.*;
 
 import lombok.*;
+import lombok.experimental.*;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Accessors(chain = true)
 @Table(name = "administrating")
 public class AdministratingEntity {
 
