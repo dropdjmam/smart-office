@@ -11,6 +11,11 @@ import plugin.atb.booking.entity.*;
 @Repository
 public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
 
+    Page<BookingEntity> findAllByHolderAndIsDeletedIsFalse(
+        EmployeeEntity holder,
+        Pageable pageable
+    );
+
     /**
      * Возвращает отсортированную страницу сущностей (бронирований),
      * для которого выполняются следующие условия:

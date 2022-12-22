@@ -81,6 +81,13 @@ public class BookingService {
         return bookingRepository.findAll(pageable);
     }
 
+    public Page<BookingEntity> getHolderHistory(EmployeeEntity holder, Pageable pageable) {
+        if (holder == null) {
+            throw new IncorrectArgumentException("Не указан держатель брони");
+        }
+        return bookingRepository.findAllByHolderAndIsDeletedIsFalse(holder, pageable);
+    }
+
     public BookingEntity getById(Long id) {
 
         if (id == null) {

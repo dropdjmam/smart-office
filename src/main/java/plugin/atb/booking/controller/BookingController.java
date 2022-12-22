@@ -34,6 +34,8 @@ public class BookingController {
 
     private final BookingMapper bookingMapper;
 
+    private final BookingInfoMapper infoMapper;
+
     @PostMapping("/")
     @Operation(summary = "Создание брони/бронирование места на указанного сотрудника",
         description = "Все поля кроме holder_id обязательны. Если holder_id не указан, то " +
@@ -131,6 +133,42 @@ public class BookingController {
         return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
     }
 
+    @GetMapping("/allByHolder/{id}")
+    @Operation(summary = "Все брони указанного держателя",
+        description = "1 <= size <= 20 (default 20)")
+    public ResponseEntity<Page<BookingGetDto>> getSelfBookings(
+        @PathVariable Long id,
+        @ParameterObject Pageable pageable
+    ) {
+        ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
+        var holder = validateHolder(id);
+
+        var page = bookingService.getHolderHistory(holder, pageable);
+
+        var dto = page.stream()
+            .map(bookingMapper::bookingToDto)
+            .toList();
+
+        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+    }
+
+    @GetMapping("/allSelf")
+    @Operation(summary = "Все свои (пользователя сессии) брони",
+        description = "1 <= size <= 20 (default 20)")
+    public ResponseEntity<Page<BookingGetDto>> getSelfBookings(@ParameterObject Pageable pageable) {
+
+        ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
+        var holder = getSessionUser();
+
+        var page = bookingService.getHolderHistory(holder, pageable);
+
+        var dto = page.stream()
+            .map(bookingMapper::bookingToDto)
+            .toList();
+
+        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Получение указанной брони")
     public ResponseEntity<BookingGetDto> getBookingById(@PathVariable Long id) {
@@ -143,6 +181,42 @@ public class BookingController {
         var dto = bookingMapper.bookingToDto(booking);
 
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/details/{id}")
+    @Operation(summary = "Получение детальной информации брони: часть брони + место + офис")
+    public ResponseEntity<BookingInfoDto> getBookingInfo(@PathVariable Long id) {
+
+        var booking = bookingService.getById(id);
+        if (booking == null) {
+            throw new NotFoundException("Не найдена бронь с id: " + id);
+        }
+        var bookingDto = infoMapper.bookingToDto(booking);
+
+        var place = booking.getWorkPlace();
+        if (place == null) {
+            throw new NotFoundException("Не найдено место у брони с id: " + id);
+        }
+        var placeDto = infoMapper.placeToDto(place);
+
+        var floor = place.getFloor();
+        if (floor == null) {
+            throw new NotFoundException(String.format(
+                "Не найден этаж у места с id:%s при поиске брони с id:%s",
+                place.getId(), booking.getId()));
+        }
+
+        var office = floor.getOffice();
+        if (office == null) {
+            throw new NotFoundException(String.format(
+                "Не найден офис для этажа с id:%s у места с id:%s при поиске брони с id:%s",
+                floor.getId(), place.getId(), booking.getId()));
+        }
+        var officeDto = infoMapper.officeToDto(office);
+
+        var response = new BookingInfoDto(bookingDto, placeDto, officeDto);
+
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/")
