@@ -12,4 +12,6 @@ public interface FavPlaceRepository extends JpaRepository<FavPlaceEntity, Long> 
 
     Page<FavPlaceEntity> findAllByEmployee(EmployeeEntity employee, Pageable pageable);
 
+    void deleteByEmployeeAndPlace(EmployeeEntity employee, WorkPlaceEntity place);
+
 }

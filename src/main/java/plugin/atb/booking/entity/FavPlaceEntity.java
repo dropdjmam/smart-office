@@ -3,6 +3,7 @@ package plugin.atb.booking.entity;
 import javax.persistence.*;
 
 import lombok.*;
+import lombok.experimental.*;
 
 @Entity
 @Getter
@@ -10,6 +11,7 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Accessors(chain = true)
 @Table(name = "fav_place",
     indexes = {@Index(name = "employee", columnList = "employee_id"),
                @Index(name = "workplace", columnList = "workplace_id"),
