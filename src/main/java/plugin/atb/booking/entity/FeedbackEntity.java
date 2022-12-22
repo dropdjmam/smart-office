@@ -5,6 +5,7 @@ import java.time.*;
 import javax.persistence.*;
 
 import lombok.*;
+import lombok.experimental.*;
 
 @Entity
 @Getter
@@ -12,7 +13,8 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "feedbacks")
+@Accessors(chain = true)
+@Table(name = "feedbacks", indexes = @Index(name = "employee", columnList = "employee_id"))
 public class FeedbackEntity {
 
     @Id
@@ -25,8 +27,13 @@ public class FeedbackEntity {
     @ToString.Exclude
     private EmployeeEntity employee;
 
+    @Column(columnDefinition = "timestamp without time zone default now() at time zone 'UTC'",
+        insertable = false)
     private LocalDateTime timeStamp;
 
+    private String title;
+
+    @Column(length = 500)
     private String text;
 
 }
