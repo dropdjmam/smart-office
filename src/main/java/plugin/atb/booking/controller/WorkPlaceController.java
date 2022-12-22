@@ -107,12 +107,12 @@ public class WorkPlaceController {
             return ResponseEntity.ok(Page.empty(floorPlaces.getPageable()));
         }
 
-        var freePlaces = workPlaceService.getAllBookedInPeriod(
+        var bookedPlaces = workPlaceService.getAllBookedInPeriod(
             floorPlaces.getContent(),
             dto.getStart(),
             dto.getEnd());
 
-        var bookedIds = freePlaces.stream()
+        var bookedIds = bookedPlaces.stream()
             .map(WorkPlaceEntity::getId)
             .collect(Collectors.toSet());
 

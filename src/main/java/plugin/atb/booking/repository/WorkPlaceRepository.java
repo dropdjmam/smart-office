@@ -54,4 +54,6 @@ public interface WorkPlaceRepository extends JpaRepository<WorkPlaceEntity, Long
         @Param("end") LocalDateTime endOfPeriod
     );
 
+    Page<WorkPlaceEntity> findAllByFloor(FloorEntity floor, Pageable pageable);
+
 }

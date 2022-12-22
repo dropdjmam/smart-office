@@ -51,6 +51,8 @@ public class FloorService {
 
     public void update(FloorEntity floor) {
 
+        ValidationUtils.checkId(floor.getId());
+
         if (floor.getId() == null) {
             throw new IncorrectArgumentException("Не указан id этажа");
         }
@@ -74,8 +76,6 @@ public class FloorService {
     }
 
     private void validate(FloorEntity floor) {
-
-        ValidationUtils.checkId(floor.getId());
 
         if (floor.getOffice() == null) {
             throw new IncorrectArgumentException("Не указан офис");

@@ -45,6 +45,18 @@ public class WorkPlaceService {
         return workPlaceRepository.findAllByFloorAndType(floor, type, pageable);
     }
 
+    public Page<WorkPlaceEntity> getPageByFloor(
+        FloorEntity floor,
+        Pageable pageable
+    ) {
+
+        if (floor == null) {
+            throw new IncorrectArgumentException("Этаж не указан");
+        }
+
+        return workPlaceRepository.findAllByFloor(floor, pageable);
+    }
+
     public List<WorkPlaceEntity> getAllBookedInPeriod(
         List<WorkPlaceEntity> floorPlaces,
         LocalDateTime start,
