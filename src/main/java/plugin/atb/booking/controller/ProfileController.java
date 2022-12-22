@@ -26,24 +26,33 @@ public class ProfileController {
 
     private final BookingService bookingService;
 
+    private final TeamMemberService teamMemberService;
+
+    private final TeamMapper teamMapper;
+
     @GetMapping
     @Operation(summary = "Получение всей информации своего профиля сотрудника",
         description = "Включает в себя данные о сотруднике, его актуальные брони и команды," +
                       "в которых он состоит")
     public ResponseEntity<ProfileDto> getProfile() {
 
-        String login = SecurityContextHolder.getContext()
-            .getAuthentication()
-            .getName();
-
-        EmployeeEntity self = employeeService.getByLogin(login);
+        var self = employeeService.getByLogin(
+            SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName());
 
         var bookings = bookingService.getAllActual(self, Pageable.ofSize(20))
             .stream()
             .map(bookingMapper::bookingToDto)
             .toList();
 
-        var profile = new ProfileDto(employeeMapper.employeeToDto(self), bookings);
+        var teams = teamMemberService.getAllTeamByEmployeeId(self.getId(), Pageable.unpaged())
+            .stream()
+            .map(TeamMemberEntity::getTeam)
+            .map(teamMapper::teamToDto)
+            .toList();
+
+        var profile = new ProfileDto(employeeMapper.employeeToDto(self), bookings, teams);
 
         return ResponseEntity.ok(profile);
     }

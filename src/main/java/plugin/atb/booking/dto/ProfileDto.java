@@ -13,4 +13,6 @@ public class ProfileDto {
 
     private List<BookingGetDto> bookings;
 
+    private List<TeamDto> teams;
+
 }
