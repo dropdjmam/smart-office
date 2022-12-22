@@ -70,7 +70,7 @@ public class WorkPlaceController {
         @RequestParam Long typeId,
         @ParameterObject Pageable pageable
     ) {
-
+        ValidationUtils.checkId(floorId);
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
 
         var type = validateType(typeId);
