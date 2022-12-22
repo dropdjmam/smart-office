@@ -1,5 +1,7 @@
 package plugin.atb.booking.controller;
 
+import java.time.*;
+import java.util.*;
 import java.util.stream.*;
 
 import javax.validation.*;
@@ -9,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
+import org.springframework.format.annotation.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
@@ -31,6 +34,8 @@ public class WorkPlaceController {
     private final WorkPlaceService workPlaceService;
 
     private final WorkPlaceMapper workPlaceMapper;
+
+    private final BookingService bookingService;
 
     @PostMapping("/")
     @Operation(summary = "Создание рабочего места", description = "Все поля обязательны")
@@ -126,6 +131,94 @@ public class WorkPlaceController {
             responseDtos,
             floorPlaces.getPageable(),
             floorPlaces.getTotalElements()));
+    }
+
+    @GetMapping("/freeIntervals")
+    @Operation(summary = "Получение свободных промежутков для бронирования места",
+        description = "Свободные промежутки составляются с учетом рабочего времени офиса.")
+    public ResponseEntity<List<TimeIntervalDto>> getFreeIntervalsForPlace(
+        @RequestParam Long placeId,
+        @Parameter(example = "2022-11-13", description = "Формат: yyyy-MM-dd")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE, pattern = "yyyy-MM-dd")
+        @RequestParam LocalDate date
+    ) {
+        ValidationUtils.checkId(placeId);
+
+        var place = workPlaceService.getById(placeId);
+        if (place == null) {
+            throw new NotFoundException("Не найдено рабочее место с id: " + placeId);
+        }
+
+        var floor = place.getFloor();
+        if (floor == null) {
+            throw new NotFoundException("Не найден этаж у места с id: " + placeId);
+        }
+
+        var office = floor.getOffice();
+        if (office == null) {
+            throw new NotFoundException(String.format(
+                "Не найден офис по этажу с id: %s, по указанному месту с id: %s ",
+                floor.getId(), placeId
+            ));
+        }
+
+        var range = office.getBookingRange();
+        if (range == null) {
+            throw new NotFoundException("Не найдено ограничение брони для офиса с id: " + office.getId());
+        }
+
+        var isDateNotInRange = date.isAfter(LocalDate.now().plusDays(range));
+
+        if (isDateNotInRange) {
+            throw new IncorrectArgumentException(String.format(
+                "Дата брони выходит за ограничения офиса. Дальность брони: %s дней",
+                office.getBookingRange()));
+        }
+
+        if (office.getStartOfDay() == null || office.getEndOfDay() == null) {
+            throw new NotFoundException("Не найден интервал работы офиса с id: " + office.getId());
+        }
+
+        var workDayStart = office.getStartOfDay();
+        var workDayEnd = office.getEndOfDay();
+
+        var bookingsPage = bookingService.getAllInPeriod(
+            place,
+            LocalDateTime.of(date, workDayStart),
+            LocalDateTime.of(date, workDayEnd),
+            Pageable.unpaged());
+
+        var bookings = bookingsPage.getContent();
+
+        if (bookings.isEmpty()) {
+            return ResponseEntity.ok(List.of(new TimeIntervalDto(workDayStart, workDayEnd)));
+        }
+
+        var size = bookings.size();
+
+        var starts = new ArrayList<>(bookings.stream()
+            .map(s -> s.getDateTimeOfStart().toLocalTime())
+            .sorted()
+            .toList());
+
+        var ends = new ArrayList<>(bookings.stream()
+            .map(s -> s.getDateTimeOfEnd().toLocalTime())
+            .sorted()
+            .toList());
+
+        var response = new ArrayList<>(IntStream.range(1, size)
+            .mapToObj(i -> new TimeIntervalDto(ends.get(i - 1), starts.get(i)))
+            .toList());
+
+        if (!workDayStart.equals(starts.get(0))) {
+            response.add(0, new TimeIntervalDto(workDayStart, starts.get(0)));
+        }
+
+        if (!workDayEnd.equals(ends.get(size - 1))) {
+            response.add(size, new TimeIntervalDto(ends.get(size - 1), workDayEnd));
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
