@@ -25,6 +25,11 @@ public class EmployeeEntity {
     @ToString.Exclude
     private RoleEntity role;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "image_id")
+    @ToString.Exclude
+    private ImageEntity photo;
+
     private String fullName;
 
     private String login;
@@ -34,7 +39,5 @@ public class EmployeeEntity {
     private String email;
 
     private String phoneNumber;
-
-    private String photo;
 
 }

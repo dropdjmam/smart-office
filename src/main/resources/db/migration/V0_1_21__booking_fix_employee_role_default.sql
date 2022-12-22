@@ -9,7 +9,7 @@ CREATE INDEX IF NOT EXISTS holder ON bookings (holder_id);
 
 CREATE INDEX IF NOT EXISTS maker ON bookings (maker_id);
 
-CREATE INDEX IF NOT EXISTS workplace ON bookings (workplace_id);
+CREATE INDEX IF NOT EXISTS workplace_bookings ON bookings (workplace_id);
 
 CREATE INDEX IF NOT EXISTS booking_end ON bookings (date_time_of_end);
 

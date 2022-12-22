@@ -25,8 +25,11 @@ public class FloorEntity {
     @ToString.Exclude
     private OfficeEntity office;
 
-    private Integer floorNumber;
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "image_id" )
+    @ToString.Exclude
+    private ImageEntity mapFloor;
 
-    private String mapFloor;
+    private Integer floorNumber;
 
 }

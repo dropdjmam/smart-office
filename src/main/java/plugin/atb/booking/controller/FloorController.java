@@ -41,7 +41,7 @@ public class FloorController {
 
     @GetMapping("/all")
     @Operation(summary = "Поиск всех этажей офиса")
-    public ResponseEntity<Page<FloorDto>> getFloors(
+    public ResponseEntity<Page<FloorGetDto>> getFloors(
         @RequestParam Long officeId,
         @ParameterObject Pageable pageable
     ) {
@@ -62,7 +62,7 @@ public class FloorController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Получение указанного этажа")
-    public ResponseEntity<FloorDto> getFloorById(@PathVariable Long id) {
+    public ResponseEntity<FloorGetDto> getFloorById(@PathVariable Long id) {
 
         var floor = floorService.getById(id);
         if (floor == null) {
@@ -74,7 +74,7 @@ public class FloorController {
 
     @PutMapping("/")
     @Operation(summary = "Изменение указанного этажа", description = "Все поля кроме карты обязательны")
-    public ResponseEntity<String> updateFloor(@Valid @RequestBody FloorDto dto) {
+    public ResponseEntity<String> updateFloor(@Valid @RequestBody FloorUpdateDto dto) {
 
         var office = officeService.getById(dto.getOfficeId());
 

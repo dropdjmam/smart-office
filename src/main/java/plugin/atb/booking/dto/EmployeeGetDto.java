@@ -19,6 +19,6 @@ public class EmployeeGetDto {
 
     private String phoneNumber;
 
-    private String photo;
+    private Long imageId;
 
 }

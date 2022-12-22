@@ -16,6 +16,4 @@ public class FloorCreateDto {
     @NotNull(message = "Не указан номер этажа")
     private Integer floorNumber;
 
-    private String mapFloor;
-
 }

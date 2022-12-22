@@ -36,6 +36,4 @@ public class EmployeeUpdateDto {
         message = "Формат телефона не прошел валидацию, убедитесь что ввели все верно")
     private String phoneNumber;
 
-    private String photo;
-
 }

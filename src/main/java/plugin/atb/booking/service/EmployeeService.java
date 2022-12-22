@@ -75,6 +75,8 @@ public class EmployeeService {
 
     public void update(EmployeeEntity employee) {
 
+        ValidationUtils.checkId(employee.getId());
+
         if (getById(employee.getId()) == null) {
             throw new NotFoundException("Не найден сотрудник с id: " + employee.getId());
         }
@@ -91,11 +93,11 @@ public class EmployeeService {
 
     public void delete(Long id) {
 
+        ValidationUtils.checkId(id);
+
         if (getById(id) == null) {
             throw new NotFoundException("Не найден сотрудник с id: " + id);
         }
-
-        ValidationUtils.checkId(id);
 
         employeeRepository.deleteById(id);
     }

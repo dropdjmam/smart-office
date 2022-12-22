@@ -8,42 +8,45 @@ import plugin.atb.booking.entity.*;
 public class EmployeeMapper {
 
     public EmployeeEntity dtoToEmployee(EmployeeCreateDto dto, RoleEntity role) {
-        EmployeeEntity employee = new EmployeeEntity()
+        var employee = new EmployeeEntity()
             .setRole(role)
             .setFullName(dto.getFullName())
             .setLogin(dto.getLogin())
             .setPassword(dto.getPassword())
             .setEmail(dto.getEmail())
-            .setPhoneNumber(dto.getPhoneNumber())
-            .setPhoto(dto.getPhoto());
+            .setPhoneNumber(dto.getPhoneNumber());
 
         return employee;
     }
 
     public EmployeeEntity dtoToEmployee(EmployeeUpdateDto dto, RoleEntity role) {
 
-        EmployeeEntity employee = new EmployeeEntity()
+        var employee = new EmployeeEntity()
             .setId(dto.getId())
             .setRole(role)
             .setFullName(dto.getFullName())
             .setEmail(dto.getEmail())
             .setPassword(dto.getPassword())
-            .setPhoneNumber(dto.getPhoneNumber())
-            .setPhoto(dto.getPhoto());
+            .setPhoneNumber(dto.getPhoneNumber());
 
         return employee;
     }
 
     public EmployeeGetDto employeeToDto(EmployeeEntity employee) {
+        var image = employee.getPhoto();
+        Long imageId = null;
+        if (image != null) {
+            imageId = image.getId();
+        }
 
-        EmployeeGetDto employeeGetDto = new EmployeeGetDto(
+        var employeeGetDto = new EmployeeGetDto(
             employee.getId(),
             employee.getRole().getName(),
             employee.getFullName(),
             employee.getLogin(),
             employee.getEmail(),
             employee.getPhoneNumber(),
-            employee.getPhoto()
+            imageId
         );
 
         return employeeGetDto;

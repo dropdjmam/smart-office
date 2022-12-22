@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @AllArgsConstructor
-public class FloorDto {
+public class FloorUpdateDto {
 
     @NotNull(message = "Не указан id этажа'")
     @Min(value = 1L, message = "Id этажа не может быть меньше 1")
@@ -19,8 +19,6 @@ public class FloorDto {
 
     @NotNull(message = "Не указан номер этажа")
     private Integer floorNumber;
-
-    private String mapFloor;
 
 }
 

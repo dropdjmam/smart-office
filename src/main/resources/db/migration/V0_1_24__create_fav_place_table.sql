@@ -8,6 +8,6 @@ CREATE TABLE IF NOT EXISTS fav_place
     CONSTRAINT FK_FAV_PLACE_ON_WORKPLACE FOREIGN KEY (workplace_id) REFERENCES workplaces (id)
 );
 
-CREATE INDEX IF NOT EXISTS employee_place ON fav_place (employee_id, workplace_id);
-CREATE INDEX IF NOT EXISTS employee ON fav_place (employee_id);
-CREATE INDEX IF NOT EXISTS workplace ON fav_place (workplace_id);
+CREATE INDEX IF NOT EXISTS employee_place_fav_place ON fav_place (employee_id, workplace_id);
+CREATE INDEX IF NOT EXISTS employee_fav_place ON fav_place (employee_id);
+CREATE INDEX IF NOT EXISTS workplace_fav_place ON fav_place (workplace_id);

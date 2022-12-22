@@ -6,6 +6,7 @@ import org.springframework.stereotype.*;
 import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
+import plugin.atb.booking.utils.*;
 
 @Service
 @RequiredArgsConstructor
@@ -15,17 +16,13 @@ public class ImageService {
 
     public void add(ImageEntity image) {
 
-        boolean exists = imageRepository
-            .existsByContent(image.getContent());
-
-        if (exists) {
-            throw new AlreadyExistsException("Изображение уже добавлено");
-        }
-
         imageRepository.save(image);
     }
 
     public ImageEntity getById(Long id) {
+
+        ValidationUtils.checkId(id);
+
         return imageRepository.findById(id).orElse(null);
     }
 
@@ -35,22 +32,11 @@ public class ImageService {
 
     public void update(ImageEntity image) {
 
-        byte[] newImage = image.getContent();
-
-        boolean exists = imageRepository.existsByContent(newImage);
-        if (exists) {
-            throw new AlreadyExistsException("Нельзя заменить на такое же изображение");
-        }
-
-        ImageEntity imageUpdate = getById(image.getId());
-
-        if (imageUpdate == null) {
+        if (getById(image.getId()) == null) {
             throw new NotFoundException("Изображение не найдено.");
         }
 
-        imageUpdate.setContent(newImage);
-
-        imageRepository.save(imageUpdate);
+        imageRepository.save(image);
     }
 
     public void delete(Long id) {
