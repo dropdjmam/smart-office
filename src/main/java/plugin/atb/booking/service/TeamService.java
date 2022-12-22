@@ -3,6 +3,7 @@ package plugin.atb.booking.service;
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
+import org.springframework.transaction.annotation.*;
 import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
@@ -13,14 +14,17 @@ public class TeamService {
 
     private final TeamRepository teamRepository;
 
+    private final TeamMemberService teamMemberService;
+
+    @Transactional
     public void add(TeamEntity team) {
 
         boolean exists = teamRepository.existsByNameAndLeader(
             team.getName(), team.getLeader());
         if (exists) {
             throw new AlreadyExistsException(String.format(
-                "Данная команда уже существует: %s, %s",
-                team.getName(), team.getLeader()));
+                "Данная команда уже существует: команда:%s, лидер:%s",
+                team.getName(), team.getLeader().getFullName()));
         }
 
         if (team.getLeader() == null) {
@@ -28,6 +32,10 @@ public class TeamService {
         }
 
         teamRepository.save(team);
+
+        var teamMember = new TeamMemberEntity().setTeam(team).setEmployee(team.getLeader());
+        teamMemberService.add(teamMember);
+
     }
 
     public Page<TeamEntity> getAll(Pageable pageable) {
@@ -49,19 +57,19 @@ public class TeamService {
     }
 
     public void update(TeamEntity team) {
-        TeamEntity updateTeam = getById(team.getId());
 
-        if (updateTeam == null) {
-            throw new NotFoundException(String.format(
-                "Команда не найдена: %s", team.getId()));
+        if (getById(team.getId()) == null) {
+            throw new NotFoundException("Команда не найдена.");
         }
 
-        if (team.getName() != null) {
-            updateTeam.setName(team.getName());
-        }
+        var newName = team.getName();
+        var newLeader = team.getLeader();
 
-        if (team.getLeader() != null) {
-            updateTeam.setLeader(team.getLeader());
+        boolean exists = teamRepository.existsByNameAndLeader(newName, newLeader);
+        if (exists) {
+            throw new AlreadyExistsException(String.format(
+                "Лидер с id: %s уже закреплен за командой: %s",
+                team.getLeader().getId(), team.getName()));
         }
 
         teamRepository.save(team);

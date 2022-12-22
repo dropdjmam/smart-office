@@ -31,11 +31,13 @@ public class TeamController {
         @Valid
         @RequestBody TeamCreateDto dto
     ) {
-
         var leader = employeeService.getById(dto.getLeaderId());
-
+        if (leader == null) {
+            throw new NotFoundException(String.format(
+                "Не найден лидер c id: %s",
+                dto.getLeaderId()));
+        }
         var team = teamMapper.dtoToCreateTeam(dto, leader);
-
         teamService.add(team);
 
         return ResponseEntity
@@ -45,7 +47,7 @@ public class TeamController {
 
     @Operation(summary = "Получить все команды")
     @GetMapping("/all")
-    public ResponseEntity<Page<TeamDto>> getTeam(
+    public ResponseEntity<Page<TeamGetDto>> getTeam(
         @ParameterObject Pageable pageable
     ) {
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
@@ -54,7 +56,7 @@ public class TeamController {
             pageable);
 
         var dto = team.stream()
-            .map(teamMapper::teamToDto)
+            .map(teamMapper::teamToGetDto)
             .toList();
 
         return ResponseEntity.ok(new PageImpl<>(
@@ -123,10 +125,14 @@ public class TeamController {
     public ResponseEntity<String> update(@RequestBody TeamDto dto) {
 
         var leader = employeeService.getById(dto.getLeaderId());
-
+        if (leader == null) {
+            throw new NotFoundException(String.format(
+                "Не найден лидер c id: %s",
+                dto.getLeaderId()));
+        }
         var team = teamMapper.dtoToTeam(dto, leader);
 
-        teamService.add(team);
+        teamService.update(team);
 
         return ResponseEntity.ok("Изменение команды прошло успешно");
     }

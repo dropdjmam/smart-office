@@ -16,6 +16,16 @@ public class TeamMapper {
         return dto;
     }
 
+    public TeamGetDto teamToGetDto(TeamEntity team) {
+        var dto = new TeamGetDto(
+            team.getId(),
+            team.getLeader().getId(),
+            team.getLeader().getFullName(),
+            team.getName()
+        );
+        return dto;
+    }
+
     public TeamEntity dtoToTeam(TeamDto dto, EmployeeEntity employee) {
         var team = new TeamEntity()
             .setId(dto.getId())
