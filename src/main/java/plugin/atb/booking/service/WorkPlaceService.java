@@ -24,6 +24,13 @@ public class WorkPlaceService {
         return workPlaceRepository.save(workPlace).getId();
     }
 
+    public Integer countPlacesByTypeAndFloor(WorkPlaceTypeEntity type, FloorEntity floor) {
+        if(type == null ){
+            throw new IncorrectArgumentException("Не указан тип места");
+        }
+        return workPlaceRepository.countAllByTypeAndFloor(type,floor);
+    }
+
     public Page<WorkPlaceEntity> getPage(Pageable pageable) {
         return workPlaceRepository.findAll(pageable);
     }

@@ -13,9 +13,11 @@ import plugin.atb.booking.entity.*;
 @Repository
 public interface WorkPlaceRepository extends JpaRepository<WorkPlaceEntity, Long> {
 
+    Integer countAllByTypeAndFloor(WorkPlaceTypeEntity type, FloorEntity floor);
+
     Page<WorkPlaceEntity> findAllByFloorAndType(
         FloorEntity floor,
-        WorkPlaceTypeEntity workPlaceType,
+        WorkPlaceTypeEntity type,
         Pageable pageable
     );
 

@@ -53,6 +53,21 @@ public class WorkPlaceController {
         return ResponseEntity.ok(newId);
     }
 
+    @GetMapping("/countOnFloor/{floorId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Количество мест каждого типа на указанный этаж")
+    public CountPlaceDto getPlacesCountByFloor(@PathVariable Long floorId) {
+
+        var floor = validateFloor(floorId);
+        var commonType = validateType(1);
+        var conferenceType = validateType(2);
+
+        var commonAmount = workPlaceService.countPlacesByTypeAndFloor(commonType, floor);
+        var conferenceAmount = workPlaceService.countPlacesByTypeAndFloor(conferenceType, floor);
+
+        return new CountPlaceDto(commonAmount, conferenceAmount);
+    }
+
     @GetMapping("/all")
     @Operation(summary = "Все рабочие места", description = "1 <= size <= 20 (default 20)")
     public ResponseEntity<Page<WorkPlaceGetDto>> getPage(@ParameterObject Pageable pageable) {
