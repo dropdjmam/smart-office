@@ -157,7 +157,7 @@ public class TeamMemberController {
 
         if (teamMember == null) {
             throw new NotFoundException(String.format(
-                "Не найдена команда с id: %s", name));
+                "Не найдена команда с названием: %s", name));
         }
 
         return ResponseEntity.ok(teamMemberMapper.teamMemberToDto(teamMember));
@@ -196,8 +196,7 @@ public class TeamMemberController {
 
         teamMemberService.update(teamMember);
 
-        return ResponseEntity.ok(String.format(
-            "Данные участника команды успешно измененны: %s, %s", employee, team));
+        return ResponseEntity.ok("Данные участника команды успешно измененны");
     }
 
     @DeleteMapping("/employee/{employeeId}/team/{teamId}")

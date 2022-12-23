@@ -138,7 +138,7 @@ public class ImageController {
         employee.setPhoto(null);
         imageService.delete(image.getId());
         employeeService.update(employee);
-        return ResponseEntity.ok("изображение удалено");
+        return ResponseEntity.ok("Изображение удалено");
     }
 
     @Operation(summary = "Удаление изображения из этажа")
@@ -158,7 +158,7 @@ public class ImageController {
         imageService.delete(image.getId());
         floorService.update(floor);
 
-        return ResponseEntity.ok("изображение удалено");
+        return ResponseEntity.ok("Изображение удалено");
     }
 
     @Operation(summary = "Удаление изображения из этажа")
@@ -173,7 +173,7 @@ public class ImageController {
         }
 
         imageService.delete(image.getId());
-        return ResponseEntity.ok("изображение удалено");
+        return ResponseEntity.ok("Изображение удалено");
     }
 
 }

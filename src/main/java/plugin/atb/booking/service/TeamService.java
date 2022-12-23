@@ -30,6 +30,9 @@ public class TeamService {
         if (team.getLeader() == null) {
             throw new NotFoundException("Лидер не найден.");
         }
+        if (team.getName().isBlank()) {
+            throw new NotFoundException("Название не найдено.");
+        }
 
         teamRepository.save(team);
 

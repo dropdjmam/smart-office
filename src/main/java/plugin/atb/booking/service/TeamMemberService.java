@@ -22,7 +22,13 @@ public class TeamMemberService {
                 "Участник с id:%s уже состоит в команде с id:%s",
                 member.getEmployee().getId(), member.getTeam().getId()));
         }
+        if (member.getEmployee() == null) {
+            throw new NotFoundException("Сотрудник не найден.");
+        }
 
+        if (member.getTeam() == null) {
+            throw new NotFoundException("Команда не найдена.");
+        }
         teamMemberRepository.save(member);
     }
 

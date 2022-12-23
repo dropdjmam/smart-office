@@ -133,8 +133,7 @@ public class AdministrationController {
 
         administrationService.update(admin);
 
-        return ResponseEntity.ok(String.format(
-            "Данные администратора измененны: %s, %s", employee, office));
+        return ResponseEntity.ok("Данные администратора измененны");
     }
 
     @DeleteMapping("/delete/{id}")

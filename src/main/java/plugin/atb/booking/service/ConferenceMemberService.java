@@ -19,18 +19,16 @@ public class ConferenceMemberService {
             conferee.getEmployee(), conferee.getBooking());
         if (exists) {
             throw new AlreadyExistsException(String.format(
-                "Участник уже зарегестрирован на бронь: %s, $s",
-                conferee.getEmployee(), conferee.getBooking()));
+                "Участник с id:%s уже зарегестрирован на бронь с id:%s",
+                conferee.getEmployee().getId(), conferee.getBooking().getId()));
         }
 
         if (conferee.getEmployee() == null) {
-            throw new NotFoundException(String.format(
-                "Сотрудник не найден: %s", conferee.getEmployee()));
+            throw new IncorrectArgumentException("Сотрудник не указан");
         }
 
         if (conferee.getBooking() == null) {
-            throw new NotFoundException(String.format(
-                "Бронирование не найдено: %s", conferee.getBooking()));
+            throw new IncorrectArgumentException("Бронирование с не указано");
         }
 
         conferenceMemberRepository.save(conferee);
@@ -60,19 +58,20 @@ public class ConferenceMemberService {
     }
 
     public void update(ConferenceMemberEntity conferee) {
-        ConferenceMemberEntity updateConferenceMember = getById(conferee.getId());
 
-        if (updateConferenceMember == null) {
-            throw new NotFoundException(String.format(
-                "Не найден участник переговоров с id: %s", conferee.getId()));
+        if (getById(conferee.getId()) == null) {
+            throw new NotFoundException("Участник конференции не найден.");
         }
 
-        if (conferee.getEmployee() != null) {
-            updateConferenceMember.setEmployee(conferee.getEmployee());
-        }
+        var newConferee = conferee.getEmployee();
+        var newBooking = conferee.getBooking();
 
-        if (conferee.getBooking() != null) {
-            updateConferenceMember.setBooking(conferee.getBooking());
+        boolean exists = conferenceMemberRepository.existsByEmployeeAndBooking(
+            newConferee, newBooking);
+        if (exists) {
+            throw new AlreadyExistsException(String.format(
+                "Участник с id: %s уже имеет бронь с id: %s",
+                conferee.getEmployee().getId(), conferee.getBooking().getId()));
         }
 
         conferenceMemberRepository.save(conferee);
@@ -82,7 +81,7 @@ public class ConferenceMemberService {
 
         if (getById(id) == null) {
             throw new NotFoundException(String.format(
-                "Не найден участник переговоров с id: %s", id));
+                "Не найден участник конференции с id: %s", id));
         }
 
         conferenceMemberRepository.deleteById(id);

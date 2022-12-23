@@ -79,7 +79,7 @@ public class AdministrationService {
 
         if (getById(id) == null) {
             throw new NotFoundException(String.format(
-                "Администратор не найден: %s", id));
+                "Администратор с id:%s не найден.", id));
         }
 
         administrationRepository.deleteById(id);

@@ -44,13 +44,6 @@ public class TeamMemberMapper {
         return member;
     }
 
-    public TeamMemberCreateDto createTeamMemberToDto(TeamMemberEntity member) {
-        var dto = new TeamMemberCreateDto(
-            member.getTeam().getId(),
-            member.getEmployee().getId());
-        return dto;
-    }
-
     public TeamMemberEntity dtoToCreateTeamMember(
         TeamEntity team, EmployeeEntity employee
     ) {

@@ -31,9 +31,15 @@ public class ConferenceMemberController {
     ) {
 
         var employee = employeeService.getById(dto.getEmployeeId());
-
+        if (employee == null) {
+            throw new NotFoundException(String.format(
+                "Не найдена сотрудник с id: %s", dto.getEmployeeId()));
+        }
         var booking = bookingService.getById(dto.getBookingId());
-
+        if (booking == null) {
+            throw new NotFoundException(String.format(
+                "Не найдена сотрудник с id: %s", dto.getBookingId()));
+        }
         var conferenceMember = conferenceMemberMapper
             .dtoToCreateConferenceMember(employee, booking);
 
@@ -131,21 +137,26 @@ public class ConferenceMemberController {
     public ResponseEntity<String> update(@RequestBody ConferenceMemberDto dto) {
 
         var employee = employeeService.getById(dto.getEmployeeId());
-
+        if (employee == null) {
+            throw new NotFoundException(String.format(
+                "Не найдена сотрудник с id: %s", dto.getEmployeeId()));
+        }
         var booking = bookingService.getById(dto.getBookingId());
-
+        if (booking == null) {
+            throw new NotFoundException(String.format(
+                "Не найдена сотрудник с id: %s", dto.getBookingId()));
+        }
         var conferenceMember = conferenceMemberMapper.dtoToConferenceMember(
             dto, employee, booking);
 
-        conferenceMemberService.add(conferenceMember);
+        conferenceMemberService.update(conferenceMember);
 
-        return ResponseEntity.ok(String.format(
-            "Данные участника переговоров успешно измененны: %s, %s", employee, booking));
+        return ResponseEntity.ok("Данные участника переговоров успешно измененны");
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
-
+        ValidationUtils.checkId(id);
         conferenceMemberService.delete(id);
 
         return ResponseEntity.ok("Участник переговоров успешно удален");

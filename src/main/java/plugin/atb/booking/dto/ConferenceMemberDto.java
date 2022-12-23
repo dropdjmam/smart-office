@@ -9,13 +9,13 @@ import lombok.*;
 @AllArgsConstructor
 public class ConferenceMemberDto {
 
-    @NotBlank
+    @NotNull
     private Long id;
 
-    @NotBlank
+    @NotNull
     private Long employeeId;
 
-    @NotBlank
+    @NotNull
     private Long bookingId;
 
 }
