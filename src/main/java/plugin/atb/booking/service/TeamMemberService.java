@@ -3,16 +3,19 @@ package plugin.atb.booking.service;
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
+import org.springframework.transaction.annotation.*;
 import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TeamMemberService {
 
     private final TeamMemberRepository teamMemberRepository;
 
+    @Transactional
     public void add(TeamMemberEntity member) {
 
         boolean exists = teamMemberRepository.existsByEmployeeAndTeam(
@@ -70,6 +73,7 @@ public class TeamMemberService {
         return teamMemberRepository.findByTeamName(name);
     }
 
+    @Transactional
     public void update(TeamMemberEntity member) {
 
         if (getById(member.getId()) == null) {
@@ -87,6 +91,7 @@ public class TeamMemberService {
         teamMemberRepository.save(member);
     }
 
+    @Transactional
     public void delete(Long id) {
 
         if (getById(id) == null) {
@@ -96,6 +101,7 @@ public class TeamMemberService {
         teamMemberRepository.deleteById(id);
     }
 
+    @Transactional
     public void delete(TeamMemberEntity teamMember) {
 
         if (teamMember == null) {
@@ -103,6 +109,15 @@ public class TeamMemberService {
         }
 
         teamMemberRepository.delete(teamMember);
+    }
+
+    @Transactional
+    public void deleteAllByTeam(TeamEntity team) {
+        if (team == null) {
+            throw new IncorrectArgumentException("Команда для удаления ее участников не указана");
+        }
+
+        teamMemberRepository.deleteAllByTeam(team);
     }
 
 }

@@ -78,12 +78,16 @@ public class TeamService {
         teamRepository.save(team);
     }
 
+    @Transactional
     public void delete(Long id) {
 
-        if (getById(id) == null) {
+        var team = getById(id);
+        if (team == null) {
             throw new NotFoundException(String.format(
                 "Команда не найдена: %s", id));
         }
+
+        teamMemberService.deleteAllByTeam(team);
 
         teamRepository.deleteById(id);
     }
