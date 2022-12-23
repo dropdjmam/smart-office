@@ -31,30 +31,26 @@ public class ProfileController {
     private final TeamMapper teamMapper;
 
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Получение всей информации своего профиля сотрудника",
-        description = "Включает в себя данные о сотруднике, его актуальные брони и команды," +
-                      "в которых он состоит")
-    public ResponseEntity<ProfileDto> getProfile() {
+        description = "Включает в себя данные о сотруднике, ближайшую бронь и команду")
+    public ProfileDto getProfile() {
 
         var self = employeeService.getByLogin(
             SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getName());
 
-        var bookings = bookingService.getAllActual(self, Pageable.ofSize(20))
-            .stream()
-            .map(bookingMapper::bookingToDto)
-            .toList();
-
-        var teams = teamMemberService.getAllTeamByEmployeeId(self.getId(), Pageable.unpaged())
-            .stream()
+        var firstTeam = teamMemberService.getAllTeamMemberByEmployee(self, Pageable.ofSize(1))
             .map(TeamMemberEntity::getTeam)
             .map(teamMapper::teamToDto)
-            .toList();
+            .getContent().get(0);
 
-        var profile = new ProfileDto(employeeMapper.employeeToDto(self), bookings, teams);
+        var firstOwnBooking = bookingService.getAllActual(self, Pageable.ofSize(1))
+            .map(bookingMapper::bookingToDto)
+            .getContent().get(0);
 
-        return ResponseEntity.ok(profile);
+        return new ProfileDto(employeeMapper.employeeToDto(self), firstOwnBooking, firstTeam);
     }
 
 }

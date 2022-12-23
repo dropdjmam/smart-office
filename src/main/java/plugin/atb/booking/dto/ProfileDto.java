@@ -1,7 +1,5 @@
 package plugin.atb.booking.dto;
 
-import java.util.*;
-
 import lombok.*;
 
 @Getter
@@ -11,8 +9,8 @@ public class ProfileDto {
 
     private EmployeeGetDto employee;
 
-    private List<BookingGetDto> bookings;
+    private BookingGetDto firstBooking;
 
-    private List<TeamDto> teams;
+    private TeamDto firstTeam;
 
 }

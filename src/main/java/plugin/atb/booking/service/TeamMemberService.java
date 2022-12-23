@@ -57,8 +57,8 @@ public class TeamMemberService {
         return teamMemberRepository.findAllTeamMemberByTeamName(name, pageable);
     }
 
-    public Page<TeamMemberEntity> getAllTeamByEmployeeId(Long employeeId, Pageable pageable) {
-        return teamMemberRepository.findAllTeamByEmployeeId(employeeId, pageable);
+    public Page<TeamMemberEntity> getAllTeamMemberByEmployee(EmployeeEntity employee, Pageable pageable) {
+        return teamMemberRepository.findAllTeamByEmployee(employee, pageable);
     }
 
     public TeamMemberEntity getById(Long id) {

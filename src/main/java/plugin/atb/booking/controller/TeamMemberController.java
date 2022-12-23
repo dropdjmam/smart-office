@@ -107,8 +107,7 @@ public class TeamMemberController {
             .map(teamMemberMapper::teamMemberToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(
-            dto, page.getPageable(), page.getTotalElements()));
+        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
     }
 
     @Operation(summary = "Получить все команды по id сотрудника")
@@ -120,8 +119,12 @@ public class TeamMemberController {
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
         ValidationUtils.checkId(employeeId);
 
-        var page = teamMemberService.getAllTeamByEmployeeId(
-            employeeId, pageable);
+        var employee = employeeService.getById(employeeId);
+        if (employee == null) {
+            throw new NotFoundException("Не найден сотрудник по id: " + employeeId);
+        }
+
+        var page = teamMemberService.getAllTeamMemberByEmployee(employee, pageable);
 
         var dto = page
             .stream()

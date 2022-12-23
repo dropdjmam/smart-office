@@ -1,12 +1,16 @@
 package plugin.atb.booking.controller;
 
 import java.time.*;
+import java.util.stream.*;
 
 import javax.validation.*;
+
+import static java.time.ZoneOffset.*;
 
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.format.annotation.*;
@@ -20,6 +24,7 @@ import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Бронирования")
@@ -36,22 +41,132 @@ public class BookingController {
 
     private final BookingInfoMapper infoMapper;
 
+    private final TeamMemberService teamMemberService;
+
+    private final ConferenceMemberService conferenceMemberService;
+
     @PostMapping("/")
+    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Создание брони/бронирование места на указанного сотрудника",
-        description = "Все поля кроме holder_id обязательны. Если holder_id не указан, то " +
-                      "держателем брони назначается ее создатель. ")
-    public ResponseEntity<String> createBooking(@Valid @RequestBody BookingCreateDto dto) {
+        description = "Все поля обязательны")
+    public String createBooking(@Valid @RequestBody BookingCreateDto dto) {
 
         var maker = getSessionUser();
         var holder = validateHolder(dto.getHolderId());
         var place = validatePlace(dto.getWorkPlaceId());
 
-        validateByOfficeWorkTime(place, dto.getStart().toLocalTime(), dto.getEnd().toLocalTime());
+        var start = dto.getStart();
+        validateBookingStart(start);
+
+        var end = dto.getEnd();
+        validateByOfficeWorkTime(place, start.toLocalTime(), end.toLocalTime());
+        validateIsAlreadyBooked(place, start, end);
 
         var booking = bookingMapper.dtoToBooking(dto, holder, maker, place);
         bookingService.add(booking);
+        log.info("Booking successfully created");
 
-        return ResponseEntity.ok("Место успешно забронировано");
+        return "Место успешно забронировано";
+    }
+
+    @PostMapping("/team")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Создание брони/бронирование места для команды",
+        description = "В контексте данного метода holderId -> id команды, держателем " +
+                      "брони назначается лидер команды")
+    public String createBookingsForTeam(@Valid @RequestBody BookingCreateDto dto) {
+
+        var teamMembers = teamMemberService.getAllTeamMemberByTeamId(
+            dto.getHolderId(),
+            Pageable.unpaged());
+
+        var count = teamMembers.getSize() + dto.getGuests();
+
+        var place = validatePlaceAndCapacity(dto.getWorkPlaceId(), count);
+
+        var start = dto.getStart();
+        validateBookingStart(start);
+
+        var end = dto.getEnd();
+        validateByOfficeWorkTime(place, start.toLocalTime(), end.toLocalTime());
+        validateIsAlreadyBooked(place, start, end);
+
+        var maker = getSessionUser();
+        var leaderAsHolder = teamMembers.getContent().get(0).getTeam().getLeader();
+        var employees = teamMembers.stream()
+            .map(TeamMemberEntity::getEmployee)
+            .collect(Collectors.toSet());
+
+        var booking = bookingMapper.dtoToBooking(dto, leaderAsHolder, maker, place);
+        var newBooking = bookingService.add(booking);
+
+        var conferees = employees.stream()
+            .map(e -> new ConferenceMemberEntity().setBooking(newBooking).setEmployee(e))
+            .collect(Collectors.toSet());
+        conferenceMemberService.addAll(conferees);
+        log.info("Booking and conferees successfully created");
+
+        return "Место успешно забронировано, участники брони созданы";
+    }
+
+    @PostMapping("/group")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Создание брони/бронирование места для указанной группы людей",
+        description = "Бронирующий назначается держателем брони. " +
+                      "Если бронирующий хочет добавить себя в участники - добавить его id список.")
+    public String createBookingsForGroup(@Valid @RequestBody BookingGroupCreateDto dto) {
+
+        var makerSameHolder = getSessionUser();
+
+        var bookingMembers = dto.getHolderIds().stream()
+            .map(this::validateHolder)
+            .collect(Collectors.toSet());
+
+        var count = bookingMembers.size() + dto.getGuests();
+        var place = validatePlaceAndCapacity(dto.getWorkPlaceId(), count);
+
+        var start = dto.getStart();
+        validateBookingStart(start);
+
+        var end = dto.getEnd();
+        validateByOfficeWorkTime(place, start.toLocalTime(), end.toLocalTime());
+        validateIsAlreadyBooked(place, start, end);
+
+        var booking = bookingMapper.dtoToBooking(dto, makerSameHolder, makerSameHolder, place);
+        var newBooking = bookingService.add(booking);
+
+        var conferees = bookingMembers.stream()
+            .map(m -> new ConferenceMemberEntity().setBooking(newBooking).setEmployee(m))
+            .collect(Collectors.toSet());
+        conferenceMemberService.addAll(conferees);
+        log.info("Booking and conferees successfully created");
+
+        return "Место успешно забронировано, участники брони созданы";
+    }
+
+    @GetMapping("/conference")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить брони с переговорок указанного сотрудника",
+        description = "1 <= size <= 20 (default 20)")
+    public Page<BookingGetDto> get(
+        @RequestParam Long employeeId,
+        @ParameterObject Pageable pageable
+    ) {
+        ValidationUtils.checkId(employeeId);
+        ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
+
+        var employee = employeeService.getById(employeeId);
+        if (employee == null) {
+            throw new NotFoundException("Не найден сотрудник по id: " + employeeId);
+        }
+
+        var page = conferenceMemberService.getAllActualByEmployee(employee, pageable);
+
+        var bookings = page.map(ConferenceMemberEntity::getBooking);
+
+        var dto = bookings.map(bookingMapper::bookingToDto).toList();
+
+        return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
     @Operation(summary = "Поиск всех актуальных броней указанного сотрудника",
@@ -62,7 +177,6 @@ public class BookingController {
         @ParameterObject Pageable pageable
     ) {
         ValidationUtils.checkId(holderId);
-
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
 
         var holder = validateHolder(holderId);
@@ -225,9 +339,15 @@ public class BookingController {
 
         var maker = getSessionUser();
         var holder = validateHolder(dto.getHolderId());
+
         var place = validatePlace(dto.getWorkPlaceId());
 
-        validateByOfficeWorkTime(place, dto.getStart().toLocalTime(), dto.getEnd().toLocalTime());
+        var start = dto.getStart();
+        validateBookingStart(start);
+
+        var end = dto.getEnd();
+        validateByOfficeWorkTime(place, start.toLocalTime(), end.toLocalTime());
+        validateIsAlreadyBooked(place, start, end);
 
         var booking = bookingMapper.dtoToBooking(dto, holder, maker, place);
         bookingService.update(booking);
@@ -265,6 +385,42 @@ public class BookingController {
             throw new NotFoundException("Не найдено место с id: " + id);
         }
         return place;
+    }
+
+    private WorkPlaceEntity validatePlaceAndCapacity(long id, int count) {
+        var place = validatePlace(id);
+        if (count > place.getCapacity()) {
+            throw new IncorrectArgumentException(String.format(
+                "Невозможно создать бронь т.к. объем бронирований %s превышает вместимость места %s",
+                count, place.getCapacity()));
+        }
+        return place;
+    }
+
+    private void validateIsAlreadyBooked(
+        WorkPlaceEntity place,
+        LocalDateTime start,
+        LocalDateTime end
+    ) {
+        boolean isTimeFree = bookingService
+            .getAllInPeriod(place, start, end, Pageable.ofSize(1)).isEmpty();
+
+        if (!isTimeFree) {
+            throw new AlreadyExistsException(String.format(
+                "Невозможно забронировать данное место на данное время: %s - %s",
+                start, end
+            ));
+        }
+    }
+
+    private void validateBookingStart(LocalDateTime start) {
+        var now = LocalDateTime.now(UTC);
+        if (start.isBefore(now)) {
+            throw new IncorrectArgumentException(String.format(
+                "Невозможно создать/изменить бронь на прошедший момент времени: %s < %s",
+                start, now));
+        }
+
     }
 
     private void validateByOfficeWorkTime(WorkPlaceEntity place, LocalTime start, LocalTime end) {

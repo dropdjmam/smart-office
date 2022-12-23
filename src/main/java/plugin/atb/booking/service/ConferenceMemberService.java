@@ -1,8 +1,11 @@
 package plugin.atb.booking.service;
 
+import java.util.*;
+
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
+import org.springframework.transaction.annotation.*;
 import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
@@ -13,6 +16,7 @@ public class ConferenceMemberService {
 
     private final ConferenceMemberRepository conferenceMemberRepository;
 
+    @Transactional
     public void add(ConferenceMemberEntity conferee) {
 
         boolean exists = conferenceMemberRepository.existsByEmployeeAndBooking(
@@ -34,11 +38,28 @@ public class ConferenceMemberService {
         conferenceMemberRepository.save(conferee);
     }
 
+    @Transactional
+    public void addAll(Set<ConferenceMemberEntity> conferees) {
+
+        conferenceMemberRepository.saveAll(conferees);
+    }
+
     public Page<ConferenceMemberEntity> getAllByBookingId(
         Long bookingId,
         Pageable pageable
     ) {
         return conferenceMemberRepository.findAllByBookingId(bookingId, pageable);
+    }
+
+    public Page<ConferenceMemberEntity> getAllActualByEmployee(
+        EmployeeEntity employee,
+        Pageable pageable
+    ) {
+        if (employee == null) {
+            throw new IncorrectArgumentException("Не указан сотрудник ");
+        }
+
+        return conferenceMemberRepository.findAllActualByEmployee(employee, pageable);
     }
 
     public ConferenceMemberEntity getByBookingId(Long bookingId) {
@@ -77,6 +98,7 @@ public class ConferenceMemberService {
         conferenceMemberRepository.save(conferee);
     }
 
+    @Transactional
     public void delete(Long id) {
 
         if (getById(id) == null) {

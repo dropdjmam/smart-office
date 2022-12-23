@@ -26,6 +26,24 @@ public class BookingMapper {
     }
 
     public BookingEntity dtoToBooking(
+        BookingGroupCreateDto dto,
+        EmployeeEntity holder,
+        EmployeeEntity maker,
+        WorkPlaceEntity workPlace
+    ) {
+        var booking = new BookingEntity()
+            .setHolder(holder)
+            .setMaker(maker)
+            .setWorkPlace(workPlace)
+            .setDateTimeOfStart(dto.getStart())
+            .setDateTimeOfEnd(dto.getEnd())
+            .setGuests(dto.getGuests())
+            .setIsDeleted(false);
+
+        return booking;
+    }
+
+    public BookingEntity dtoToBooking(
         BookingUpdateDto dto,
         EmployeeEntity holder,
         EmployeeEntity maker,

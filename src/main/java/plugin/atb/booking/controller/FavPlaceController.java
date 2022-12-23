@@ -4,9 +4,6 @@ import java.time.*;
 import java.util.*;
 import java.util.stream.*;
 
-import javax.validation.*;
-import javax.validation.constraints.*;
-
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
@@ -41,14 +38,8 @@ public class FavPlaceController {
 
     @PostMapping("/")
     @Operation(summary = "Добавление места в избранное")
-    public ResponseEntity<String> add(
-        @Valid
-        @RequestBody
-        @NotNull(message = "Не указан id места")
-        @Min(value = 1L, message = "Id места не может быть меньше 1")
-        Long placeId
-    ) {
-
+    public ResponseEntity<String> add(@RequestParam Long placeId) {
+        ValidationUtils.checkId(placeId);
         var employee = getSessionUser();
 
         var place = validatePlace(placeId);

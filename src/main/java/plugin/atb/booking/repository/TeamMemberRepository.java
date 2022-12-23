@@ -18,7 +18,7 @@ public interface TeamMemberRepository extends JpaRepository<TeamMemberEntity, Lo
 
     Page<TeamMemberEntity> findAllTeamMemberByTeamName(String name, Pageable pageable);
 
-    Page<TeamMemberEntity> findAllTeamByEmployeeId(Long employeeId, Pageable pageable);
+    Page<TeamMemberEntity> findAllTeamByEmployee(EmployeeEntity employee, Pageable pageable);
 
     boolean existsByEmployeeAndTeam(EmployeeEntity employee, TeamEntity team);
 

@@ -196,19 +196,17 @@ public class WorkPlaceController {
 
         var size = bookings.size();
 
-        var starts = new ArrayList<>(bookings.stream()
+        var starts = bookings.stream()
             .map(s -> s.getDateTimeOfStart().toLocalTime())
-            .sorted()
-            .toList());
+            .toList();
 
-        var ends = new ArrayList<>(bookings.stream()
+        var ends = bookings.stream()
             .map(s -> s.getDateTimeOfEnd().toLocalTime())
-            .sorted()
-            .toList());
+            .toList();
 
-        var response = new ArrayList<>(IntStream.range(1, size)
+        var response = IntStream.range(1, size)
             .mapToObj(i -> new TimeIntervalDto(ends.get(i - 1), starts.get(i)))
-            .toList());
+            .collect(Collectors.toList());
 
         if (!workDayStart.equals(starts.get(0))) {
             response.add(0, new TimeIntervalDto(workDayStart, starts.get(0)));

@@ -2,6 +2,8 @@ package plugin.atb.booking.service;
 
 import java.time.*;
 
+import static java.time.ZoneOffset.*;
+
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
@@ -19,25 +21,11 @@ public class BookingService {
     private final BookingRepository bookingRepository;
 
     @Transactional
-    public void add(BookingEntity booking) {
+    public BookingEntity add(BookingEntity booking) {
 
         validate(booking);
 
-        var start = booking.getDateTimeOfStart();
-        var end = booking.getDateTimeOfEnd();
-
-        boolean isTimeFree = bookingRepository
-            .findAllInPeriod(booking.getWorkPlace(), start, end, Pageable.ofSize(1)).isEmpty();
-
-        if (!isTimeFree) {
-            throw new AlreadyExistsException(String.format(
-                "Невозможно забронировать данное место на данное время: %s - %s",
-                start, end
-            ));
-        }
-
-        bookingRepository.save(booking);
-
+        return bookingRepository.save(booking);
     }
 
     public Page<BookingEntity> getAllInPeriod(
@@ -58,12 +46,7 @@ public class BookingService {
             throw new IncorrectArgumentException("Не указан конец брони");
         }
 
-        if (end.isBefore(start)) {
-            throw new IncorrectArgumentException(String.format(
-                "Конец брони не может быть раньше начала: %s < %s",
-                end, start
-            ));
-        }
+        ValidationUtils.checkInterval(start, end);
 
         return bookingRepository.findAllInPeriod(place, start, end, pageable);
     }
@@ -116,7 +99,7 @@ public class BookingService {
         if (start == null) {
             throw new NotFoundException("Не найдено начало у брони с id: " + bookingToUpdate.getId());
         }
-        var now = LocalDateTime.now();
+        var now = LocalDateTime.now(UTC);
         if (start.isBefore(now)) {
             throw new IncorrectArgumentException(String.format(
                 "Невозможно изменить начавшуюся/прошедшую бронь: %s < %s",
@@ -152,11 +135,6 @@ public class BookingService {
             throw new IncorrectArgumentException("Невозможно добавить/обновить бронь как удаленную");
         }
 
-        var place = booking.getWorkPlace();
-        if (place == null) {
-            throw new IncorrectArgumentException("Место для брони не указано");
-        }
-
         if (booking.getHolder() == null) {
             throw new IncorrectArgumentException("Не указан держатель брони");
         }
@@ -171,47 +149,6 @@ public class BookingService {
 
         if (booking.getGuests() < 0) {
             throw new IncorrectArgumentException("Гостей не может быть меньше нуля");
-        }
-
-        var start = booking.getDateTimeOfStart();
-        if (start == null) {
-            throw new IncorrectArgumentException("Не указано начало брони");
-        }
-
-        var now = LocalDateTime.now();
-        if (start.isBefore(now)) {
-            throw new IncorrectArgumentException(String.format(
-                "Невозможно создать/изменить бронь на прошедший момент времени: %s < %s",
-                start, now));
-        }
-
-        var end = booking.getDateTimeOfEnd();
-        if (end == null) {
-            throw new IncorrectArgumentException("Не указан конец брони");
-        }
-
-        if (end.isBefore(start)) {
-            throw new IncorrectArgumentException(String.format(
-                "Конец брони не может быть раньше начала: %s < %s",
-                end, start
-            ));
-        }
-
-        var capacity = place.getCapacity();
-        if (capacity == null) {
-            throw new IncorrectArgumentException(String.format(
-                "Невозможно добавить/изменить бронь, т.к. у места для брони с id:%s не указана вместимость",
-                place.getId()));
-        }
-
-        var page = getAllInPeriod(place, start, end, Pageable.unpaged());
-        var count = page.getTotalElements();
-        var allMembers = count + booking.getGuests();
-
-        if (allMembers > capacity) {
-            throw new IncorrectArgumentException(String.format(
-                "Невозможно забронировать место, т.к. оно не вмещает больше участников: %s > %s",
-                allMembers, capacity));
         }
 
     }

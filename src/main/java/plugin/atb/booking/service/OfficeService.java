@@ -82,25 +82,13 @@ public class OfficeService {
             throw new IncorrectArgumentException("Город, в котором должен находиться офис не указан");
         }
 
-        var start = office.getStartOfDay();
-        if (start == null) {
-            throw new IncorrectArgumentException("Начало рабочего дня не указано");
-        }
-
-        var end = office.getEndOfDay();
-        if (end == null) {
-            throw new IncorrectArgumentException("Конец рабочего дня не указан");
-        }
-
         if (office.getBookingRange() == null) {
             throw new IncorrectArgumentException("Ограничения дальности брони не указано");
         }
 
-        if (start.isAfter(end)) {
-            throw new IncorrectArgumentException(String.format(
-                "Начало рабочего дня не может быть позже конца рабочего дня: %s > %s",
-                start, end));
-        }
+        var start = office.getStartOfDay();
+        var end = office.getEndOfDay();
+        ValidationUtils.checkInterval(start, end);
 
         if (office.getBookingRange() < 1) {
             throw new IncorrectArgumentException(
