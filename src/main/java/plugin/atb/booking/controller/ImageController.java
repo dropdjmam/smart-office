@@ -27,7 +27,7 @@ public class ImageController {
     private final EmployeeService employeeService;
 
     @Operation(summary = "Загрузка изображения - размер одного файла: max 10Мб")
-    @PostMapping(value = "/", consumes = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
+    @PostMapping(value = "/", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> uploadImage(@RequestParam MultipartFile multipartImage)
         throws Exception {
 
@@ -40,8 +40,8 @@ public class ImageController {
             .build();
     }
 
-    @Operation(summary = "Загрузка изображения - размер одного файла: max 10Мб")
-    @PostMapping(value = "/employee", consumes = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
+    @Operation(summary = "Сотрудник: Загрузка изображения - размер одного файла: max 10Мб")
+    @PostMapping(value = "/employee", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> uploadEmployeeImage(
         @RequestParam Long employeeId,
         @RequestParam MultipartFile multipartImage
@@ -49,6 +49,9 @@ public class ImageController {
         throws Exception {
 
         var image = imageMapper.dtoToImage(multipartImage);
+        if (image != null) {
+            throw new AlreadyExistsException("Изображение уже существует");
+        }
         var employee = employeeService.getById(employeeId);
         if (employee == null) {
             throw new NotFoundException("Не найден сотрудник с id: " + employeeId);
@@ -63,8 +66,8 @@ public class ImageController {
             .build();
     }
 
-    @Operation(summary = "Загрузка изображения - размер одного файла: max 10Мб")
-    @PostMapping(value = "/floor", consumes = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
+    @Operation(summary = "Этаж: Загрузка изображения - размер одного файла: max 10Мб")
+    @PostMapping(value = "/floor", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> uploadFloorImage(
         @RequestParam Long floorId,
         @RequestParam MultipartFile multipartImage
@@ -72,6 +75,9 @@ public class ImageController {
         throws Exception {
 
         var image = imageMapper.dtoToImage(multipartImage);
+        if (image != null) {
+            throw new AlreadyExistsException("Изображение уже существует");
+        }
         var floor = floorService.getById(floorId);
         if (floor == null) {
             throw new NotFoundException("Не найден этаж с id: " + floorId);
@@ -161,7 +167,7 @@ public class ImageController {
         return ResponseEntity.ok("Изображение удалено");
     }
 
-    @Operation(summary = "Удаление изображения из этажа")
+    @Operation(summary = "Удаление изображения по id")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         ValidationUtils.checkId(id);
