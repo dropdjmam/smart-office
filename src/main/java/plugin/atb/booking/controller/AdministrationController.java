@@ -7,6 +7,7 @@ import org.springframework.data.domain.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
+import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
@@ -25,8 +26,10 @@ public class AdministrationController {
 
     private final OfficeService officeService;
 
+    private final OfficeMapper officeMapper;
+
     @PostMapping("/")
-    public ResponseEntity<String> createAdmin(@RequestBody AdministrationDto dto) {
+    public ResponseEntity<String> createAdmin(@RequestBody AdministrationCreateDto dto) {
 
         var employee = employeeService.getById(dto.getEmployeeId());
         if (employee == null) {
@@ -64,9 +67,10 @@ public class AdministrationController {
 
     }
 
-    @Operation(summary = "Получить все офисы по id администартора")
+    @Operation(summary = "Получить все офисы по id администратора")
     @GetMapping("/allOffice/{id}")
-    public ResponseEntity<Page<AdministrationDto>> getAllOfficeById(
+    @ResponseStatus(HttpStatus.OK)
+    public Page<OfficeGetDto> getAllOfficeById(
         @PathVariable Long id,
         @ParameterObject Pageable pageable
     ) {
@@ -76,12 +80,11 @@ public class AdministrationController {
             id, pageable);
 
         var dto = page
-            .stream()
-            .map(administrationMapper::adminToDto)
+            .map(AdministratingEntity::getOffice)
+            .map(officeMapper::officeToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(
-            dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
     @Operation(summary = "Получить всех администраторов по id офиса")
