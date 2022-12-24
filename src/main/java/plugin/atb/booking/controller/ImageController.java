@@ -32,7 +32,9 @@ public class ImageController {
         throws Exception {
 
         var image = imageMapper.dtoToImage(multipartImage);
-
+        if (image == null) {
+            throw new NotFoundException("Изображение не найдено");
+        }
         imageService.add(image);
 
         return ResponseEntity
@@ -49,8 +51,8 @@ public class ImageController {
         throws Exception {
 
         var image = imageMapper.dtoToImage(multipartImage);
-        if (image != null) {
-            throw new AlreadyExistsException("Изображение уже существует");
+        if (image == null) {
+            throw new NotFoundException("Изображение не найдено");
         }
         var employee = employeeService.getById(employeeId);
         if (employee == null) {
@@ -75,8 +77,8 @@ public class ImageController {
         throws Exception {
 
         var image = imageMapper.dtoToImage(multipartImage);
-        if (image != null) {
-            throw new AlreadyExistsException("Изображение уже существует");
+        if (image == null) {
+            throw new NotFoundException("Изображение не найдено");
         }
         var floor = floorService.getById(floorId);
         if (floor == null) {
