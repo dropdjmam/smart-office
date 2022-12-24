@@ -19,7 +19,7 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
@@ -79,7 +79,7 @@ public class BookingController {
     @Operation(summary = "Создать брони места для команды",
         description = "В контексте данного метода holderId -> id команды, держателем " +
                       "брони назначается лидер команды")
-    public String createBookingsForTeam(@Valid @RequestBody BookingCreateDto dto) {
+    public String createBookingForTeam(@Valid @RequestBody BookingCreateDto dto) {
 
         var teamMembers = teamMemberService.getAllTeamMemberByTeamId(
             dto.getHolderId(),
@@ -99,14 +99,14 @@ public class BookingController {
         var maker = getSessionUser();
         var leaderAsHolder = teamMembers.getContent().get(0).getTeam().getLeader();
         var employees = teamMembers.stream()
-            .map(TeamMemberEntity::getEmployee)
+            .map(TeamMember::getEmployee)
             .collect(Collectors.toSet());
 
         var booking = bookingMapper.dtoToBooking(dto, leaderAsHolder, maker, place);
         var newBooking = bookingService.add(booking);
 
         var conferees = employees.stream()
-            .map(e -> new ConferenceMemberEntity().setBooking(newBooking).setEmployee(e))
+            .map(e -> new ConferenceMember().setBooking(newBooking).setEmployee(e))
             .collect(Collectors.toSet());
         conferenceMemberService.addAll(conferees);
         log.info("Booking and conferees successfully created");
@@ -119,7 +119,7 @@ public class BookingController {
     @Operation(summary = "Создать брони места для указанной группы людей",
         description = "Бронирующий назначается держателем брони. " +
                       "Если бронирующий хочет добавить себя в участники - добавить его id список.")
-    public String createBookingsForGroup(@Valid @RequestBody BookingGroupCreateDto dto) {
+    public String createBookingForGroup(@Valid @RequestBody BookingGroupCreateDto dto) {
 
         var makerSameHolder = getSessionUser();
 
@@ -141,7 +141,7 @@ public class BookingController {
         var newBooking = bookingService.add(booking);
 
         var conferees = bookingMembers.stream()
-            .map(m -> new ConferenceMemberEntity().setBooking(newBooking).setEmployee(m))
+            .map(m -> new ConferenceMember().setBooking(newBooking).setEmployee(m))
             .collect(Collectors.toSet());
         conferenceMemberService.addAll(conferees);
         log.info("Booking and conferees successfully created");
@@ -153,7 +153,7 @@ public class BookingController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Получить брони с переговорок указанного сотрудника",
         description = "1 <= size <= 20 (default 20)")
-    public Page<BookingGetDto> get(
+    public Page<BookingGetDto> getConferenceBookings(
         @RequestParam Long employeeId,
         @ParameterObject Pageable pageable
     ) {
@@ -167,7 +167,7 @@ public class BookingController {
 
         var page = conferenceMemberService.getAllActualByEmployee(employee, pageable);
 
-        var bookings = page.map(ConferenceMemberEntity::getBooking);
+        var bookings = page.map(ConferenceMember::getBooking);
 
         var dtos = bookings.stream()
             .map(this::getBookingDto)
@@ -276,7 +276,7 @@ public class BookingController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Получить брони указанного сотрудника - держателя броней",
         description = "1 <= size <= 20 (default 20)")
-    public Page<BookingGetDto> getSelfBookings(
+    public Page<BookingGetDto> getHolderBookings(
         @PathVariable Long id,
         @ParameterObject Pageable pageable
     ) {
@@ -398,7 +398,7 @@ public class BookingController {
         return "Бронь успешно удалена";
     }
 
-    private EmployeeEntity getSessionUser() {
+    private Employee getSessionUser() {
         return employeeService.getByLogin(
             SecurityContextHolder.getContext()
                 .getAuthentication()
@@ -406,7 +406,7 @@ public class BookingController {
         );
     }
 
-    private EmployeeEntity validateHolder(long id) {
+    private Employee validateHolder(long id) {
         var holder = employeeService.getById(id);
         if (holder == null) {
             log.error("Not found a holder of booking by employee id: {}", id);
@@ -415,7 +415,7 @@ public class BookingController {
         return holder;
     }
 
-    private WorkPlaceEntity validatePlace(long id) {
+    private WorkPlace validatePlace(long id) {
         var place = workPlaceService.getById(id);
         if (place == null) {
             log.error("Not found a place of booking by workPlace id: {}", id);
@@ -424,7 +424,7 @@ public class BookingController {
         return place;
     }
 
-    private WorkPlaceEntity validatePlaceAndCapacity(long id, int count) {
+    private WorkPlace validatePlaceAndCapacity(long id, int count) {
         var place = validatePlace(id);
         if (count > place.getCapacity()) {
             log.error("Conflict: count of people for booking {} more than place capacity {}",
@@ -437,7 +437,7 @@ public class BookingController {
     }
 
     private void validateIsAlreadyBooked(
-        WorkPlaceEntity place,
+        WorkPlace place,
         LocalDateTime start,
         LocalDateTime end
     ) {
@@ -466,7 +466,7 @@ public class BookingController {
 
     }
 
-    private void validateByOfficeWorkTime(WorkPlaceEntity place, LocalTime start, LocalTime end) {
+    private void validateByOfficeWorkTime(WorkPlace place, LocalTime start, LocalTime end) {
         var floor = place.getFloor();
         if (floor == null) {
             log.error("Not found floor in place with id: {}", place.getId());
@@ -515,7 +515,7 @@ public class BookingController {
 
     }
 
-    private BookingGetDto getBookingDto(BookingEntity booking) {
+    private BookingGetDto getBookingDto(Booking booking) {
 
         var infoBooking = Optional.of(booking)
             .map(infoMapper::bookingToDto)
@@ -528,18 +528,18 @@ public class BookingController {
         return new BookingGetDto(infoBooking, infoPlace, infoOffice);
     }
 
-    private InfoPlaceDto getPlaceInfo(BookingEntity booking) {
+    private InfoPlaceDto getPlaceInfo(Booking booking) {
         return Optional.of(booking)
-            .map(BookingEntity::getWorkPlace)
+            .map(Booking::getWorkPlace)
             .map(infoMapper::placeToDto)
             .orElseThrow(() -> new NotFoundException("Не найдено место у брони с id: " + booking.getId()));
     }
 
-    private InfoOfficeDto getOfficeInfo(BookingEntity booking) {
+    private InfoOfficeDto getOfficeInfo(Booking booking) {
         return Optional.of(booking)
-            .map(BookingEntity::getWorkPlace)
-            .map(WorkPlaceEntity::getFloor)
-            .map(FloorEntity::getOffice)
+            .map(Booking::getWorkPlace)
+            .map(WorkPlace::getFloor)
+            .map(Floor::getOffice)
             .map(infoMapper::officeToDto)
             .orElseThrow(() -> new NotFoundException(String.format(
                 "При поиске от брони с id:%s не был найден офис",

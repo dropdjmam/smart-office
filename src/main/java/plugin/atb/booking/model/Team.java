@@ -1,6 +1,4 @@
-package plugin.atb.booking.entity;
-
-import java.time.*;
+package plugin.atb.booking.model;
 
 import javax.persistence.*;
 
@@ -13,9 +11,9 @@ import lombok.experimental.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "teams")
 @Accessors(chain = true)
-@Table(name = "offices")
-public class OfficeEntity {
+public class Team {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,18 +21,10 @@ public class OfficeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "city_id")
+    @JoinColumn(name = "employee_id")
     @ToString.Exclude
-    private CityEntity city;
+    private Employee leader;
 
-    private String address;
-
-    private String workNumber;
-
-    private LocalTime startOfDay;
-
-    private LocalTime endOfDay;
-
-    private Integer bookingRange;
+    private String name;
 
 }

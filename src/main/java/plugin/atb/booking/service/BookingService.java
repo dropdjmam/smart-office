@@ -8,8 +8,8 @@ import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
-import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.repository.*;
 import plugin.atb.booking.utils.*;
 
@@ -20,16 +20,18 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
 
+    private final ConferenceMemberService conferenceMemberService;
+
     @Transactional
-    public BookingEntity add(BookingEntity booking) {
+    public Booking add(Booking booking) {
 
         validate(booking);
 
         return bookingRepository.save(booking);
     }
 
-    public Page<BookingEntity> getAllInPeriod(
-        WorkPlaceEntity place,
+    public Page<Booking> getAllInPeriod(
+        WorkPlace place,
         LocalDateTime start,
         LocalDateTime end,
         Pageable pageable
@@ -51,7 +53,7 @@ public class BookingService {
         return bookingRepository.findAllInPeriod(place, start, end, pageable);
     }
 
-    public Page<BookingEntity> getAllActual(EmployeeEntity holder, Pageable pageable) {
+    public Page<Booking> getAllActual(Employee holder, Pageable pageable) {
 
         if (holder == null) {
             throw new IncorrectArgumentException("Держатель брони не указан");
@@ -60,20 +62,20 @@ public class BookingService {
         return bookingRepository.findAllActual(holder, pageable);
     }
 
-    public Page<BookingEntity> getAll(Pageable pageable) {
+    public Page<Booking> getAll(Pageable pageable) {
         return bookingRepository.findAll(pageable);
     }
 
-    public Page<BookingEntity> getHolderHistory(EmployeeEntity holder, Pageable pageable) {
+    public Page<Booking> getHolderHistory(Employee holder, Pageable pageable) {
         if (holder == null) {
             throw new IncorrectArgumentException("Не указан держатель брони");
         }
         return bookingRepository.findAllByHolderAndIsDeletedIsFalse(holder, pageable);
     }
 
-    public Page<BookingEntity> getAllByOffice(
-        OfficeEntity office,
-        WorkPlaceTypeEntity type,
+    public Page<Booking> getAllByOffice(
+        Office office,
+        WorkPlaceType type,
         Boolean isActual,
         Pageable pageable
     ) {
@@ -94,7 +96,7 @@ public class BookingService {
         return bookingRepository.findAllByOffice(office, type, isActual, pageable);
     }
 
-    public BookingEntity getById(Long id) {
+    public Booking getById(Long id) {
 
         if (id == null) {
             throw new IncorrectArgumentException("Id не указан");
@@ -106,7 +108,7 @@ public class BookingService {
     }
 
     @Transactional
-    public void update(BookingEntity booking) {
+    public void update(Booking booking) {
 
         var bookingToUpdate = getById(booking.getId());
 
@@ -142,12 +144,17 @@ public class BookingService {
             throw new NotFoundException("Не найдено бронирование с id: " + id);
         }
 
+        var conferenceMembers = conferenceMemberService.getAllByBookingId(id, Pageable.unpaged());
+        if (!conferenceMembers.isEmpty()) {
+            conferenceMemberService.delete(conferenceMembers.getContent());
+        }
+
         booking.setIsDeleted(true);
 
         bookingRepository.save(booking);
     }
 
-    private void validate(BookingEntity booking) {
+    private void validate(Booking booking) {
 
         if (booking.getIsDeleted() == null) {
             throw new IncorrectArgumentException(

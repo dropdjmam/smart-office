@@ -6,7 +6,7 @@ import java.util.*;
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
 import plugin.atb.booking.utils.*;
@@ -17,27 +17,27 @@ public class WorkPlaceService {
 
     private final WorkPlaceRepository workPlaceRepository;
 
-    public Long add(WorkPlaceEntity workPlace) {
+    public Long add(WorkPlace workPlace) {
 
         validate(workPlace);
 
         return workPlaceRepository.save(workPlace).getId();
     }
 
-    public Integer countPlacesByTypeAndFloor(WorkPlaceTypeEntity type, FloorEntity floor) {
+    public Integer countPlacesByTypeAndFloor(WorkPlaceType type, Floor floor) {
         if(type == null ){
             throw new IncorrectArgumentException("Не указан тип места");
         }
         return workPlaceRepository.countAllByTypeAndFloor(type,floor);
     }
 
-    public Page<WorkPlaceEntity> getPage(Pageable pageable) {
+    public Page<WorkPlace> getPage(Pageable pageable) {
         return workPlaceRepository.findAll(pageable);
     }
 
-    public Page<WorkPlaceEntity> getPageByFloorAndType(
-        FloorEntity floor,
-        WorkPlaceTypeEntity type,
+    public Page<WorkPlace> getPageByFloorAndType(
+        Floor floor,
+        WorkPlaceType type,
         Pageable pageable
     ) {
 
@@ -52,8 +52,8 @@ public class WorkPlaceService {
         return workPlaceRepository.findAllByFloorAndType(floor, type, pageable);
     }
 
-    public Page<WorkPlaceEntity> getPageByFloor(
-        FloorEntity floor,
+    public Page<WorkPlace> getPageByFloor(
+        Floor floor,
         Pageable pageable
     ) {
 
@@ -64,8 +64,8 @@ public class WorkPlaceService {
         return workPlaceRepository.findAllByFloor(floor, pageable);
     }
 
-    public List<WorkPlaceEntity> getAllBookedInPeriod(
-        List<WorkPlaceEntity> floorPlaces,
+    public List<WorkPlace> getAllBookedInPeriod(
+        List<WorkPlace> floorPlaces,
         LocalDateTime start,
         LocalDateTime end
     ) {
@@ -91,7 +91,7 @@ public class WorkPlaceService {
         return workPlaceRepository.findAllBookedInPeriod(floorPlaces, start, end);
     }
 
-    public WorkPlaceEntity getById(Long id) {
+    public WorkPlace getById(Long id) {
 
         if (id == null) {
             throw new IncorrectArgumentException("Id не указан");
@@ -102,7 +102,7 @@ public class WorkPlaceService {
         return workPlaceRepository.findById(id).orElse(null);
     }
 
-    public void update(WorkPlaceEntity workPlace) {
+    public void update(WorkPlace workPlace) {
 
         if (getById(workPlace.getId()) == null) {
             throw new NotFoundException("Не найдено место с id: " + workPlace.getId());
@@ -122,7 +122,7 @@ public class WorkPlaceService {
         workPlaceRepository.deleteById(id);
     }
 
-    private void validate(WorkPlaceEntity workPlace) {
+    private void validate(WorkPlace workPlace) {
 
         if (workPlace.getType() == null) {
             throw new IncorrectArgumentException("Не указан тип места");

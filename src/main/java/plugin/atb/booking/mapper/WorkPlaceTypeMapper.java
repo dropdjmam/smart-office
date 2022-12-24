@@ -2,29 +2,26 @@ package plugin.atb.booking.mapper;
 
 import org.springframework.stereotype.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 
 @Component
 public class WorkPlaceTypeMapper {
 
-    public WorkPlaceTypeDto typeToDto(WorkPlaceTypeEntity type) {
-        var dto = new WorkPlaceTypeDto(
+    public WorkPlaceTypeDto typeToDto(WorkPlaceType type) {
+        return new WorkPlaceTypeDto(
             type.getId(),
             type.getName());
-        return dto;
     }
 
-    public WorkPlaceTypeEntity dtoToType(WorkPlaceTypeDto dto) {
-        var type = new WorkPlaceTypeEntity()
+    public WorkPlaceType dtoToType(WorkPlaceTypeDto dto) {
+        return new WorkPlaceType()
             .setId(dto.getId())
             .setName(dto.getName());
-        return type;
     }
 
-    public WorkPlaceTypeEntity createDtoToType(WorkPlaceTypeCreateDto dto) {
-        var type = new WorkPlaceTypeEntity()
+    public WorkPlaceType createDtoToType(WorkPlaceTypeCreateDto dto) {
+        return new WorkPlaceType()
             .setName(dto.getName());
-        return type;
     }
 
 }

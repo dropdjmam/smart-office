@@ -2,12 +2,12 @@ package plugin.atb.booking.mapper;
 
 import org.springframework.stereotype.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 
 @Component
 public class FloorMapper {
 
-    public FloorGetDto floorToDto(FloorEntity floor) {
+    public FloorGetDto floorToDto(Floor floor) {
 
         var image = floor.getMapFloor();
         Long floorId = null;
@@ -15,31 +15,24 @@ public class FloorMapper {
             floorId = image.getId();
         }
 
-        var dto = new FloorGetDto(
+        return new FloorGetDto(
             floor.getId(),
             floor.getOffice().getId(),
             floor.getFloorNumber(),
-            floorId
-        );
-
-        return dto;
+            floorId);
     }
 
-    public FloorEntity dtoToFloor(FloorUpdateDto dto, OfficeEntity office) {
-        var floor = new FloorEntity()
+    public Floor dtoToFloor(FloorUpdateDto dto, Office office) {
+        return new Floor()
             .setId(dto.getId())
             .setOffice(office)
             .setFloorNumber(dto.getFloorNumber());
-
-        return floor;
     }
 
-    public FloorEntity dtoToFloor(FloorCreateDto dto, OfficeEntity office) {
-        var floor = new FloorEntity()
+    public Floor dtoToFloor(FloorCreateDto dto, Office office) {
+        return new Floor()
             .setOffice(office)
             .setFloorNumber(dto.getFloorNumber());
-
-        return floor;
     }
 
 }

@@ -3,7 +3,7 @@ package plugin.atb.booking.service;
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
 import plugin.atb.booking.utils.*;
@@ -14,23 +14,23 @@ public class ImageService {
 
     private final ImageRepository imageRepository;
 
-    public void add(ImageEntity image) {
+    public void add(Image image) {
 
         imageRepository.save(image);
     }
 
-    public ImageEntity getById(Long id) {
+    public Image getById(Long id) {
 
         ValidationUtils.checkId(id);
 
         return imageRepository.findById(id).orElse(null);
     }
 
-    public Page<ImageEntity> getAll(Pageable pageable) {
+    public Page<Image> getAll(Pageable pageable) {
         return imageRepository.findAll(pageable);
     }
 
-    public void update(ImageEntity image) {
+    public void update(Image image) {
 
         if (getById(image.getId()) == null) {
             throw new NotFoundException("Изображение не найдено.");

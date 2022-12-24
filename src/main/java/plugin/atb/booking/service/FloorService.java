@@ -3,7 +3,7 @@ package plugin.atb.booking.service;
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
 import plugin.atb.booking.utils.*;
@@ -14,7 +14,7 @@ public class FloorService {
 
     private final FloorRepository floorRepository;
 
-    public Long add(FloorEntity floor) {
+    public Long add(Floor floor) {
 
         validate(floor);
 
@@ -29,7 +29,7 @@ public class FloorService {
         return floorRepository.save(floor).getId();
     }
 
-    public Page<FloorEntity> getAllByOffice(OfficeEntity office, Pageable pageable) {
+    public Page<Floor> getAllByOffice(Office office, Pageable pageable) {
 
         if (office == null) {
             throw new IncorrectArgumentException("Офис не указан");
@@ -38,7 +38,7 @@ public class FloorService {
         return floorRepository.findAllByOffice(office, pageable);
     }
 
-    public FloorEntity getById(Long id) {
+    public Floor getById(Long id) {
 
         if (id == null) {
             throw new IncorrectArgumentException("Id не указан");
@@ -49,7 +49,7 @@ public class FloorService {
         return floorRepository.findById(id).orElse(null);
     }
 
-    public void update(FloorEntity floor) {
+    public void update(Floor floor) {
 
         ValidationUtils.checkId(floor.getId());
 
@@ -75,7 +75,7 @@ public class FloorService {
         floorRepository.deleteById(id);
     }
 
-    private void validate(FloorEntity floor) {
+    private void validate(Floor floor) {
 
         if (floor.getOffice() == null) {
             throw new IncorrectArgumentException("Не указан офис");

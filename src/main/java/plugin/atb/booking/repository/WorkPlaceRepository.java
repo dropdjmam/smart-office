@@ -8,16 +8,16 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 
 @Repository
-public interface WorkPlaceRepository extends JpaRepository<WorkPlaceEntity, Long> {
+public interface WorkPlaceRepository extends JpaRepository<WorkPlace, Long> {
 
-    Integer countAllByTypeAndFloor(WorkPlaceTypeEntity type, FloorEntity floor);
+    Integer countAllByTypeAndFloor(WorkPlaceType type, Floor floor);
 
-    Page<WorkPlaceEntity> findAllByFloorAndType(
-        FloorEntity floor,
-        WorkPlaceTypeEntity type,
+    Page<WorkPlace> findAllByFloorAndType(
+        Floor floor,
+        WorkPlaceType type,
         Pageable pageable
     );
 
@@ -43,19 +43,19 @@ public interface WorkPlaceRepository extends JpaRepository<WorkPlaceEntity, Long
      * @return список свободных мест
      */
     @Query(value = "select place " +
-                   "from WorkPlaceEntity place " +
-                   "left join BookingEntity booking on place.id = booking.workPlace.id " +
+                   "from WorkPlace place " +
+                   "left join Booking booking on place.id = booking.workPlace.id " +
                    "where place in :floorPlaces " +
                    "and booking.dateTimeOfEnd > current_timestamp " +
                    "and booking.isDeleted is false " +
                    "and booking.dateTimeOfStart < :end and booking.dateTimeOfEnd > :start " +
                    "group by place.id")
-    List<WorkPlaceEntity> findAllBookedInPeriod(
-        @Param("floorPlaces") List<WorkPlaceEntity> floorPlaces,
+    List<WorkPlace> findAllBookedInPeriod(
+        @Param("floorPlaces") List<WorkPlace> floorPlaces,
         @Param("start") LocalDateTime startOfPeriod,
         @Param("end") LocalDateTime endOfPeriod
     );
 
-    Page<WorkPlaceEntity> findAllByFloor(FloorEntity floor, Pageable pageable);
+    Page<WorkPlace> findAllByFloor(Floor floor, Pageable pageable);
 
 }

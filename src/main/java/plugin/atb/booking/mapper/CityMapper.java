@@ -2,18 +2,18 @@ package plugin.atb.booking.mapper;
 
 import org.springframework.stereotype.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 
 @Component
 
 public class CityMapper {
 
-    public CityDto cityToDto(CityEntity city) {
+    public CityDto cityToDto(City city) {
         return new CityDto(city.getId(), city.getName());
     }
 
-    public CityEntity dtoToCity(CityDto dto) {
-        return new CityEntity(dto.getId(), dto.getName());
+    public City dtoToCity(CityDto dto) {
+        return new City(dto.getId(), dto.getName());
     }
 
 }

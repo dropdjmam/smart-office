@@ -6,13 +6,13 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 
 @Repository
-public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
+public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    Page<BookingEntity> findAllByHolderAndIsDeletedIsFalse(
-        EmployeeEntity holder,
+    Page<Booking> findAllByHolderAndIsDeletedIsFalse(
+        Employee holder,
         Pageable pageable
     );
 
@@ -35,14 +35,14 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
      *
      * @return страница бронирований
      */
-    @Query("select booking from BookingEntity booking " +
+    @Query("select booking from Booking booking " +
            "where booking.workPlace = :workPlace and " +
            "(booking.dateTimeOfStart < :end and " +
            "booking.dateTimeOfEnd > :start) and " +
            "booking.isDeleted is false " +
            "order by booking.dateTimeOfStart asc")
-    Page<BookingEntity> findAllInPeriod(
-        @Param("workPlace") WorkPlaceEntity workPlace,
+    Page<Booking> findAllInPeriod(
+        @Param("workPlace") WorkPlace workPlace,
         @Param("start") LocalDateTime startOfNewBooking,
         @Param("end") LocalDateTime endOfNewBooking,
         @Param("pageable") Pageable pageable
@@ -64,13 +64,13 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
      *
      * @return страница бронирований
      */
-    @Query("select booking from BookingEntity booking " +
+    @Query("select booking from Booking booking " +
            "where booking.holder = :holder and " +
            "booking.dateTimeOfEnd > current_timestamp and " +
            "booking.isDeleted is false " +
            "order by booking.dateTimeOfStart asc")
-    Page<BookingEntity> findAllActual(
-        @Param("holder") EmployeeEntity holder,
+    Page<Booking> findAllActual(
+        @Param("holder") Employee holder,
         @Param("pageable") Pageable pageable
     );
 
@@ -95,18 +95,18 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
      *
      * @return страница бронирований в офисе
      */
-    @Query("select booking from BookingEntity booking " +
-           "left join WorkPlaceEntity place on booking.workPlace.id = place.id " +
-           "left join WorkPlaceTypeEntity type on place.type.id = type.id " +
-           "left join FloorEntity level on place.floor.id = level.id " +
-           "left join OfficeEntity office on level.office.id = office.id " +
+    @Query("select booking from Booking booking " +
+           "left join WorkPlace place on booking.workPlace.id = place.id " +
+           "left join WorkPlaceType type on place.type.id = type.id " +
+           "left join Floor level on place.floor.id = level.id " +
+           "left join Office office on level.office.id = office.id " +
            "where (:isActual is false and type = :type and office = :office) " +
            "or (:isActual is true and booking.dateTimeOfEnd > current_timestamp and " +
            "type = :type and office = :office) " +
            "order by booking.dateTimeOfStart asc")
-    Page<BookingEntity> findAllByOffice(
-        @Param("office") OfficeEntity office,
-        @Param("type") WorkPlaceTypeEntity type,
+    Page<Booking> findAllByOffice(
+        @Param("office") Office office,
+        @Param("type") WorkPlaceType type,
         @Param("isActual") Boolean isActual,
         @Param("pageable") Pageable pageable
     );

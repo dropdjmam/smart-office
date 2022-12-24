@@ -3,14 +3,14 @@ package plugin.atb.booking.repository;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 
 @Repository
-public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> {
+public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
-    Page<EmployeeEntity> findByFullNameContaining(String fullName, Pageable pageable);
+    Page<Employee> findByFullNameContaining(String fullName, Pageable pageable);
 
-    EmployeeEntity findByLogin(String login);
+    Employee findByLogin(String login);
 
     boolean existsEmployeeByLoginOrEmail(String login, String email);
 

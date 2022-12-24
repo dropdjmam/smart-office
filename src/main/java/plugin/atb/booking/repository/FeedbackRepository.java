@@ -3,11 +3,11 @@ package plugin.atb.booking.repository;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 
 @Repository
-public interface FeedbackRepository extends JpaRepository<FeedbackEntity, Long> {
+public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
-    Page<FeedbackEntity> findAllByEmployee(EmployeeEntity employee, Pageable pageable);
+    Page<Feedback> findAllByEmployee(Employee employee, Pageable pageable);
 
 }

@@ -2,18 +2,18 @@ package plugin.atb.booking.mapper;
 
 import org.springframework.stereotype.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 
 @Component
 public class BookingMapper {
 
-    public BookingEntity dtoToBooking(
+    public Booking dtoToBooking(
         BookingCreateDto dto,
-        EmployeeEntity holder,
-        EmployeeEntity maker,
-        WorkPlaceEntity workPlace
+        Employee holder,
+        Employee maker,
+        WorkPlace workPlace
     ) {
-        return new BookingEntity()
+        return new Booking()
             .setHolder(holder)
             .setMaker(maker)
             .setWorkPlace(workPlace)
@@ -23,13 +23,13 @@ public class BookingMapper {
             .setIsDeleted(false);
     }
 
-    public BookingEntity dtoToBooking(
+    public Booking dtoToBooking(
         BookingGroupCreateDto dto,
-        EmployeeEntity holder,
-        EmployeeEntity maker,
-        WorkPlaceEntity workPlace
+        Employee holder,
+        Employee maker,
+        WorkPlace workPlace
     ) {
-        return new BookingEntity()
+        return new Booking()
             .setHolder(holder)
             .setMaker(maker)
             .setWorkPlace(workPlace)
@@ -39,13 +39,13 @@ public class BookingMapper {
             .setIsDeleted(false);
     }
 
-    public BookingEntity dtoToBooking(
+    public Booking dtoToBooking(
         BookingUpdateDto dto,
-        EmployeeEntity holder,
-        EmployeeEntity maker,
-        WorkPlaceEntity workPlace
+        Employee holder,
+        Employee maker,
+        WorkPlace workPlace
     ) {
-        return new BookingEntity()
+        return new Booking()
             .setId(dto.getId())
             .setHolder(holder)
             .setMaker(maker)

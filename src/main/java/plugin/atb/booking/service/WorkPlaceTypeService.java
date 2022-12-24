@@ -3,7 +3,7 @@ package plugin.atb.booking.service;
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
 
@@ -21,25 +21,25 @@ public class WorkPlaceTypeService {
                 String.format("Такой тип места уже существует: %s", name));
         }
 
-        WorkPlaceTypeEntity type = new WorkPlaceTypeEntity();
+        WorkPlaceType type = new WorkPlaceType();
         type.setName(name);
         workPlaceTypeRepository.save(type);
     }
 
-    public Page<WorkPlaceTypeEntity> getAll(Pageable pageable) {
+    public Page<WorkPlaceType> getAll(Pageable pageable) {
 
         return workPlaceTypeRepository.findAll(pageable);
     }
 
-    public WorkPlaceTypeEntity getById(Long id) {
+    public WorkPlaceType getById(Long id) {
         return workPlaceTypeRepository.findById(id).orElse(null);
     }
 
-    public Page<WorkPlaceTypeEntity> getByName(String name, Pageable pageable) {
+    public Page<WorkPlaceType> getByName(String name, Pageable pageable) {
         return workPlaceTypeRepository.findByName(name, pageable);
     }
 
-    public void update(WorkPlaceTypeEntity type) {
+    public void update(WorkPlaceType type) {
         String newName = type.getName();
 
         boolean exists = workPlaceTypeRepository.existsByName(newName);
@@ -49,7 +49,7 @@ public class WorkPlaceTypeService {
                 "Тип места уже существует: %s", newName));
         }
 
-        WorkPlaceTypeEntity updateType = getById(type.getId());
+        WorkPlaceType updateType = getById(type.getId());
 
         if (updateType == null) {
             throw new NotFoundException(String.format(

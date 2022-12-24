@@ -4,7 +4,7 @@ import lombok.*;
 import lombok.extern.slf4j.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
 import plugin.atb.booking.utils.*;
@@ -16,7 +16,7 @@ public class FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
 
-    public void add(FeedbackEntity feedback) {
+    public void add(Feedback feedback) {
 
         validate(feedback);
 
@@ -26,7 +26,7 @@ public class FeedbackService {
 
     }
 
-    public Page<FeedbackEntity> getAll(Pageable pageable) {
+    public Page<Feedback> getAll(Pageable pageable) {
         var page = feedbackRepository.findAll(pageable);
 
         log.info("IN getAll METHOD - {} elements found", page.getTotalElements());
@@ -34,7 +34,7 @@ public class FeedbackService {
         return page;
     }
 
-    public Page<FeedbackEntity> getAllByEmployee(EmployeeEntity employee, Pageable pageable) {
+    public Page<Feedback> getAllByEmployee(Employee employee, Pageable pageable) {
         if (employee == null) {
             log.error("IN getAllByEmployee METHOD - employee is null");
             throw new IncorrectArgumentException("Не указан сотрудник");
@@ -47,7 +47,7 @@ public class FeedbackService {
         return page;
     }
 
-    public FeedbackEntity getById(Long id) {
+    public Feedback getById(Long id) {
 
         if (id == null) {
             log.warn("IN getById METHOD - id is null");
@@ -75,7 +75,7 @@ public class FeedbackService {
         log.info("Удалена обратная связь с id: " + id);
     }
 
-    private void validate(FeedbackEntity feedback) {
+    private void validate(Feedback feedback) {
 
         if (feedback.getEmployee() == null) {
             log.warn("Validation. Employee is null: {}", feedback);

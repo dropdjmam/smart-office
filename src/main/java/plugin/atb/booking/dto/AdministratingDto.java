@@ -7,7 +7,10 @@ import lombok.*;
 @Getter
 @Setter
 @AllArgsConstructor
-public class AdministrationCreateDto {
+public class AdministratingDto {
+
+    @NotNull
+    private Long id;
 
     @NotNull
     private Long employeeId;

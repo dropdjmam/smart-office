@@ -1,19 +1,19 @@
-package plugin.atb.booking.entity;
+package plugin.atb.booking.model;
 
 import javax.persistence.*;
 
 import lombok.*;
 import lombok.experimental.*;
 
-@Data
-@Builder
 @Entity
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Table(name = "workplaces")
-
-public class WorkPlaceEntity {
+@Table(name = "floors")
+public class Floor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,15 +21,15 @@ public class WorkPlaceEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "workplacetype_id")
+    @JoinColumn(name = "office_id")
     @ToString.Exclude
-    private WorkPlaceTypeEntity type;
+    private Office office;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "floor_id")
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "image_id" )
     @ToString.Exclude
-    private FloorEntity floor;
+    private Image mapFloor;
 
-    private Integer capacity;
+    private Integer floorNumber;
 
 }

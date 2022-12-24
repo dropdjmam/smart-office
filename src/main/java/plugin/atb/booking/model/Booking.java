@@ -1,4 +1,4 @@
-package plugin.atb.booking.entity;
+package plugin.atb.booking.model;
 
 import java.time.*;
 
@@ -17,14 +17,14 @@ import lombok.experimental.*;
 @Table(name = "bookings",
     indexes = {@Index(name = "holder", columnList = "holder_id"),
                @Index(name = "maker", columnList = "maker_id"),
-               @Index(name = "workplace", columnList = "workplace_id"),
+               @Index(name = "workplace_bookings", columnList = "workplace_id"),
                @Index(name = "booking_start", columnList = "date_time_of_start"),
                @Index(name = "booking_end", columnList = "date_time_of_end"),
                @Index(name = "in_period",
                    columnList = "workplace_id, date_time_of_start, date_time_of_end, is_deleted"),
                @Index(name = "actual",
                    columnList = "holder_id, date_time_of_start, date_time_of_end, is_deleted")})
-public class BookingEntity {
+public class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,17 +34,17 @@ public class BookingEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "holder_id")
     @ToString.Exclude
-    private EmployeeEntity holder;
+    private Employee holder;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "maker_id")
     @ToString.Exclude
-    private EmployeeEntity maker;
+    private Employee maker;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workplace_id")
     @ToString.Exclude
-    private WorkPlaceEntity workPlace;
+    private WorkPlace workPlace;
 
     @Column(name = "date_time_of_start")
     private LocalDateTime dateTimeOfStart;

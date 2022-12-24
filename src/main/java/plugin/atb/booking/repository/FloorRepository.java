@@ -3,13 +3,13 @@ package plugin.atb.booking.repository;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 
 @Repository
-public interface FloorRepository extends JpaRepository<FloorEntity, Long> {
+public interface FloorRepository extends JpaRepository<Floor, Long> {
 
-    Page<FloorEntity> findAllByOffice(OfficeEntity office, Pageable pageable);
+    Page<Floor> findAllByOffice(Office office, Pageable pageable);
 
-    boolean existsByFloorNumberAndOffice(Integer floorNumber, OfficeEntity office);
+    boolean existsByFloorNumberAndOffice(Integer floorNumber, Office office);
 
 }

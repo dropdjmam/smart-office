@@ -4,7 +4,7 @@ import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
 
@@ -16,7 +16,7 @@ public class TeamMemberService {
     private final TeamMemberRepository teamMemberRepository;
 
     @Transactional
-    public void add(TeamMemberEntity member) {
+    public void add(TeamMember member) {
 
         boolean exists = teamMemberRepository.existsByEmployeeAndTeam(
             member.getEmployee(), member.getTeam());
@@ -35,46 +35,46 @@ public class TeamMemberService {
         teamMemberRepository.save(member);
     }
 
-    public Page<TeamMemberEntity> getAll(Pageable pageable) {
+    public Page<TeamMember> getAll(Pageable pageable) {
 
         return teamMemberRepository.findAll(pageable);
     }
 
-    public TeamMemberEntity getByEmployeeAndTeam(
-        EmployeeEntity employee, TeamEntity team
+    public TeamMember getByEmployeeAndTeam(
+        Employee employee, Team team
     ) {
 
         return teamMemberRepository.findTeamMemberByEmployeeAndTeam(employee, team);
     }
 
-    public Page<TeamMemberEntity> getAllTeamMemberByTeamId(Long teamId, Pageable pageable) {
+    public Page<TeamMember> getAllTeamMemberByTeamId(Long teamId, Pageable pageable) {
 
         return teamMemberRepository.findAllTeamMemberByTeamId(teamId, pageable);
     }
 
-    public Page<TeamMemberEntity> getAllTeamMemberByTeamName(String name, Pageable pageable) {
+    public Page<TeamMember> getAllTeamMemberByTeamName(String name, Pageable pageable) {
 
         return teamMemberRepository.findAllTeamMemberByTeamName(name, pageable);
     }
 
-    public Page<TeamMemberEntity> getAllTeamMemberByEmployee(EmployeeEntity employee, Pageable pageable) {
+    public Page<TeamMember> getAllTeamMemberByEmployee(Employee employee, Pageable pageable) {
         return teamMemberRepository.findAllTeamByEmployee(employee, pageable);
     }
 
-    public TeamMemberEntity getById(Long id) {
+    public TeamMember getById(Long id) {
         return teamMemberRepository.findById(id).orElse(null);
     }
 
-    public TeamMemberEntity getByTeamId(Long teamId) {
+    public TeamMember getByTeamId(Long teamId) {
         return teamMemberRepository.findByTeamId(teamId);
     }
 
-    public TeamMemberEntity getByTeamName(String name) {
+    public TeamMember getByTeamName(String name) {
         return teamMemberRepository.findByTeamName(name);
     }
 
     @Transactional
-    public void update(TeamMemberEntity member) {
+    public void update(TeamMember member) {
 
         if (getById(member.getId()) == null) {
             throw new NotFoundException("Не найдена роль с id: " + member.getId());
@@ -102,7 +102,7 @@ public class TeamMemberService {
     }
 
     @Transactional
-    public void delete(TeamMemberEntity teamMember) {
+    public void delete(TeamMember teamMember) {
 
         if (teamMember == null) {
             throw new IncorrectArgumentException("Участник команды не указан");
@@ -112,7 +112,7 @@ public class TeamMemberService {
     }
 
     @Transactional
-    public void deleteAllByTeam(TeamEntity team) {
+    public void deleteAllByTeam(Team team) {
         if (team == null) {
             throw new IncorrectArgumentException("Команда для удаления ее участников не указана");
         }

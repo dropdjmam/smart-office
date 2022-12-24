@@ -33,11 +33,10 @@ public class EmployeeController {
     private final EmployeeMapper employeeMapper;
 
     @PostMapping("/")
-    @Operation(
-        summary = "Создание сотрудника",
-        description = "Все поля кроме роли и фото обязательны (роль по дефолту ROLE_EMPLOYEE - id 1)"
-    )
-    public ResponseEntity<String> createEmployee(@Valid @RequestBody EmployeeCreateDto dto) {
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Создание сотрудника",
+        description = "Все поля кроме роли обязательны (роль по дефолту ROLE_EMPLOYEE - id 1)")
+    public String createEmployee(@Valid @RequestBody EmployeeCreateDto dto) {
 
         var role = Optional.of(dto)
             .map(EmployeeCreateDto::getRoleId)
@@ -48,12 +47,13 @@ public class EmployeeController {
 
         employeeService.add(employeeMapper.dtoToEmployee(dto, role));
 
-        return ResponseEntity.ok("Сотрудник успешно добавлен");
+        return "Сотрудник успешно добавлен";
     }
 
     @GetMapping("/all")
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Все сотрудники", description = "1 <= size <= 20 (default 20)")
-    public ResponseEntity<Page<EmployeeGetDto>> getEmployees(@ParameterObject Pageable pageable) {
+    public Page<EmployeeGetDto> getEmployees(@ParameterObject Pageable pageable) {
 
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
 
@@ -63,16 +63,15 @@ public class EmployeeController {
             .map(employeeMapper::employeeToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
     @GetMapping("/allByName")
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Поиск среди сотрудников по имени", description = "1 <= size <= 20 (default 20)")
-    public ResponseEntity<Page<EmployeeGetDto>> getEmployeesByName(
-        @RequestParam String name,
-        @ParameterObject Pageable pageable
+    public Page<EmployeeGetDto> getEmployeesByName(
+        @RequestParam String name, @ParameterObject Pageable pageable
     ) {
-
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
 
         var page = employeeService.getPageByName(name, pageable);
@@ -81,14 +80,13 @@ public class EmployeeController {
             .map(employeeMapper::employeeToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Получение указанного сотрудника по id")
-    public ResponseEntity<EmployeeGetDto> getEmployeeById(@PathVariable Long id) {
-
-        ValidationUtils.checkId(id);
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить сотрудника по id")
+    public EmployeeGetDto getEmployeeById(@PathVariable Long id) {
 
         var employee = employeeService.getById(id);
 
@@ -96,11 +94,13 @@ public class EmployeeController {
             throw new NotFoundException("Не найден сотрудник с id: " + id);
         }
 
-        return ResponseEntity.ok(employeeMapper.employeeToDto(employee));
+        return employeeMapper.employeeToDto(employee);
     }
 
     @GetMapping("/login")
-    public ResponseEntity<EmployeeGetDto> getEmployeeByLogin(@RequestParam String login) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить сотрудника по логину")
+    public EmployeeGetDto getEmployeeByLogin(@RequestParam String login) {
 
         var employee = employeeService.getByLogin(login);
 
@@ -108,14 +108,14 @@ public class EmployeeController {
             throw new NotFoundException("Не найден сотрудник с логином: " + login);
         }
 
-        return ResponseEntity.ok(employeeMapper.employeeToDto(employee));
+        return employeeMapper.employeeToDto(employee);
     }
 
     @PutMapping("/")
-    @Operation(
-        summary = "Изменение указанного сотрудника",
-        description = "Все поля кроме фото обязательны")
-    public ResponseEntity<String> update(@Valid @RequestBody EmployeeUpdateDto dto) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Изменение указанного сотрудника",
+        description = "Все поля обязательны")
+    public String update(@Valid @RequestBody EmployeeUpdateDto dto) {
 
         var role = roleService.getById(dto.getRoleId());
         if (role == null) {
@@ -124,16 +124,19 @@ public class EmployeeController {
 
         employeeService.update(employeeMapper.dtoToEmployee(dto, role));
 
-        return ResponseEntity.ok("Данные сотрудника успешно обновлены");
+        return "Данные сотрудника успешно обновлены";
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Удаление указанного сотрудника по id")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Удаление указанного сотрудника по id",
+        description = "Сотрудник также удаляется из участников команд, а также, если сотрудник " +
+                      "является лидером команды - она удаляется")
+    public String delete(@PathVariable Long id) {
 
         employeeService.delete(id);
 
-        return ResponseEntity.ok("Сотрудник успешно удален");
+        return "Сотрудник успешно удален";
     }
 
 }

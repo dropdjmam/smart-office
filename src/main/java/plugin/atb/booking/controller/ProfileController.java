@@ -11,7 +11,7 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
 
@@ -49,7 +49,7 @@ public class ProfileController {
         var teamMemberPage = teamMemberService.getAllTeamMemberByEmployee(self, Pageable.ofSize(1));
         if (!teamMemberPage.isEmpty()) {
             firstTeam = Optional.of(teamMemberPage.getContent().get(0))
-                .map(TeamMemberEntity::getTeam)
+                .map(TeamMember::getTeam)
                 .map(teamMapper::teamToGetDto)
                 .orElse(null);
             if (firstTeam == null) {
@@ -67,7 +67,7 @@ public class ProfileController {
         var bookingInfo = bookingInfoMapper.bookingToDto(booking);
 
         var placeInfo = Optional.of(booking)
-            .map(BookingEntity::getWorkPlace)
+            .map(Booking::getWorkPlace)
             .map(bookingInfoMapper::placeToDto)
             .orElse(null);
 
@@ -77,9 +77,9 @@ public class ProfileController {
         }
 
         var officeInfo = Optional.of(booking)
-            .map(BookingEntity::getWorkPlace)
-            .map(WorkPlaceEntity::getFloor)
-            .map(FloorEntity::getOffice)
+            .map(Booking::getWorkPlace)
+            .map(WorkPlace::getFloor)
+            .map(Floor::getOffice)
             .map(bookingInfoMapper::officeToDto)
             .orElse(null);
 

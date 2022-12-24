@@ -3,25 +3,25 @@ package plugin.atb.booking.repository;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 
 @Repository
-public interface TeamMemberRepository extends JpaRepository<TeamMemberEntity, Long> {
+public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
 
-    TeamMemberEntity findTeamMemberByEmployeeAndTeam(EmployeeEntity employee, TeamEntity team);
+    TeamMember findTeamMemberByEmployeeAndTeam(Employee employee, Team team);
 
-    TeamMemberEntity findByTeamId(Long teamId);
+    TeamMember findByTeamId(Long teamId);
 
-    TeamMemberEntity findByTeamName(String name);
+    TeamMember findByTeamName(String name);
 
-    Page<TeamMemberEntity> findAllTeamMemberByTeamId(Long teamId, Pageable pageable);
+    Page<TeamMember> findAllTeamMemberByTeamId(Long teamId, Pageable pageable);
 
-    Page<TeamMemberEntity> findAllTeamMemberByTeamName(String name, Pageable pageable);
+    Page<TeamMember> findAllTeamMemberByTeamName(String name, Pageable pageable);
 
-    Page<TeamMemberEntity> findAllTeamByEmployee(EmployeeEntity employee, Pageable pageable);
+    Page<TeamMember> findAllTeamByEmployee(Employee employee, Pageable pageable);
 
-    boolean existsByEmployeeAndTeam(EmployeeEntity employee, TeamEntity team);
+    boolean existsByEmployeeAndTeam(Employee employee, Team team);
 
-    void deleteAllByTeam(TeamEntity team);
+    void deleteAllByTeam(Team team);
 
 }

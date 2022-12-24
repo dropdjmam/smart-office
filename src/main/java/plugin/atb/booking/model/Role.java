@@ -1,15 +1,17 @@
-package plugin.atb.booking.entity;
+package plugin.atb.booking.model;
 
 import javax.persistence.*;
 
 import lombok.*;
 
-@Data
 @Entity
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "cities")
-public class CityEntity {
+@Table(name = "roles")
+public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

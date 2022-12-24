@@ -4,18 +4,14 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 
 @Repository
-public interface ConferenceMemberRepository extends JpaRepository<ConferenceMemberEntity, Long> {
+public interface ConferenceMemberRepository extends JpaRepository<ConferenceMember, Long> {
 
-    Page<ConferenceMemberEntity> findAllByBookingId(Long bookingId, Pageable pageable);
+    Page<ConferenceMember> findAllByBookingId(Long bookingId, Pageable pageable);
 
-    ConferenceMemberEntity findByBookingId(Long bookingId);
-
-    ConferenceMemberEntity findByEmployeeId(Long employeeId);
-
-    boolean existsByEmployeeAndBooking(EmployeeEntity employee, BookingEntity booking);
+    boolean existsByEmployeeAndBooking(Employee employee, Booking booking);
 
     /**
      * Возвращает отсортированную страницу сущностей (участников переговоров),
@@ -33,15 +29,15 @@ public interface ConferenceMemberRepository extends JpaRepository<ConferenceMemb
      *
      * @return страница участников переговорок
      */
-    @Query(value = "select conferee from ConferenceMemberEntity conferee " +
-                   "left join BookingEntity booking on conferee.booking = booking " +
+    @Query(value = "select conferee from ConferenceMember conferee " +
+                   "left join Booking booking on conferee.booking = booking " +
                    "where conferee.employee = :employee and " +
                    "booking.dateTimeOfEnd > current_timestamp and " +
                    "booking.isDeleted is false " +
                    "order by booking.dateTimeOfStart asc")
-    Page<ConferenceMemberEntity> findAllActualByEmployee(
-    @Param("employee") EmployeeEntity employee,
-    @Param("pageable") Pageable pageable
+    Page<ConferenceMember> findAllActualByEmployee(
+        @Param("employee") Employee employee,
+        @Param("pageable") Pageable pageable
     );
 
 }

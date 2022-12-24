@@ -5,7 +5,7 @@ import java.util.*;
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
 import plugin.atb.booking.utils.*;
@@ -23,17 +23,17 @@ public class RoleService {
             throw new AlreadyExistsException("Роль уже существует: " + name);
         }
 
-        RoleEntity role = new RoleEntity();
+        Role role = new Role();
         role.setName(name);
         roleRepository.save(role);
     }
 
-    public List<RoleEntity> getAll() {
+    public List<Role> getAll() {
         Sort sort = Sort.by(Sort.Direction.ASC, "name");
         return roleRepository.findAll(sort);
     }
 
-    public RoleEntity getById(Long id) {
+    public Role getById(Long id) {
 
         if (id == null) {
             throw new IncorrectArgumentException("Не указан id для поиска роли");
@@ -44,7 +44,7 @@ public class RoleService {
         return roleRepository.findById(id).orElse(null);
     }
 
-    public void update(RoleEntity role) {
+    public void update(Role role) {
 
         if (role.getName().isBlank()) {
             throw new IncorrectArgumentException("Не указано имя роли");

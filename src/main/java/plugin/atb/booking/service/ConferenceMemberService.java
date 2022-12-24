@@ -6,54 +6,60 @@ import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
-import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.repository.*;
+import plugin.atb.booking.utils.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ConferenceMemberService {
 
     private final ConferenceMemberRepository conferenceMemberRepository;
 
     @Transactional
-    public void add(ConferenceMemberEntity conferee) {
-
-        boolean exists = conferenceMemberRepository.existsByEmployeeAndBooking(
-            conferee.getEmployee(), conferee.getBooking());
-        if (exists) {
-            throw new AlreadyExistsException(String.format(
-                "Участник с id:%s уже зарегестрирован на бронь с id:%s",
-                conferee.getEmployee().getId(), conferee.getBooking().getId()));
-        }
+    public void add(ConferenceMember conferee) {
 
         if (conferee.getEmployee() == null) {
             throw new IncorrectArgumentException("Сотрудник не указан");
         }
 
         if (conferee.getBooking() == null) {
-            throw new IncorrectArgumentException("Бронирование с не указано");
+            throw new IncorrectArgumentException("Бронирование не указано");
+        }
+
+        boolean exists = conferenceMemberRepository.existsByEmployeeAndBooking(
+            conferee.getEmployee(), conferee.getBooking());
+        if (exists) {
+            throw new AlreadyExistsException(String.format(
+                "Сотрудник с id:%s уже относится к брони с id:%s",
+                conferee.getEmployee().getId(), conferee.getBooking().getId()));
         }
 
         conferenceMemberRepository.save(conferee);
     }
 
     @Transactional
-    public void addAll(Set<ConferenceMemberEntity> conferees) {
+    public void addAll(Set<ConferenceMember> conferees) {
 
         conferenceMemberRepository.saveAll(conferees);
     }
 
-    public Page<ConferenceMemberEntity> getAllByBookingId(
-        Long bookingId,
-        Pageable pageable
+    public Page<ConferenceMember> getAllByBookingId(
+        Long bookingId, Pageable pageable
     ) {
+        if (bookingId == null) {
+            throw new IncorrectArgumentException("Id брони не указан");
+        }
+
+        ValidationUtils.checkId(bookingId);
+
         return conferenceMemberRepository.findAllByBookingId(bookingId, pageable);
     }
 
-    public Page<ConferenceMemberEntity> getAllActualByEmployee(
-        EmployeeEntity employee,
-        Pageable pageable
+    public Page<ConferenceMember> getAllActualByEmployee(
+        Employee employee, Pageable pageable
     ) {
         if (employee == null) {
             throw new IncorrectArgumentException("Не указан сотрудник ");
@@ -62,40 +68,18 @@ public class ConferenceMemberService {
         return conferenceMemberRepository.findAllActualByEmployee(employee, pageable);
     }
 
-    public ConferenceMemberEntity getByBookingId(Long bookingId) {
-        return conferenceMemberRepository.findByBookingId(bookingId);
-    }
-
-    public ConferenceMemberEntity getByEmployeeId(Long employeeId) {
-        return conferenceMemberRepository.findByEmployeeId(employeeId);
-    }
-
-    public Page<ConferenceMemberEntity> getAll(Pageable pageable) {
+    public Page<ConferenceMember> getAll(Pageable pageable) {
         return conferenceMemberRepository.findAll(pageable);
     }
 
-    public ConferenceMemberEntity getById(Long id) {
+    public ConferenceMember getById(Long id) {
+        if (id == null) {
+            throw new IncorrectArgumentException("Id не указан");
+        }
+
+        ValidationUtils.checkId(id);
+
         return conferenceMemberRepository.findById(id).orElse(null);
-    }
-
-    public void update(ConferenceMemberEntity conferee) {
-
-        if (getById(conferee.getId()) == null) {
-            throw new NotFoundException("Участник конференции не найден.");
-        }
-
-        var newConferee = conferee.getEmployee();
-        var newBooking = conferee.getBooking();
-
-        boolean exists = conferenceMemberRepository.existsByEmployeeAndBooking(
-            newConferee, newBooking);
-        if (exists) {
-            throw new AlreadyExistsException(String.format(
-                "Участник с id: %s уже имеет бронь с id: %s",
-                conferee.getEmployee().getId(), conferee.getBooking().getId()));
-        }
-
-        conferenceMemberRepository.save(conferee);
     }
 
     @Transactional
@@ -107,6 +91,11 @@ public class ConferenceMemberService {
         }
 
         conferenceMemberRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void delete(List<ConferenceMember> conferenceMembers) {
+        conferenceMemberRepository.deleteAll(conferenceMembers);
     }
 
 }

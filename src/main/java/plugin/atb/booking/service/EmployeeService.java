@@ -1,20 +1,30 @@
 package plugin.atb.booking.service;
 
+import java.util.*;
+import java.util.stream.*;
+
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import org.springframework.transaction.annotation.*;
 import plugin.atb.booking.exception.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.repository.*;
 import plugin.atb.booking.utils.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
 
-    public void add(EmployeeEntity employee) {
+    private final TeamService teamService;
+
+    private final TeamMemberService teamMemberService;
+
+    @Transactional
+    public void add(Employee employee) {
 
         validate(employee);
 
@@ -37,12 +47,12 @@ public class EmployeeService {
 
     }
 
-    public Page<EmployeeEntity> getPage(Pageable pageable) {
+    public Page<Employee> getPage(Pageable pageable) {
 
         return employeeRepository.findAll(pageable);
     }
 
-    public Page<EmployeeEntity> getPageByName(String name, Pageable pageable) {
+    public Page<Employee> getPageByName(String name, Pageable pageable) {
 
         if (name.isBlank()) {
             throw new IncorrectArgumentException(
@@ -52,7 +62,7 @@ public class EmployeeService {
         return employeeRepository.findByFullNameContaining(name, pageable);
     }
 
-    public EmployeeEntity getById(Long id) {
+    public Employee getById(Long id) {
 
         if (id == null) {
             throw new IncorrectArgumentException("Id не указан");
@@ -63,7 +73,7 @@ public class EmployeeService {
         return employeeRepository.findById(id).orElse(null);
     }
 
-    public EmployeeEntity getByLogin(String login) {
+    public Employee getByLogin(String login) {
 
         if (login.isBlank()) {
             throw new IncorrectArgumentException(
@@ -73,7 +83,8 @@ public class EmployeeService {
         return employeeRepository.findByLogin(login);
     }
 
-    public void update(EmployeeEntity employee) {
+    @Transactional
+    public void update(Employee employee) {
 
         ValidationUtils.checkId(employee.getId());
 
@@ -91,18 +102,30 @@ public class EmployeeService {
 
     }
 
+    @Transactional
     public void delete(Long id) {
 
-        ValidationUtils.checkId(id);
+        var employee = getById(id);
 
-        if (getById(id) == null) {
+        if (employee == null) {
             throw new NotFoundException("Не найден сотрудник с id: " + id);
         }
 
-        employeeRepository.deleteById(id);
+        var teamMembers = teamMemberService.getAllTeamMemberByEmployee(
+            employee, Pageable.unpaged());
+
+        if (!teamMembers.isEmpty()) {
+            var teams = teamMembers.stream()
+                .map(TeamMember::getTeam)
+                .collect(Collectors.toSet());
+            teams.removeIf(t -> !Objects.equals(t.getLeader().getId(), id));
+            teamService.delete(teams);
+        }
+
+        employeeRepository.delete(employee);
     }
 
-    private void validate(EmployeeEntity employee) {
+    private void validate(Employee employee) {
 
         if (employee.getFullName() == null) {
             throw new IncorrectArgumentException("Полное имя сотрудника не указано");

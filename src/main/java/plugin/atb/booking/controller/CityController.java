@@ -2,17 +2,20 @@ package plugin.atb.booking.controller;
 
 import java.util.*;
 
-import javax.validation.constraints.*;
+import javax.validation.*;
 
+import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
 import org.springframework.http.*;
-import org.springframework.validation.annotation.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
+import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
 
 @RestController
+@Tag(name = "Город")
 @RequiredArgsConstructor
 @RequestMapping("/city")
 public class CityController {
@@ -22,58 +25,62 @@ public class CityController {
     private final CityMapper cityMapper;
 
     @PostMapping("/")
-    public ResponseEntity<String> createCity(@NotBlank @RequestParam String name) {
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Добавление города")
+    public String createCity(@RequestParam String name) {
         cityService.add(name);
 
-        return ResponseEntity.ok("Город " + name + "успешно создан.");
+        return "Город " + name + "успешно добавлен";
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<CityDto>> getCities() {
-        List<CityDto> cities;
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить список городов")
+    public List<CityDto> getCities() {
+        var cities = cityService.getAll();
 
-        cities = cityService.getAll()
-            .stream()
+        return cities.stream()
             .map(cityMapper::cityToDto)
             .toList();
-
-        return ResponseEntity.ok(cities);
     }
 
-    @GetMapping("/id{id}")
-    public ResponseEntity<CityDto> getCityById(@PathVariable Long id) {
-        if (id < 1) {
-            throw new IllegalArgumentException("Id не может быть меньше 1!");
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить город")
+    public CityDto getCityById(@PathVariable Long id) {
+        var city = cityService.getById(id);
+
+        if (city == null) {
+            throw new NotFoundException("Не найден город с id: " + id);
         }
 
-        return ResponseEntity.ok(cityMapper.cityToDto(cityService.getById(id))
-        );
+        return cityMapper.cityToDto(city);
     }
 
-    @GetMapping("/{name}")
-    public ResponseEntity<List<CityDto>> getCitiesByName(@PathVariable String name) {
-        List<CityDto> cities;
+    @GetMapping("/")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить список всех городов")
+    public List<CityDto> getCitiesByName(@RequestParam String name) {
+        var cities = cityService.getAllByName(name);
 
-        cities = cityService.getAllByName(name).stream()
+        return cities.stream()
             .map(cityMapper::cityToDto)
             .toList();
-
-        return ResponseEntity.ok(cities);
     }
 
-    @Validated
     @PutMapping("/")
-    public ResponseEntity<String> update(@RequestBody CityDto dto) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Изменение наименования города")
+    public String update(@Valid @RequestBody CityDto dto) {
         cityService.update(cityMapper.dtoToCity(dto));
 
-        return ResponseEntity.ok("Успешно! Город изменен: " + dto.getName());
+        return "Успешно! Город изменен: " + dto.getName();
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Удаление города")
     public ResponseEntity<String> deleteCity(@PathVariable Long id) {
-        if (id < 1) {
-            throw new IllegalArgumentException("Id не может быть меньше 1!");
-        }
 
         cityService.delete(id);
 

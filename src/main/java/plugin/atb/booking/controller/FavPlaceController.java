@@ -14,7 +14,7 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
@@ -44,7 +44,7 @@ public class FavPlaceController {
 
         var place = validatePlace(placeId);
 
-        favPlaceService.add(new FavPlaceEntity()
+        favPlaceService.add(new FavPlace()
             .setEmployee(employee)
             .setPlace(place));
 
@@ -61,7 +61,7 @@ public class FavPlaceController {
         var page = favPlaceService.getAllByEmployee(employee, pageable);
 
         var dtos = page.stream()
-            .map(FavPlaceEntity::getPlace)
+            .map(FavPlace::getPlace)
             .map(workPlaceMapper::workPlaceToDto)
             .toList();
 
@@ -89,7 +89,7 @@ public class FavPlaceController {
 
         var favPlacesPage = favPlaceService.getAllByEmployee(employee, Pageable.unpaged());
         var favPlacesSet = favPlacesPage.stream()
-            .map(FavPlaceEntity::getPlace)
+            .map(FavPlace::getPlace)
             .collect(Collectors.toSet());
 
         var floor = validateFloor(floorId);
@@ -107,7 +107,7 @@ public class FavPlaceController {
             end);
 
         var bookedIds = bookedFavPlaces.stream()
-            .map(WorkPlaceEntity::getId)
+            .map(WorkPlace::getId)
             .collect(Collectors.toSet());
 
         var responseDtos = floorFavPlaces.stream()
@@ -133,7 +133,7 @@ public class FavPlaceController {
         var page = favPlaceService.getAllByEmployee(employee, pageable);
 
         var dtos = page.stream()
-            .map(FavPlaceEntity::getPlace)
+            .map(FavPlace::getPlace)
             .map(workPlaceMapper::workPlaceToDto)
             .toList();
 
@@ -171,7 +171,7 @@ public class FavPlaceController {
         return ResponseEntity.ok("Место успешно удалено из избранного");
     }
 
-    private EmployeeEntity getSessionUser() {
+    private Employee getSessionUser() {
         return employeeService.getByLogin(
             SecurityContextHolder.getContext()
                 .getAuthentication()
@@ -179,7 +179,7 @@ public class FavPlaceController {
         );
     }
 
-    private EmployeeEntity validateEmployee(Long id) {
+    private Employee validateEmployee(Long id) {
         var employee = employeeService.getById(id);
         if (employee == null) {
             throw new NotFoundException("Не найден сотрудник с id: " + id);
@@ -187,7 +187,7 @@ public class FavPlaceController {
         return employee;
     }
 
-    private WorkPlaceEntity validatePlace(Long id) {
+    private WorkPlace validatePlace(Long id) {
         var place = workPlaceService.getById(id);
         if (place == null) {
             throw new NotFoundException("Не найдено место с id: " + id);
@@ -195,7 +195,7 @@ public class FavPlaceController {
         return place;
     }
 
-    private FloorEntity validateFloor(long id) {
+    private Floor validateFloor(long id) {
         var floor = floorService.getById(id);
         if (floor == null) {
             throw new NotFoundException("Не найден этаж с id: " + id);

@@ -4,12 +4,12 @@ import java.util.*;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import plugin.atb.booking.entity.CityEntity;
+import plugin.atb.booking.model.City;
 
 @Repository
-public interface CityRepository extends JpaRepository<CityEntity, Long> {
+public interface CityRepository extends JpaRepository<City, Long> {
 
-    List<CityEntity> findAllByNameContainingOrderByName(String name);
+    List<City> findAllByNameContainingOrderByName(String name);
 
     boolean existsByName(String name);
 

@@ -1,4 +1,4 @@
-package plugin.atb.booking.entity;
+package plugin.atb.booking.model;
 
 import java.time.*;
 
@@ -14,8 +14,8 @@ import lombok.experimental.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Table(name = "feedbacks", indexes = @Index(name = "employee", columnList = "employee_id"))
-public class FeedbackEntity {
+@Table(name = "feedbacks", indexes = @Index(name = "employee_feedbacks", columnList = "employee_id"))
+public class Feedback {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +25,7 @@ public class FeedbackEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")
     @ToString.Exclude
-    private EmployeeEntity employee;
+    private Employee employee;
 
     @Column(columnDefinition = "timestamp without time zone default now() at time zone 'UTC'",
         insertable = false)

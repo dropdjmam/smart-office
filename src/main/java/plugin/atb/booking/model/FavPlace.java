@@ -1,4 +1,4 @@
-package plugin.atb.booking.entity;
+package plugin.atb.booking.model;
 
 import javax.persistence.*;
 
@@ -12,8 +12,11 @@ import lombok.experimental.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Table(name = "team_members")
-public class TeamMemberEntity {
+@Table(name = "fav_place",
+    indexes = {@Index(name = "employee_fav_place", columnList = "employee_id"),
+               @Index(name = "workplace_fav_place", columnList = "workplace_id"),
+               @Index(name = "employee_place_fav_place", columnList = "employee_id, workplace_id")})
+public class FavPlace {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,11 +26,11 @@ public class TeamMemberEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")
     @ToString.Exclude
-    private EmployeeEntity employee;
+    private Employee employee;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_id")
+    @JoinColumn(name = "workplace_id")
     @ToString.Exclude
-    private TeamEntity team;
+    private WorkPlace place;
 
 }

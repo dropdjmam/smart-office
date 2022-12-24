@@ -2,12 +2,12 @@ package plugin.atb.booking.mapper;
 
 import org.springframework.stereotype.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 
 @Component
 public class BookingInfoMapper {
 
-    public InfoBookingDto bookingToDto(BookingEntity booking) {
+    public InfoBookingDto bookingToDto(Booking booking) {
         return new InfoBookingDto(
             booking.getId(),
             booking.getMaker().getId(),
@@ -21,7 +21,7 @@ public class BookingInfoMapper {
         );
     }
 
-    public InfoPlaceDto placeToDto(WorkPlaceEntity workPlace) {
+    public InfoPlaceDto placeToDto(WorkPlace workPlace) {
         return new InfoPlaceDto(
             workPlace.getId(),
             workPlace.getType().getName(),
@@ -29,7 +29,7 @@ public class BookingInfoMapper {
         );
     }
 
-    public InfoOfficeDto officeToDto(OfficeEntity office) {
+    public InfoOfficeDto officeToDto(Office office) {
         return new InfoOfficeDto(
             office.getId(),
             office.getCity().getName(),

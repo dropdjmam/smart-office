@@ -3,15 +3,15 @@ package plugin.atb.booking.repository;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 
 @Repository
-public interface FavPlaceRepository extends JpaRepository<FavPlaceEntity, Long> {
+public interface FavPlaceRepository extends JpaRepository<FavPlace, Long> {
 
-    boolean existsByEmployeeAndPlace(EmployeeEntity employee, WorkPlaceEntity place);
+    boolean existsByEmployeeAndPlace(Employee employee, WorkPlace place);
 
-    Page<FavPlaceEntity> findAllByEmployee(EmployeeEntity employee, Pageable pageable);
+    Page<FavPlace> findAllByEmployee(Employee employee, Pageable pageable);
 
-    void deleteByEmployeeAndPlace(EmployeeEntity employee, WorkPlaceEntity place);
+    void deleteByEmployeeAndPlace(Employee employee, WorkPlace place);
 
 }

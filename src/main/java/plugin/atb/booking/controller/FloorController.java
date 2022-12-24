@@ -10,7 +10,7 @@ import org.springframework.data.domain.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
@@ -92,7 +92,7 @@ public class FloorController {
         return ResponseEntity.ok("Этаж успешно удален");
     }
 
-    private OfficeEntity validateOffice(long id) {
+    private Office validateOffice(long id) {
         var office = officeService.getById(id);
         if (office == null) {
             throw new NotFoundException("Не найден офис с id: " + id);

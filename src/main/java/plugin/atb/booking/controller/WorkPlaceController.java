@@ -15,7 +15,7 @@ import org.springframework.format.annotation.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.entity.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
@@ -133,7 +133,7 @@ public class WorkPlaceController {
             dto.getEnd());
 
         var bookedIds = bookedPlaces.stream()
-            .map(WorkPlaceEntity::getId)
+            .map(WorkPlace::getId)
             .collect(Collectors.toSet());
 
         var responseDtos = floorPlaces.stream()
@@ -268,7 +268,7 @@ public class WorkPlaceController {
         return ResponseEntity.ok("Место успешно удалено");
     }
 
-    private FloorEntity validateFloor(long id) {
+    private Floor validateFloor(long id) {
         var floor = floorService.getById(id);
         if (floor == null) {
             throw new NotFoundException("Не найден этаж с id: " + id);
@@ -276,7 +276,7 @@ public class WorkPlaceController {
         return floor;
     }
 
-    private WorkPlaceTypeEntity validateType(long id) {
+    private WorkPlaceType validateType(long id) {
         var type = workPlaceTypeService.getById(id);
         if (type == null) {
             throw new NotFoundException("Не найден тип места с id: " + id);

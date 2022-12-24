@@ -1,15 +1,18 @@
 package plugin.atb.booking.service;
 
+import java.util.*;
+
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
-import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.repository.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TeamService {
 
     private final TeamRepository teamRepository;
@@ -17,7 +20,7 @@ public class TeamService {
     private final TeamMemberService teamMemberService;
 
     @Transactional
-    public void add(TeamEntity team) {
+    public void add(Team team) {
 
         boolean exists = teamRepository.existsByNameAndLeader(
             team.getName(), team.getLeader());
@@ -36,30 +39,31 @@ public class TeamService {
 
         teamRepository.save(team);
 
-        var teamMember = new TeamMemberEntity().setTeam(team).setEmployee(team.getLeader());
+        var teamMember = new TeamMember().setTeam(team).setEmployee(team.getLeader());
         teamMemberService.add(teamMember);
 
     }
 
-    public Page<TeamEntity> getAll(Pageable pageable) {
+    public Page<Team> getAll(Pageable pageable) {
 
         return teamRepository.findAll(pageable);
     }
 
-    public Page<TeamEntity> getAllByName(String name, Pageable pageable) {
+    public Page<Team> getAllByName(String name, Pageable pageable) {
 
         return teamRepository.findAllByName(name, pageable);
     }
 
-    public TeamEntity getById(Long id) {
+    public Team getById(Long id) {
         return teamRepository.findById(id).orElse(null);
     }
 
-    public Page<TeamEntity> getAllByLeaderId(Long leaderId, Pageable pageable) {
+    public Page<Team> getAllByLeaderId(Long leaderId, Pageable pageable) {
         return teamRepository.findAllByLeaderId(leaderId, pageable);
     }
 
-    public void update(TeamEntity team) {
+    @Transactional
+    public void update(Team team) {
 
         if (getById(team.getId()) == null) {
             throw new NotFoundException("Команда не найдена.");
@@ -90,6 +94,14 @@ public class TeamService {
         teamMemberService.deleteAllByTeam(team);
 
         teamRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void delete(Set<Team> teams) {
+
+        teams.forEach(teamMemberService::deleteAllByTeam);
+
+        teamRepository.deleteAll(teams);
     }
 
 }

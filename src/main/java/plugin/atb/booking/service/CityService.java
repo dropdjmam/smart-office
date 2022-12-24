@@ -5,9 +5,10 @@ import java.util.*;
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.entity.*;
 import plugin.atb.booking.exception.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.repository.*;
+import plugin.atb.booking.utils.*;
 
 import static org.springframework.data.domain.Sort.Direction.*;
 
@@ -18,6 +19,12 @@ public class CityService {
     private final CityRepository cityRepository;
 
     public void add(String name) {
+
+        if (name.isBlank()) {
+            throw new IncorrectArgumentException(
+                "Имя города не может быть пустым или состоять только из пробелов");
+        }
+
         boolean exists = cityRepository.existsByName(name);
 
         if (exists) {
@@ -25,48 +32,55 @@ public class CityService {
                 "Город " + name + "уже существует!");
         }
 
-        CityEntity city = new CityEntity();
+        City city = new City();
         city.setName(name);
         cityRepository.save(city);
     }
 
-    public List<CityEntity> getAll() {
+    public List<City> getAll() {
         var sort = Sort.by(ASC, "name");
         return cityRepository.findAll(sort);
     }
 
-    public CityEntity getById(Long id) {
+    public City getById(Long id) {
+        if (id == null) {
+            throw new IncorrectArgumentException("Id не указан");
+        }
+
+        ValidationUtils.checkId(id);
+
         return cityRepository.findById(id).orElse(null);
     }
 
-    public List<CityEntity> getAllByName(String name) {
+    public List<City> getAllByName(String name) {
+
+        if (name.isBlank()) {
+            throw new IncorrectArgumentException(
+                "Имя города не может быть пустым или состоять только из пробелов");
+        }
+
         return cityRepository.findAllByNameContainingOrderByName(name);
     }
 
-    public void update(CityEntity city) {
+    public void update(City city) {
         String newName = city.getName();
 
         boolean exists = cityRepository.existsByName(newName);
-
         if (exists) {
             throw new AlreadyExistsException("Город  " + newName + " уже существует!");
         }
 
-        CityEntity cityUpdate = getById(city.getId());
-
-        if (cityUpdate == null) {
-            throw new NotFoundException("Город  с id " + cityUpdate.getId() + " не найден!");
+        if (getById(city.getId()) == null) {
+            throw new NotFoundException("Город  с id " + city.getId() + " не найден!");
         }
 
-        cityUpdate.setName(newName);
-
-        cityRepository.save(cityUpdate);
+        cityRepository.save(city);
     }
 
     public void delete(Long id) {
 
         if (getById(id) == null) {
-            throw new NotFoundException("Города с id " + id + " не существует");
+            throw new NotFoundException("Город с id " + id + " не найден");
         }
 
         cityRepository.deleteById(id);
