@@ -46,6 +46,10 @@ public class BookingController {
 
     private final ConferenceMemberService conferenceMemberService;
 
+    private final OfficeService officeService;
+
+    private final WorkPlaceTypeService workPlaceTypeService;
+
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Создать бронь места на указанного сотрудника",
@@ -166,9 +170,10 @@ public class BookingController {
         var bookings = page.map(ConferenceMemberEntity::getBooking);
 
         var dtos = bookings.stream()
-            .map(BookingEntity::getId)
             .map(this::getBookingDto)
             .toList();
+
+        log.info("Page of conference place's bookings successfully formed");
 
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
@@ -189,9 +194,10 @@ public class BookingController {
         var page = bookingService.getAllActual(holder, pageable);
 
         var dtos = page.stream()
-            .map(BookingEntity::getId)
             .map(this::getBookingDto)
             .toList();
+
+        log.info("Page of employee's actual bookings successfully formed");
 
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
@@ -209,9 +215,10 @@ public class BookingController {
         var page = bookingService.getAllActual(holder, pageable);
 
         var dtos = page.stream()
-            .map(BookingEntity::getId)
             .map(this::getBookingDto)
             .toList();
+
+        log.info("Page of session user's actual bookings successfully formed");
 
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
@@ -241,6 +248,8 @@ public class BookingController {
                 getOfficeInfo(b)))
             .toList();
 
+        log.info("Page of bookings by place and date/time interval successfully formed");
+
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -255,9 +264,10 @@ public class BookingController {
         var page = bookingService.getAll(pageable);
 
         var dtos = page.stream()
-            .map(BookingEntity::getId)
             .map(this::getBookingDto)
             .toList();
+
+        log.info("Page of all (include deleted) bookings successfully formed");
 
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
@@ -276,9 +286,10 @@ public class BookingController {
         var page = bookingService.getHolderHistory(holder, pageable);
 
         var dtos = page.stream()
-            .map(BookingEntity::getId)
             .map(this::getBookingDto)
             .toList();
+
+        log.info("Page of employee's bookings successfully formed");
 
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
@@ -295,23 +306,66 @@ public class BookingController {
         var page = bookingService.getHolderHistory(holder, pageable);
 
         var dtos = page.stream()
-            .map(BookingEntity::getId)
             .map(this::getBookingDto)
             .toList();
+
+        log.info("Page of session user's actual bookings successfully formed");
+
+        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/office/")
+    @Operation(summary = "Получение страницы броней по офису (включая удаленные)")
+    public Page<BookingGetDto> getAllOfOffice(
+        @RequestParam Long officeId,
+        @RequestParam Long typeId,
+        @Parameter(description = "Параметр отвечает за выборку броней: актуальные - все. " +
+                                 "Параметр не обязателен, дефолтное значение - true.")
+        @RequestParam(required = false, defaultValue = "true") Boolean isActual,
+        @ParameterObject Pageable pageable
+    ) {
+        ValidationUtils.checkId(officeId);
+        ValidationUtils.checkId(typeId);
+        ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
+
+        var office = officeService.getById(officeId);
+        if (office == null) {
+            throw new NotFoundException("Не найден офис с id: " + officeId);
+        }
+
+        var type = workPlaceTypeService.getById(typeId);
+        if (type == null) {
+            throw new NotFoundException("Не найден тип места с id: " + typeId);
+        }
+
+        var page = bookingService.getAllByOffice(office, type, isActual, pageable);
+
+        var dtos = page.stream()
+            .map(this::getBookingDto)
+            .toList();
+
+        log.info("Page of actual/all bookings of office successfully formed");
 
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Получение информации об указанной брони: часть брони + место + офис")
-    public BookingGetDto longBooking(@PathVariable Long id) {
-        return getBookingDto(id);
+    @Operation(summary = "Получение информации об указанной брони")
+    public BookingGetDto getById(@PathVariable Long id) {
+        var booking = bookingService.getById(id);
+        var bookingDto = getBookingDto(booking);
+
+        log.info("Booking successfully found");
+
+        return bookingDto;
     }
 
     @PutMapping("/")
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Изменение указанной брони")
-    public ResponseEntity<String> update(@Valid @RequestBody BookingUpdateDto dto) {
+    public String update(@Valid @RequestBody BookingUpdateDto dto) {
 
         var maker = getSessionUser();
         var holder = validateHolder(dto.getHolderId());
@@ -328,15 +382,20 @@ public class BookingController {
         var booking = bookingMapper.dtoToBooking(dto, holder, maker, place);
         bookingService.update(booking);
 
-        return ResponseEntity.ok("Бронь успешно обновлена");
+        log.info("Booking successfully updated");
+
+        return "Бронь успешно обновлена";
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Удаление указанной брони")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    public String delete(@PathVariable Long id) {
         bookingService.delete(id);
 
-        return ResponseEntity.ok("Бронь успешно удалена");
+        log.info("Bookings successfully deleted");
+
+        return "Бронь успешно удалена";
     }
 
     private EmployeeEntity getSessionUser() {
@@ -347,17 +406,19 @@ public class BookingController {
         );
     }
 
-    private EmployeeEntity validateHolder(Long id) {
+    private EmployeeEntity validateHolder(long id) {
         var holder = employeeService.getById(id);
         if (holder == null) {
+            log.error("Not found a holder of booking by employee id: {}", id);
             throw new NotFoundException("Не найден держатель брони с id: " + id);
         }
         return holder;
     }
 
-    private WorkPlaceEntity validatePlace(Long id) {
+    private WorkPlaceEntity validatePlace(long id) {
         var place = workPlaceService.getById(id);
         if (place == null) {
+            log.error("Not found a place of booking by workPlace id: {}", id);
             throw new NotFoundException("Не найдено место с id: " + id);
         }
         return place;
@@ -366,6 +427,8 @@ public class BookingController {
     private WorkPlaceEntity validatePlaceAndCapacity(long id, int count) {
         var place = validatePlace(id);
         if (count > place.getCapacity()) {
+            log.error("Conflict: count of people for booking {} more than place capacity {}",
+                count, place.getCapacity());
             throw new IncorrectArgumentException(String.format(
                 "Невозможно создать бронь т.к. объем бронирований %s превышает вместимость места %s",
                 count, place.getCapacity()));
@@ -382,6 +445,8 @@ public class BookingController {
             .getAllInPeriod(place, start, end, Pageable.ofSize(1)).isEmpty();
 
         if (!isTimeFree) {
+            log.error("Conflict: cannot add booking — place already booked on this time {}-{}",
+                start, end);
             throw new AlreadyExistsException(String.format(
                 "Невозможно забронировать данное место на данное время: %s - %s",
                 start, end
@@ -392,6 +457,8 @@ public class BookingController {
     private void validateBookingStart(LocalDateTime start) {
         var now = LocalDateTime.now(UTC);
         if (start.isBefore(now)) {
+            log.error("Conflict: count of people for booking {} more than place capacity {}",
+                start, now);
             throw new IncorrectArgumentException(String.format(
                 "Невозможно создать/изменить бронь на прошедший момент времени: %s < %s",
                 start, now));
@@ -402,46 +469,57 @@ public class BookingController {
     private void validateByOfficeWorkTime(WorkPlaceEntity place, LocalTime start, LocalTime end) {
         var floor = place.getFloor();
         if (floor == null) {
+            log.error("Not found floor in place with id: {}", place.getId());
             throw new NotFoundException("Не найден этаж у места с id: " + place.getId());
         }
         var office = floor.getOffice();
         if (office == null) {
+            log.error("Not found office in floor with id: {}, in place with id: {}",
+                floor.getId(), place.getId());
             throw new NotFoundException(String.format(
                 "У этажа с id %s по месту с id %s не найден офис",
                 floor.getId(), place.getId()));
         }
 
         if (office.getStartOfDay() == null) {
+            log.error("Not found work day start of office with id: {}, floor with id: {}, " +
+                      "in place with id: {}", office.getId(), floor.getId(), place.getId());
             throw new NotFoundException(String.format(
                 "У офиса не найдено начало рабочего дня. Id офиса: %s, Id этажа: %s, Id места: %s",
                 office.getId(), floor.getId(), place.getId()));
         }
 
         if (office.getEndOfDay() == null) {
+            log.error("Not found work day end of office with id: {}, floor with id: {}, " +
+                      "in place with id: {}", office.getId(), floor.getId(), place.getId());
             throw new NotFoundException(String.format(
                 "У офиса не найден конец рабочего дня. Id офиса: %s, Id этажа: %s, Id места: %s",
                 office.getId(), floor.getId(), place.getId()));
         }
 
         if (start.isBefore(office.getStartOfDay())) {
-            throw new IncorrectArgumentException(
-                "Начало брони не может быть раньше начала рабочего дня офиса");
+            log.error("Conflict: start of the booking before office work day start: {} < {}",
+                start, office.getStartOfDay());
+            throw new IncorrectArgumentException(String.format(
+                "Начало брони не может быть раньше начала рабочего дня офиса: %s < %s",
+                start, office.getStartOfDay()));
         }
 
         if (end.isAfter(office.getEndOfDay())) {
-            throw new IncorrectArgumentException(
-                "Конец брони не может быть позже конца рабочего дня офиса");
+            log.error("Conflict: end of the booking after office work day end: {} < {}",
+                end, office.getEndOfDay());
+            throw new IncorrectArgumentException(String.format(
+                "Конец брони не может быть позже конца рабочего дня офиса: %s < %s",
+                end, office.getEndOfDay()));
         }
 
     }
 
-    private BookingGetDto getBookingDto(Long id) {
-
-        var booking = bookingService.getById(id);
+    private BookingGetDto getBookingDto(BookingEntity booking) {
 
         var infoBooking = Optional.of(booking)
             .map(infoMapper::bookingToDto)
-            .orElseThrow(() -> new NotFoundException("Не найдена бронь с id: " + id));
+            .orElseThrow(() -> new NotFoundException("Не найдена бронь с id: " + booking.getId()));
 
         var infoPlace = getPlaceInfo(booking);
 

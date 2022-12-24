@@ -8,7 +8,7 @@ import plugin.atb.booking.entity.*;
 @Repository
 public interface AdministrationRepository extends JpaRepository<AdministratingEntity, Long> {
 
-    Page<AdministratingEntity> findAllOfficeById(Long id, Pageable pageable);
+    Page<AdministratingEntity> findAllByEmployeeId(Long id, Pageable pageable);
 
     Page<AdministratingEntity> findAllAdministrationByOfficeId(Long officeId, Pageable pageable);
 

@@ -24,14 +24,14 @@ public class ControllerExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NotFoundException.class)
     @ApiResponse(responseCode = "404", useReturnTypeSchema = true, description = "Объект не найден")
-    public ExceptionDto notFoundExceptionHandler(NotFoundException ex) {
+    public @ResponseBody ExceptionDto notFoundExceptionHandler(NotFoundException ex) {
         return new ExceptionDto(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(AlreadyExistsException.class)
     @ApiResponse(responseCode = "409", useReturnTypeSchema = true, description = "Объект уже существует")
-    public ExceptionDto alreadyExistExceptionHandler(AlreadyExistsException ex) {
+    public @ResponseBody ExceptionDto alreadyExistExceptionHandler(AlreadyExistsException ex) {
         return new ExceptionDto(HttpStatus.CONFLICT, ex.getMessage());
     }
 
@@ -51,13 +51,13 @@ public class ControllerExceptionHandler {
     )
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(IncorrectArgumentException.class)
-    public ExceptionDto incorrectArgumentExceptionHandler(IncorrectArgumentException ex) {
+    public @ResponseBody ExceptionDto incorrectArgumentExceptionHandler(IncorrectArgumentException ex) {
         return new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    ExceptionsDto methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException ex) {
+    @ResponseBody ExceptionsDto methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException ex) {
 
         var errors = ex.getBindingResult().getFieldErrors();
 
@@ -71,7 +71,7 @@ public class ControllerExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    ExceptionDto methodMissingServletRequestParameterExceptionHandler(
+    @ResponseBody ExceptionDto methodMissingServletRequestParameterExceptionHandler(
         MissingServletRequestParameterException ex
     ) {
         return new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage());

@@ -71,6 +71,29 @@ public class BookingService {
         return bookingRepository.findAllByHolderAndIsDeletedIsFalse(holder, pageable);
     }
 
+    public Page<BookingEntity> getAllByOffice(
+        OfficeEntity office,
+        WorkPlaceTypeEntity type,
+        Boolean isActual,
+        Pageable pageable
+    ) {
+        if (office == null) {
+            throw new IncorrectArgumentException("Не указан офис для поиска броней офиса");
+        }
+
+        if (isActual == null) {
+            throw new IncorrectArgumentException(
+                "Не указан масштаб поиска броней офиса - актуальные/все");
+        }
+
+        if (type == null) {
+            throw new IncorrectArgumentException(
+                "Не указан тип места у искомых броней офиса");
+        }
+
+        return bookingRepository.findAllByOffice(office, type, isActual, pageable);
+    }
+
     public BookingEntity getById(Long id) {
 
         if (id == null) {

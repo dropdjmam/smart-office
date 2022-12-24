@@ -45,17 +45,24 @@ public class ProfileController {
                 .getAuthentication()
                 .getName());
 
+        TeamGetDto firstTeam = null;
         var teamMemberPage = teamMemberService.getAllTeamMemberByEmployee(self, Pageable.ofSize(1));
-        var firstTeam = Optional.of(teamMemberPage.getContent().get(0))
-            .map(TeamMemberEntity::getTeam)
-            .map(teamMapper::teamToDto)
-            .orElse(null);
+        if (!teamMemberPage.isEmpty()) {
+            firstTeam = Optional.of(teamMemberPage.getContent().get(0))
+                .map(TeamMemberEntity::getTeam)
+                .map(teamMapper::teamToGetDto)
+                .orElse(null);
+            if (firstTeam == null) {
+                log.debug("Not found Team from {}", teamMemberPage.getContent().get(0));
+            }
+        }
 
-        var booking = bookingService.getAllActual(self, Pageable.ofSize(1)).getContent().get(0);
-
-        if (booking == null) {
+        var bookingPage = bookingService.getAllActual(self, Pageable.ofSize(1));
+        if (bookingPage.isEmpty()) {
             return new ProfileDto(employeeMapper.employeeToDto(self), null, firstTeam);
         }
+
+        var booking = bookingPage.getContent().get(0);
 
         var bookingInfo = bookingInfoMapper.bookingToDto(booking);
 

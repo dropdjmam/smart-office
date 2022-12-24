@@ -41,7 +41,7 @@ public class AdministrationService {
 
     public Page<AdministratingEntity> getAllOfficeById(Long id, Pageable pageable) {
 
-        return administrationRepository.findAllOfficeById(id, pageable);
+        return administrationRepository.findAllByEmployeeId(id, pageable);
     }
 
     public Page<AdministratingEntity> getAllAdministrationByOfficeId(

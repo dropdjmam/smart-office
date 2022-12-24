@@ -16,7 +16,8 @@ public class BookingInfoMapper {
             booking.getHolder().getFullName(),
             booking.getDateTimeOfStart(),
             booking.getDateTimeOfEnd(),
-            booking.getGuests()
+            booking.getGuests(),
+            booking.getIsDeleted()
         );
     }
 

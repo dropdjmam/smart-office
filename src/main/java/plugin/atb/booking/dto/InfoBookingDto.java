@@ -25,4 +25,6 @@ public class InfoBookingDto {
 
     private Integer guests;
 
+    private Boolean isDeleted;
+
 }
