@@ -7,38 +7,33 @@ import plugin.atb.booking.entity.*;
 @Component
 public class BookingInfoMapper {
 
-    public BookingPartInfoDto bookingToDto(BookingEntity booking) {
-        var dto = new BookingPartInfoDto(
+    public InfoBookingDto bookingToDto(BookingEntity booking) {
+        return new InfoBookingDto(
             booking.getId(),
             booking.getMaker().getId(),
             booking.getMaker().getFullName(),
             booking.getHolder().getId(),
             booking.getHolder().getFullName(),
             booking.getDateTimeOfStart(),
-            booking.getDateTimeOfEnd()
+            booking.getDateTimeOfEnd(),
+            booking.getGuests()
         );
-
-        return dto;
     }
 
-    public BookingInfoPlaceDto placeToDto(WorkPlaceEntity workPlace) {
-        var dto = new BookingInfoPlaceDto(
+    public InfoPlaceDto placeToDto(WorkPlaceEntity workPlace) {
+        return new InfoPlaceDto(
             workPlace.getId(),
             workPlace.getType().getName(),
             workPlace.getFloor().getFloorNumber()
         );
-
-        return dto;
     }
 
-    public BookingInfoOfficeDto officeToDto(OfficeEntity office) {
-        var dto = new BookingInfoOfficeDto(
+    public InfoOfficeDto officeToDto(OfficeEntity office) {
+        return new InfoOfficeDto(
             office.getId(),
             office.getCity().getName(),
             office.getAddress()
         );
-
-        return dto;
     }
 
 }

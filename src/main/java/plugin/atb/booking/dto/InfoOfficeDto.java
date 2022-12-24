@@ -5,7 +5,7 @@ import lombok.*;
 @Getter
 @Setter
 @AllArgsConstructor
-public class BookingInfoOfficeDto {
+public class InfoOfficeDto {
 
     private Long officeId;
 

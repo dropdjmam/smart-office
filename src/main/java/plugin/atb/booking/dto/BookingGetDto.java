@@ -1,7 +1,5 @@
 package plugin.atb.booking.dto;
 
-import java.time.*;
-
 import lombok.*;
 
 @Getter
@@ -9,18 +7,10 @@ import lombok.*;
 @AllArgsConstructor
 public class BookingGetDto {
 
-    private Long id;
+    private InfoBookingDto infoBooking;
 
-    private Long holderId;
+    private InfoPlaceDto infoPlace;
 
-    private Long makerId;
-
-    private Long workplaceId;
-
-    private LocalDateTime start;
-
-    private LocalDateTime end;
-
-    private Integer guests;
+    private InfoOfficeDto infoOffice;
 
 }

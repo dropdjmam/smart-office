@@ -13,7 +13,7 @@ public class BookingMapper {
         EmployeeEntity maker,
         WorkPlaceEntity workPlace
     ) {
-        var booking = new BookingEntity()
+        return new BookingEntity()
             .setHolder(holder)
             .setMaker(maker)
             .setWorkPlace(workPlace)
@@ -21,8 +21,6 @@ public class BookingMapper {
             .setDateTimeOfEnd(dto.getEnd())
             .setGuests(dto.getGuests())
             .setIsDeleted(false);
-
-        return booking;
     }
 
     public BookingEntity dtoToBooking(
@@ -31,7 +29,7 @@ public class BookingMapper {
         EmployeeEntity maker,
         WorkPlaceEntity workPlace
     ) {
-        var booking = new BookingEntity()
+        return new BookingEntity()
             .setHolder(holder)
             .setMaker(maker)
             .setWorkPlace(workPlace)
@@ -39,8 +37,6 @@ public class BookingMapper {
             .setDateTimeOfEnd(dto.getEnd())
             .setGuests(dto.getGuests())
             .setIsDeleted(false);
-
-        return booking;
     }
 
     public BookingEntity dtoToBooking(
@@ -49,7 +45,7 @@ public class BookingMapper {
         EmployeeEntity maker,
         WorkPlaceEntity workPlace
     ) {
-        var booking = new BookingEntity()
+        return new BookingEntity()
             .setId(dto.getId())
             .setHolder(holder)
             .setMaker(maker)
@@ -58,24 +54,6 @@ public class BookingMapper {
             .setDateTimeOfEnd(dto.getEnd())
             .setGuests(dto.getGuests())
             .setIsDeleted(false);
-
-        return booking;
-    }
-
-    public BookingGetDto bookingToDto(BookingEntity booking) {
-
-        var dto = new BookingGetDto(
-            booking.getId(),
-            booking.getHolder().getId(),
-            booking.getMaker().getId(),
-            booking.getWorkPlace().getId(),
-            booking.getDateTimeOfStart(),
-            booking.getDateTimeOfEnd(),
-            booking.getGuests()
-        );
-
-        return dto;
-
     }
 
 }

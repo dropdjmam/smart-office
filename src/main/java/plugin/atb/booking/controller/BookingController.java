@@ -1,6 +1,7 @@
 package plugin.atb.booking.controller;
 
 import java.time.*;
+import java.util.*;
 import java.util.stream.*;
 
 import javax.validation.*;
@@ -47,7 +48,7 @@ public class BookingController {
 
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Создание брони/бронирование места на указанного сотрудника",
+    @Operation(summary = "Создать бронь места на указанного сотрудника",
         description = "Все поля обязательны")
     public String createBooking(@Valid @RequestBody BookingCreateDto dto) {
 
@@ -71,7 +72,7 @@ public class BookingController {
 
     @PostMapping("/team")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Создание брони/бронирование места для команды",
+    @Operation(summary = "Создать брони места для команды",
         description = "В контексте данного метода holderId -> id команды, держателем " +
                       "брони назначается лидер команды")
     public String createBookingsForTeam(@Valid @RequestBody BookingCreateDto dto) {
@@ -111,7 +112,7 @@ public class BookingController {
 
     @PostMapping("/group")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Создание брони/бронирование места для указанной группы людей",
+    @Operation(summary = "Создать брони места для указанной группы людей",
         description = "Бронирующий назначается держателем брони. " +
                       "Если бронирующий хочет добавить себя в участники - добавить его id список.")
     public String createBookingsForGroup(@Valid @RequestBody BookingGroupCreateDto dto) {
@@ -164,15 +165,19 @@ public class BookingController {
 
         var bookings = page.map(ConferenceMemberEntity::getBooking);
 
-        var dto = bookings.map(bookingMapper::bookingToDto).toList();
+        var dtos = bookings.stream()
+            .map(BookingEntity::getId)
+            .map(this::getBookingDto)
+            .toList();
 
-        return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
+        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
-    @Operation(summary = "Поиск всех актуальных броней указанного сотрудника",
-        description = "1 <= size <= 20 (default 20)")
     @GetMapping("/allActual")
-    public ResponseEntity<Page<BookingGetDto>> getActualBookings(
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить актуальные брони указанного сотрудника - держателя броней",
+        description = "1 <= size <= 20 (default 20)")
+    public Page<BookingGetDto> getActualBookings(
         @RequestParam Long holderId,
         @ParameterObject Pageable pageable
     ) {
@@ -183,36 +188,39 @@ public class BookingController {
 
         var page = bookingService.getAllActual(holder, pageable);
 
-        var dto = page.stream()
-            .map(bookingMapper::bookingToDto)
+        var dtos = page.stream()
+            .map(BookingEntity::getId)
+            .map(this::getBookingDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
-    @Operation(summary = "Поиск всех своих актуальных броней",
-        description = "1 <= size <= 20 (default 20)")
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/allActualSelf")
-    public ResponseEntity<Page<BookingGetDto>> getSelfActualBookings(
-        @ParameterObject Pageable pageable
-    ) {
+    @Operation(summary = "Получить актуальные брони пользователя сессии - держателя броней",
+        description = "1 <= size <= 20 (default 20)")
+    public Page<BookingGetDto> getSelfActualBookings(@ParameterObject Pageable pageable) {
+
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
 
         var holder = getSessionUser();
 
         var page = bookingService.getAllActual(holder, pageable);
 
-        var dto = page.stream()
-            .map(bookingMapper::bookingToDto)
+        var dtos = page.stream()
+            .map(BookingEntity::getId)
+            .map(this::getBookingDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
     @GetMapping("/allInPeriod")
-    @Operation(summary = "Метод возвращает все брони по месту в указанном периоде времени",
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить брони по месту в указанном периоде времени",
         description = "1 <= size <= 20 (default 20)")
-    public ResponseEntity<Page<BookingGetDto>> getBookingsInPeriod(
+    public Page<BookingGetDto> getBookingsInPeriod(
         @RequestParam Long placeId,
         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm") @RequestParam LocalDateTime start,
         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm") @RequestParam LocalDateTime end,
@@ -224,33 +232,41 @@ public class BookingController {
 
         var page = bookingService.getAllInPeriod(place, start, end, pageable);
 
-        var dto = page.stream()
-            .map(bookingMapper::bookingToDto)
+        var placeInfo = infoMapper.placeToDto(place);
+
+        var dtos = page.stream()
+            .map(b -> new BookingGetDto(
+                infoMapper.bookingToDto(b),
+                placeInfo,
+                getOfficeInfo(b)))
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
     @GetMapping("/all")
-    @Operation(summary = "Метод возвращает все брони (включая удаленные)",
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить все брони (включая удаленные)",
         description = "1 <= size <= 20 (default 20)")
-    public ResponseEntity<Page<BookingGetDto>> getBookings(@ParameterObject Pageable pageable) {
+    public Page<BookingGetDto> getBookings(@ParameterObject Pageable pageable) {
 
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
 
         var page = bookingService.getAll(pageable);
 
-        var dto = page.stream()
-            .map(bookingMapper::bookingToDto)
+        var dtos = page.stream()
+            .map(BookingEntity::getId)
+            .map(this::getBookingDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
     @GetMapping("/allByHolder/{id}")
-    @Operation(summary = "Все брони указанного держателя",
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить брони указанного сотрудника - держателя броней",
         description = "1 <= size <= 20 (default 20)")
-    public ResponseEntity<Page<BookingGetDto>> getSelfBookings(
+    public Page<BookingGetDto> getSelfBookings(
         @PathVariable Long id,
         @ParameterObject Pageable pageable
     ) {
@@ -259,78 +275,38 @@ public class BookingController {
 
         var page = bookingService.getHolderHistory(holder, pageable);
 
-        var dto = page.stream()
-            .map(bookingMapper::bookingToDto)
+        var dtos = page.stream()
+            .map(BookingEntity::getId)
+            .map(this::getBookingDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
     @GetMapping("/allSelf")
-    @Operation(summary = "Все свои (пользователя сессии) брони",
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить брони пользователя сессии - держателя броней",
         description = "1 <= size <= 20 (default 20)")
-    public ResponseEntity<Page<BookingGetDto>> getSelfBookings(@ParameterObject Pageable pageable) {
+    public Page<BookingGetDto> getSelfBookings(@ParameterObject Pageable pageable) {
 
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
         var holder = getSessionUser();
 
         var page = bookingService.getHolderHistory(holder, pageable);
 
-        var dto = page.stream()
-            .map(bookingMapper::bookingToDto)
+        var dtos = page.stream()
+            .map(BookingEntity::getId)
+            .map(this::getBookingDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Получение указанной брони")
-    public ResponseEntity<BookingGetDto> getBookingById(@PathVariable Long id) {
-
-        var booking = bookingService.getById(id);
-        if (booking == null) {
-            throw new NotFoundException("Не найдена бронь с id: " + id);
-        }
-
-        var dto = bookingMapper.bookingToDto(booking);
-
-        return ResponseEntity.ok(dto);
-    }
-
-    @GetMapping("/details/{id}")
-    @Operation(summary = "Получение детальной информации брони: часть брони + место + офис")
-    public ResponseEntity<BookingInfoDto> getBookingInfo(@PathVariable Long id) {
-
-        var booking = bookingService.getById(id);
-        if (booking == null) {
-            throw new NotFoundException("Не найдена бронь с id: " + id);
-        }
-        var bookingDto = infoMapper.bookingToDto(booking);
-
-        var place = booking.getWorkPlace();
-        if (place == null) {
-            throw new NotFoundException("Не найдено место у брони с id: " + id);
-        }
-        var placeDto = infoMapper.placeToDto(place);
-
-        var floor = place.getFloor();
-        if (floor == null) {
-            throw new NotFoundException(String.format(
-                "Не найден этаж у места с id:%s при поиске брони с id:%s",
-                place.getId(), booking.getId()));
-        }
-
-        var office = floor.getOffice();
-        if (office == null) {
-            throw new NotFoundException(String.format(
-                "Не найден офис для этажа с id:%s у места с id:%s при поиске брони с id:%s",
-                floor.getId(), place.getId(), booking.getId()));
-        }
-        var officeDto = infoMapper.officeToDto(office);
-
-        var response = new BookingInfoDto(bookingDto, placeDto, officeDto);
-
-        return ResponseEntity.ok(response);
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получение информации об указанной брони: часть брони + место + офис")
+    public BookingGetDto longBooking(@PathVariable Long id) {
+        return getBookingDto(id);
     }
 
     @PutMapping("/")
@@ -457,6 +433,39 @@ public class BookingController {
                 "Конец брони не может быть позже конца рабочего дня офиса");
         }
 
+    }
+
+    private BookingGetDto getBookingDto(Long id) {
+
+        var booking = bookingService.getById(id);
+
+        var infoBooking = Optional.of(booking)
+            .map(infoMapper::bookingToDto)
+            .orElseThrow(() -> new NotFoundException("Не найдена бронь с id: " + id));
+
+        var infoPlace = getPlaceInfo(booking);
+
+        var infoOffice = getOfficeInfo(booking);
+
+        return new BookingGetDto(infoBooking, infoPlace, infoOffice);
+    }
+
+    private InfoPlaceDto getPlaceInfo(BookingEntity booking) {
+        return Optional.of(booking)
+            .map(BookingEntity::getWorkPlace)
+            .map(infoMapper::placeToDto)
+            .orElseThrow(() -> new NotFoundException("Не найдено место у брони с id: " + booking.getId()));
+    }
+
+    private InfoOfficeDto getOfficeInfo(BookingEntity booking) {
+        return Optional.of(booking)
+            .map(BookingEntity::getWorkPlace)
+            .map(WorkPlaceEntity::getFloor)
+            .map(FloorEntity::getOffice)
+            .map(infoMapper::officeToDto)
+            .orElseThrow(() -> new NotFoundException(String.format(
+                "При поиске от брони с id:%s не был найден офис",
+                booking.getId())));
     }
 
 }

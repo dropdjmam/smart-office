@@ -21,22 +21,18 @@ import plugin.atb.booking.dto.*;
 @ControllerAdvice
 public class ControllerExceptionHandler {
 
-    @ApiResponse(responseCode = "404", useReturnTypeSchema = true, description = "Объект не найден")
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ExceptionDto> notFoundExceptionHandler(NotFoundException ex) {
-
-        var dto = new ExceptionDto(HttpStatus.NOT_FOUND, ex.getMessage());
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(dto);
+    @ApiResponse(responseCode = "404", useReturnTypeSchema = true, description = "Объект не найден")
+    public ExceptionDto notFoundExceptionHandler(NotFoundException ex) {
+        return new ExceptionDto(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ApiResponse(responseCode = "409", useReturnTypeSchema = true, description = "Объект уже существует")
+    @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(AlreadyExistsException.class)
-    public ResponseEntity<ExceptionDto> alreadyExistExceptionHandler(AlreadyExistsException ex) {
-
-        var dto = new ExceptionDto(HttpStatus.CONFLICT, ex.getMessage());
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(dto);
+    @ApiResponse(responseCode = "409", useReturnTypeSchema = true, description = "Объект уже существует")
+    public ExceptionDto alreadyExistExceptionHandler(AlreadyExistsException ex) {
+        return new ExceptionDto(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     @ApiResponse(responseCode = "400",
@@ -53,20 +49,15 @@ public class ControllerExceptionHandler {
             },
             schema = @Schema(oneOf = {ExceptionDto.class, ExceptionsDto.class}))
     )
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(IncorrectArgumentException.class)
-    public @Schema ResponseEntity<ExceptionDto> incorrectArgumentExceptionHandler(
-        IncorrectArgumentException ex
-    ) {
-
-        var dto = new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage());
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dto);
+    public ExceptionDto incorrectArgumentExceptionHandler(IncorrectArgumentException ex) {
+        return new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    @ExceptionHandler
-    ResponseEntity<ExceptionsDto> methodArgumentNotValidExceptionHandler(
-        MethodArgumentNotValidException ex
-    ) {
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    ExceptionsDto methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException ex) {
 
         var errors = ex.getBindingResult().getFieldErrors();
 
@@ -75,29 +66,21 @@ public class ControllerExceptionHandler {
                 FieldError::getField,
                 e -> Objects.requireNonNullElse(e.getDefaultMessage(), "Ошибка валидации")));
 
-        var dto = new ExceptionsDto(HttpStatus.BAD_REQUEST, errorsMap);
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dto);
+        return new ExceptionsDto(HttpStatus.BAD_REQUEST, errorsMap);
     }
 
-    @ExceptionHandler
-    ResponseEntity<ExceptionDto> methodMissingServletRequestParameterExceptionHandler(
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    ExceptionDto methodMissingServletRequestParameterExceptionHandler(
         MissingServletRequestParameterException ex
     ) {
-
-        var dto = new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage());
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dto);
+        return new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    @ExceptionHandler
-    ResponseEntity<ExceptionDto> httpMessageNotReadableExceptionHandler(
-        HttpMessageNotReadableException ex
-    ) {
-
-        var dto = new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage());
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dto);
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ExceptionDto httpMessageNotReadableExceptionHandler(HttpMessageNotReadableException ex) {
+        return new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
 }

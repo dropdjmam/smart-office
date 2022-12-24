@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @AllArgsConstructor
-public class BookingPartInfoDto {
+public class InfoBookingDto {
 
     private Long id;
 
@@ -22,5 +22,7 @@ public class BookingPartInfoDto {
     private LocalDateTime start;
 
     private LocalDateTime end;
+
+    private Integer guests;
 
 }

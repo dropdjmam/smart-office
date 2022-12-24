@@ -1,8 +1,11 @@
 package plugin.atb.booking.controller;
 
+import java.util.*;
+
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
 import org.springframework.security.core.context.*;
@@ -12,6 +15,7 @@ import plugin.atb.booking.entity.*;
 import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/profile")
@@ -22,13 +26,13 @@ public class ProfileController {
 
     private final EmployeeService employeeService;
 
-    private final BookingMapper bookingMapper;
-
     private final BookingService bookingService;
 
     private final TeamMemberService teamMemberService;
 
     private final TeamMapper teamMapper;
+
+    private final BookingInfoMapper bookingInfoMapper;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -41,16 +45,46 @@ public class ProfileController {
                 .getAuthentication()
                 .getName());
 
-        var firstTeam = teamMemberService.getAllTeamMemberByEmployee(self, Pageable.ofSize(1))
+        var teamMemberPage = teamMemberService.getAllTeamMemberByEmployee(self, Pageable.ofSize(1));
+        var firstTeam = Optional.of(teamMemberPage.getContent().get(0))
             .map(TeamMemberEntity::getTeam)
             .map(teamMapper::teamToDto)
-            .getContent().get(0);
+            .orElse(null);
 
-        var firstOwnBooking = bookingService.getAllActual(self, Pageable.ofSize(1))
-            .map(bookingMapper::bookingToDto)
-            .getContent().get(0);
+        var booking = bookingService.getAllActual(self, Pageable.ofSize(1)).getContent().get(0);
 
-        return new ProfileDto(employeeMapper.employeeToDto(self), firstOwnBooking, firstTeam);
+        if (booking == null) {
+            return new ProfileDto(employeeMapper.employeeToDto(self), null, firstTeam);
+        }
+
+        var bookingInfo = bookingInfoMapper.bookingToDto(booking);
+
+        var placeInfo = Optional.of(booking)
+            .map(BookingEntity::getWorkPlace)
+            .map(bookingInfoMapper::placeToDto)
+            .orElse(null);
+
+        if (placeInfo == null) {
+            log.debug("Not found WorkPlace while forming BookingGetDto from {}", booking);
+            return new ProfileDto(employeeMapper.employeeToDto(self), null, firstTeam);
+        }
+
+        var officeInfo = Optional.of(booking)
+            .map(BookingEntity::getWorkPlace)
+            .map(WorkPlaceEntity::getFloor)
+            .map(FloorEntity::getOffice)
+            .map(bookingInfoMapper::officeToDto)
+            .orElse(null);
+
+        if (officeInfo == null) {
+            log.debug("Not found Floor in WorkPlace or Office in Floor while " +
+                      "forming BookingGetDto from {}", booking);
+            return new ProfileDto(employeeMapper.employeeToDto(self), null, firstTeam);
+        }
+
+        var firstBooking = new BookingGetDto(bookingInfo, placeInfo, officeInfo);
+        log.info("Profile successfully formed");
+        return new ProfileDto(employeeMapper.employeeToDto(self), firstBooking, firstTeam);
     }
 
 }
