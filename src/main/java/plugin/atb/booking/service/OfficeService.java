@@ -3,8 +3,9 @@ package plugin.atb.booking.service;
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.model.*;
+import org.springframework.transaction.annotation.*;
 import plugin.atb.booking.exception.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.repository.*;
 import plugin.atb.booking.utils.*;
 
@@ -14,6 +15,11 @@ public class OfficeService {
 
     private final OfficeRepository officeRepository;
 
+    private final AdministratingService administratingService;
+
+    private final FloorService floorService;
+
+    @Transactional
     public Long add(Office office) {
 
         boolean exists = officeRepository.existsByAddress(office.getAddress());
@@ -54,6 +60,7 @@ public class OfficeService {
         return officeRepository.findAllByAddressContaining(address, pageable);
     }
 
+    @Transactional
     public void update(Office office) {
 
         if (getById(office.getId()) == null) {
@@ -65,13 +72,20 @@ public class OfficeService {
         officeRepository.save(office);
     }
 
+    @Transactional
     public void delete(Long id) {
 
-        if (getById(id) == null) {
+        var office = getById(id);
+
+        if (office == null) {
             throw new NotFoundException("Не найден офис с id: " + id);
         }
 
-        ValidationUtils.checkId(id);
+        var administratings = administratingService.getAllByOfficeId(id, Pageable.unpaged());
+        administratingService.deleteAll(administratings.getContent());
+
+        var floors = floorService.getAllByOffice(office,Pageable.unpaged());
+        floorService.deleteAll(floors.getContent());
 
         officeRepository.deleteById(id);
     }

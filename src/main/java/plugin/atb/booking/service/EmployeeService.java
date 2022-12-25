@@ -23,6 +23,8 @@ public class EmployeeService {
 
     private final TeamMemberService teamMemberService;
 
+    private final BookingService bookingService;
+
     @Transactional
     public void add(Employee employee) {
 
@@ -119,8 +121,10 @@ public class EmployeeService {
                 .map(TeamMember::getTeam)
                 .collect(Collectors.toSet());
             teams.removeIf(t -> !Objects.equals(t.getLeader().getId(), id));
-            teamService.delete(teams);
+            teamService.deleteAll(teams);
         }
+
+        bookingService.deleteAllByHolder(employee);
 
         employeeRepository.delete(employee);
     }

@@ -6,6 +6,7 @@ import static java.time.ZoneOffset.*;
 
 import lombok.*;
 import org.springframework.data.domain.*;
+import org.springframework.data.util.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
 import plugin.atb.booking.exception.*;
@@ -146,12 +147,40 @@ public class BookingService {
 
         var conferenceMembers = conferenceMemberService.getAllByBookingId(id, Pageable.unpaged());
         if (!conferenceMembers.isEmpty()) {
-            conferenceMemberService.delete(conferenceMembers.getContent());
+            conferenceMemberService.deleteAll(conferenceMembers.getContent());
         }
 
         booking.setIsDeleted(true);
 
         bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public void deleteAllByWorkplace(WorkPlace place) {
+
+        var deletedBookings = bookingRepository.deleteAllByWorkPlace(place);
+
+        var conferenceMembers = deletedBookings.stream()
+            .map(b -> conferenceMemberService.getAllByBookingId(b.getId(), Pageable.unpaged()))
+            .flatMap(Streamable::get)
+            .toList();
+        if (!conferenceMembers.isEmpty()) {
+            conferenceMemberService.deleteAll(conferenceMembers);
+        }
+
+    }
+
+    @Transactional
+    public void deleteAllByHolder(Employee holder) {
+        var deletedBookings = bookingRepository.deleteAllByHolder(holder);
+
+        var conferenceMembers = deletedBookings.stream()
+            .map(b -> conferenceMemberService.getAllByBookingId(b.getId(), Pageable.unpaged()))
+            .flatMap(Streamable::get)
+            .toList();
+        if (!conferenceMembers.isEmpty()) {
+            conferenceMemberService.deleteAll(conferenceMembers);
+        }
     }
 
     private void validate(Booking booking) {

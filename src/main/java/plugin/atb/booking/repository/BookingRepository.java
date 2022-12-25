@@ -1,15 +1,28 @@
 package plugin.atb.booking.repository;
 
 import java.time.*;
+import java.util.*;
 
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.*;
+import org.springframework.lang.*;
 import org.springframework.stereotype.*;
+import org.springframework.transaction.annotation.*;
 import plugin.atb.booking.model.*;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
+
+    @Modifying
+    @Transactional
+    @Query("update Booking b set b.isDeleted = true, b.workPlace = null where b.workPlace = ?1")
+    Set<Booking> deleteAllByWorkPlace(@NonNull WorkPlace workPlace);
+
+    @Modifying
+    @Transactional
+    @Query("update Booking b set b.isDeleted = true, b.holder = null where b.holder = ?1")
+    Set<Booking> deleteAllByHolder(@NonNull Employee holder);
 
     Page<Booking> findAllByHolderAndIsDeletedIsFalse(
         Employee holder,

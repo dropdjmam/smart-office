@@ -11,6 +11,8 @@ public class OfficeGetDto {
 
     private Long id;
 
+    private Long cityId;
+
     private String cityName;
 
     private String address;

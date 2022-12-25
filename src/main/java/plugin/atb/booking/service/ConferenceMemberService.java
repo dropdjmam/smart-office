@@ -94,7 +94,7 @@ public class ConferenceMemberService {
     }
 
     @Transactional
-    public void delete(List<ConferenceMember> conferenceMembers) {
+    public void deleteAll(List<ConferenceMember> conferenceMembers) {
         conferenceMemberRepository.deleteAll(conferenceMembers);
     }
 

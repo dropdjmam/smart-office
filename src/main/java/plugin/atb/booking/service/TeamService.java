@@ -97,7 +97,7 @@ public class TeamService {
     }
 
     @Transactional
-    public void delete(Set<Team> teams) {
+    public void deleteAll(Set<Team> teams) {
 
         teams.forEach(teamMemberService::deleteAllByTeam);
 

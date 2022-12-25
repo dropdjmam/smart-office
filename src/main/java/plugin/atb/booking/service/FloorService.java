@@ -1,10 +1,14 @@
 package plugin.atb.booking.service;
 
+import java.util.*;
+
 import lombok.*;
 import org.springframework.data.domain.*;
+import org.springframework.data.util.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.model.*;
+import org.springframework.transaction.annotation.*;
 import plugin.atb.booking.exception.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.repository.*;
 import plugin.atb.booking.utils.*;
 
@@ -14,6 +18,9 @@ public class FloorService {
 
     private final FloorRepository floorRepository;
 
+    private final WorkPlaceService workPlaceService;
+
+    @Transactional
     public Long add(Floor floor) {
 
         validate(floor);
@@ -49,6 +56,7 @@ public class FloorService {
         return floorRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public void update(Floor floor) {
 
         ValidationUtils.checkId(floor.getId());
@@ -66,13 +74,32 @@ public class FloorService {
         floorRepository.save(floor);
     }
 
+    @Transactional
     public void delete(Long id) {
 
-        if (getById(id) == null) {
+        var floor = getById(id);
+
+        if (floor == null) {
             throw new NotFoundException("Не найден этаж с id: " + id);
         }
 
+        var places = workPlaceService.getPageByFloor(floor, Pageable.unpaged());
+        workPlaceService.deleteAll(places.getContent());
+
         floorRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteAll(List<Floor> floors) {
+
+        var places = floors.stream()
+            .map(f -> workPlaceService.getPageByFloor(f, Pageable.unpaged()))
+            .flatMap(Streamable::get)
+            .toList();
+
+        workPlaceService.deleteAll(places);
+
+        floorRepository.deleteAll(floors);
     }
 
     private void validate(Floor floor) {

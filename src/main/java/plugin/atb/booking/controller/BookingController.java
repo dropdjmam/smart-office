@@ -19,9 +19,9 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
@@ -76,7 +76,7 @@ public class BookingController {
 
     @PostMapping("/team")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Создать брони места для команды",
+    @Operation(summary = "Создать бронь места (переговорки) для команды",
         description = "В контексте данного метода holderId -> id команды, держателем " +
                       "брони назначается лидер команды")
     public String createBookingForTeam(@Valid @RequestBody BookingCreateDto dto) {
@@ -116,7 +116,7 @@ public class BookingController {
 
     @PostMapping("/group")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Создать брони места для указанной группы людей",
+    @Operation(summary = "Создать бронь места (переговорки) для указанной группы людей",
         description = "Бронирующий назначается держателем брони. " +
                       "Если бронирующий хочет добавить себя в участники - добавить его id список.")
     public String createBookingForGroup(@Valid @RequestBody BookingGroupCreateDto dto) {
@@ -264,7 +264,7 @@ public class BookingController {
         var page = bookingService.getAll(pageable);
 
         var dtos = page.stream()
-            .map(this::getBookingDto)
+            .map(this::getBookingDtoIncludingDeleted)
             .toList();
 
         log.info("Page of all (include deleted) bookings successfully formed");
@@ -342,7 +342,7 @@ public class BookingController {
         var page = bookingService.getAllByOffice(office, type, isActual, pageable);
 
         var dtos = page.stream()
-            .map(this::getBookingDto)
+            .map(this::getBookingDtoIncludingDeleted)
             .toList();
 
         log.info("Page of actual/all bookings of office successfully formed");
@@ -519,11 +519,36 @@ public class BookingController {
 
         var infoBooking = Optional.of(booking)
             .map(infoMapper::bookingToDto)
-            .orElseThrow(() -> new NotFoundException("Не найдена бронь с id: " + booking.getId()));
+            .orElseThrow(() -> new IncorrectArgumentException("Не указана бронь"));
 
         var infoPlace = getPlaceInfo(booking);
 
         var infoOffice = getOfficeInfo(booking);
+
+        return new BookingGetDto(infoBooking, infoPlace, infoOffice);
+    }
+
+    private BookingGetDto getBookingDtoIncludingDeleted(Booking booking) {
+
+        var infoBooking = Optional.of(booking)
+            .map(infoMapper::bookingToDto)
+            .orElse(null);
+
+        if (infoBooking == null) {
+            return null;
+        }
+
+        var infoPlace = Optional.of(booking)
+            .map(Booking::getWorkPlace)
+            .map(infoMapper::placeToDto)
+            .orElse(null);
+
+        var infoOffice = Optional.of(booking)
+            .map(Booking::getWorkPlace)
+            .map(WorkPlace::getFloor)
+            .map(Floor::getOffice)
+            .map(infoMapper::officeToDto)
+            .orElse(null);
 
         return new BookingGetDto(infoBooking, infoPlace, infoOffice);
     }

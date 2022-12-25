@@ -26,10 +26,10 @@ public class ImageController {
 
     private final EmployeeService employeeService;
 
+    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Загрузка изображения - размер одного файла: max 10Мб")
     @PostMapping(value = "/", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<String> uploadImage(@RequestParam MultipartFile multipartImage)
-        throws Exception {
+    public String uploadImage(@RequestParam MultipartFile multipartImage) throws Exception {
 
         var image = imageMapper.dtoToImage(multipartImage);
         if (image == null) {
@@ -37,18 +37,15 @@ public class ImageController {
         }
         imageService.add(image);
 
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .build();
+        return "Изображение успешно загружено";
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Сотрудник: Загрузка изображения - размер одного файла: max 10Мб")
-    @PostMapping(value = "/employee", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<String> uploadEmployeeImage(
-        @RequestParam Long employeeId,
-        @RequestParam MultipartFile multipartImage
-    )
-        throws Exception {
+    @PostMapping(value = "/employee/{employeeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public String uploadEmployeeImage(
+        @PathVariable Long employeeId, @RequestParam MultipartFile multipartImage
+    ) throws Exception {
 
         var image = imageMapper.dtoToImage(multipartImage);
         if (image == null) {
@@ -59,23 +56,25 @@ public class ImageController {
             throw new NotFoundException("Не найден сотрудник с id: " + employeeId);
         }
 
-        employee.setPhoto(image);
-        imageService.add(image);
+        var newImage = imageService.add(image);
+        var oldImage = employee.getPhoto();
+
+        employee.setPhoto(newImage);
         employeeService.update(employee);
 
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .build();
+        if (oldImage != null) {
+            imageService.delete(image.getId());
+        }
+
+        return "Фотография пользователя успешно загружена";
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Этаж: Загрузка изображения - размер одного файла: max 10Мб")
-    @PostMapping(value = "/floor", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<String> uploadFloorImage(
-        @RequestParam Long floorId,
-        @RequestParam MultipartFile multipartImage
-    )
-        throws Exception {
-
+    @PostMapping(value = "/floor/{floorId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public String uploadFloorImage(
+        @PathVariable Long floorId, @RequestParam MultipartFile multipartImage
+    ) throws Exception {
         var image = imageMapper.dtoToImage(multipartImage);
         if (image == null) {
             throw new NotFoundException("Изображение не найдено");
@@ -85,13 +84,17 @@ public class ImageController {
             throw new NotFoundException("Не найден этаж с id: " + floorId);
         }
 
-        floor.setMapFloor(image);
-        imageService.add(image);
+        var newImage = imageService.add(image);
+        var oldImage = floor.getMapFloor();
+
+        floor.setMapFloor(newImage);
         floorService.update(floor);
 
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .build();
+        if (oldImage != null) {
+            imageService.delete(oldImage.getId());
+        }
+
+        return "Карта этажа успешно загружена";
     }
 
     @Operation(summary = "Получение изображения")

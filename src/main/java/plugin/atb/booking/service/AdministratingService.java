@@ -5,8 +5,9 @@ import java.util.*;
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.model.*;
+import org.springframework.transaction.annotation.*;
 import plugin.atb.booking.exception.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.repository.*;
 import plugin.atb.booking.utils.*;
 
@@ -16,6 +17,7 @@ public class AdministratingService {
 
     private final AdministratingRepository administratingRepository;
 
+    @Transactional
     public void add(Administrating administrating) {
         if (administrating.getOffice() == null) {
             throw new IncorrectArgumentException("Офис не указан");
@@ -76,6 +78,7 @@ public class AdministratingService {
         return administratingRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
 
         if (getById(id) == null) {
@@ -84,6 +87,11 @@ public class AdministratingService {
         }
 
         administratingRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteAll(List<Administrating> administratings) {
+        administratingRepository.deleteAll(administratings);
     }
 
 }

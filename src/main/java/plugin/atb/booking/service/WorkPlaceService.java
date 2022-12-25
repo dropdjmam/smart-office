@@ -6,8 +6,9 @@ import java.util.*;
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
-import plugin.atb.booking.model.*;
+import org.springframework.transaction.annotation.*;
 import plugin.atb.booking.exception.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.repository.*;
 import plugin.atb.booking.utils.*;
 
@@ -17,6 +18,8 @@ public class WorkPlaceService {
 
     private final WorkPlaceRepository workPlaceRepository;
 
+    private final BookingService bookingService;
+
     public Long add(WorkPlace workPlace) {
 
         validate(workPlace);
@@ -25,10 +28,10 @@ public class WorkPlaceService {
     }
 
     public Integer countPlacesByTypeAndFloor(WorkPlaceType type, Floor floor) {
-        if(type == null ){
+        if (type == null) {
             throw new IncorrectArgumentException("Не указан тип места");
         }
-        return workPlaceRepository.countAllByTypeAndFloor(type,floor);
+        return workPlaceRepository.countAllByTypeAndFloor(type, floor);
     }
 
     public Page<WorkPlace> getPage(Pageable pageable) {
@@ -113,13 +116,26 @@ public class WorkPlaceService {
         workPlaceRepository.save(workPlace);
     }
 
+    @Transactional
     public void delete(Long id) {
 
-        if (getById(id) == null) {
+        var place = getById(id);
+
+        if (place == null) {
             throw new NotFoundException("Не найдено место с id: " + id);
         }
 
+        bookingService.deleteAllByWorkplace(place);
+
         workPlaceRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteAll(List<WorkPlace> places) {
+
+        places.forEach(bookingService::deleteAllByWorkplace);
+
+        workPlaceRepository.deleteAll(places);
     }
 
     private void validate(WorkPlace workPlace) {

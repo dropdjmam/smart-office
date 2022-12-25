@@ -10,6 +10,7 @@ public class OfficeMapper {
     public OfficeGetDto officeToDto(Office office) {
         return new OfficeGetDto(
             office.getId(),
+            office.getCity().getId(),
             office.getCity().getName(),
             office.getAddress(),
             office.getWorkNumber(),
