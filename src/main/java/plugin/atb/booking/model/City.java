@@ -4,8 +4,10 @@ import javax.persistence.*;
 
 import lombok.*;
 
-@Data
 @Entity
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "cities")
@@ -17,5 +19,8 @@ public class City {
     private Long id;
 
     private String name;
+
+    @Column(name = "zone_id", nullable = false, columnDefinition = "VARCHAR(255) default 'UTC'")
+    private String zoneId;
 
 }

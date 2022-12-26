@@ -15,9 +15,9 @@ import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
 
 @RestController
-@Tag(name = "Город")
 @RequiredArgsConstructor
 @RequestMapping("/city")
+@Tag(name = "Город", description = "Наименование и тайм зона города")
 public class CityController {
 
     private final CityService cityService;
@@ -27,8 +27,8 @@ public class CityController {
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Добавление города")
-    public String createCity(@RequestParam String name) {
-        cityService.add(name);
+    public String createCity(@RequestParam String name, @RequestParam String zoneId) {
+        cityService.add(name, zoneId);
 
         return "Город " + name + "успешно добавлен";
     }

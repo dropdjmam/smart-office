@@ -5,11 +5,15 @@ import java.util.*;
 
 import javax.validation.constraints.*;
 
+import io.swagger.v3.oas.annotations.media.*;
 import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
+@Schema(example = "{\"holderIds\": [1,2],\"workPlaceId\": 1," +
+                  "\"start\":\"2022-12-25T14:00:00.000+10:00[Asia/Vladivostok]\"," +
+                  "\"end\": \"2022-12-25T18:00:00.000+10:00[Asia/Vladivostok]\",\"guests\": 0}")
 public class BookingGroupCreateDto {
 
     @Size(min = 2, max = 20,
@@ -25,10 +29,10 @@ public class BookingGroupCreateDto {
     private Long workPlaceId;
 
     @NotNull(message = "Не указано начало интервала")
-    private LocalDateTime start;
+    private ZonedDateTime start;
 
     @NotNull(message = "Не указан конец интервала")
-    private LocalDateTime end;
+    private ZonedDateTime end;
 
     @NotNull(message = "Не указано количество гостей")
     @Min(value = 0, message = "Количество гостей не может быть меньше 0")

@@ -1,5 +1,6 @@
 package plugin.atb.booking.controller;
 
+import java.time.*;
 import java.util.*;
 
 import io.swagger.v3.oas.annotations.*;
@@ -11,8 +12,8 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.model.*;
 import plugin.atb.booking.mapper.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.service.*;
 
 @Slf4j
@@ -64,8 +65,6 @@ public class ProfileController {
 
         var booking = bookingPage.getContent().get(0);
 
-        var bookingInfo = bookingInfoMapper.bookingToDto(booking);
-
         var placeInfo = Optional.of(booking)
             .map(Booking::getWorkPlace)
             .map(bookingInfoMapper::placeToDto)
@@ -88,6 +87,10 @@ public class ProfileController {
                       "forming BookingGetDto from {}", booking);
             return new ProfileDto(employeeMapper.employeeToDto(self), null, firstTeam);
         }
+
+        var bookingInfo = bookingInfoMapper.bookingToDto(
+            booking,
+            ZoneId.of(officeInfo.getZoneId()));
 
         var firstBooking = new BookingGetDto(bookingInfo, placeInfo, officeInfo);
         log.info("Profile successfully formed");

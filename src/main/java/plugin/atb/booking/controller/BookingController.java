@@ -28,8 +28,10 @@ import plugin.atb.booking.utils.*;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Бронирования")
 @RequestMapping("/booking")
+@Tag(name = "Бронирования",
+    description = "Интервал брони принимается в ZonedDateTime по тайм зоне офиса, хранится в UTC и " +
+                  "возвращается в LocalDateTime перерасчитанном под тайм зону соответствующего офиса")
 public class BookingController {
 
     private final EmployeeService employeeService;
@@ -118,7 +120,7 @@ public class BookingController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Создать бронь места (переговорки) для указанной группы людей",
         description = "Бронирующий назначается держателем брони. " +
-                      "Если бронирующий хочет добавить себя в участники - добавить его id список.")
+                      "Если бронирующий хочет добавить себя в участники - добавить его id в список.")
     public String createBookingForGroup(@Valid @RequestBody BookingGroupCreateDto dto) {
 
         var makerSameHolder = getSessionUser();
@@ -237,13 +239,22 @@ public class BookingController {
 
         var place = validatePlace(placeId);
 
+        var zoneId = Optional.of(place)
+            .map(WorkPlace::getFloor)
+            .map(Floor::getOffice)
+            .map(Office::getCity)
+            .map(City::getZoneId)
+            .map(ZoneId::of)
+            .orElseThrow(() -> new IncorrectArgumentException(
+                "Не удалось вывести тайм зону для броней места с id: " + placeId));
+
         var page = bookingService.getAllInPeriod(place, start, end, pageable);
 
         var placeInfo = infoMapper.placeToDto(place);
 
         var dtos = page.stream()
             .map(b -> new BookingGetDto(
-                infoMapper.bookingToDto(b),
+                infoMapper.bookingToDto(b, zoneId),
                 placeInfo,
                 getOfficeInfo(b)))
             .toList();
@@ -438,11 +449,14 @@ public class BookingController {
 
     private void validateIsAlreadyBooked(
         WorkPlace place,
-        LocalDateTime start,
-        LocalDateTime end
+        ZonedDateTime start,
+        ZonedDateTime end
     ) {
+        var utcStart = start.withZoneSameInstant(UTC).toLocalDateTime();
+        var utcEnd = end.withZoneSameInstant(UTC).toLocalDateTime();
+
         boolean isTimeFree = bookingService
-            .getAllInPeriod(place, start, end, Pageable.ofSize(1)).isEmpty();
+            .getAllInPeriod(place, utcStart, utcEnd, Pageable.ofSize(1)).isEmpty();
 
         if (!isTimeFree) {
             log.error("Conflict: cannot add booking — place already booked on this time {}-{}",
@@ -454,8 +468,8 @@ public class BookingController {
         }
     }
 
-    private void validateBookingStart(LocalDateTime start) {
-        var now = LocalDateTime.now(UTC);
+    private void validateBookingStart(ZonedDateTime start) {
+        var now = ZonedDateTime.now(start.getZone());
         if (start.isBefore(now)) {
             log.error("Conflict: count of people for booking {} more than place capacity {}",
                 start, now);
@@ -517,26 +531,19 @@ public class BookingController {
 
     private BookingGetDto getBookingDto(Booking booking) {
 
-        var infoBooking = Optional.of(booking)
-            .map(infoMapper::bookingToDto)
-            .orElseThrow(() -> new IncorrectArgumentException("Не указана бронь"));
-
         var infoPlace = getPlaceInfo(booking);
 
         var infoOffice = getOfficeInfo(booking);
+
+        var infoBooking = Optional.of(booking)
+            .map(b -> infoMapper.bookingToDto(b, ZoneId.of(infoOffice.getZoneId())))
+            .orElseThrow(() -> new IncorrectArgumentException(
+                "Найденная бронь пуста (null). Невозможно сформировать ответ к запросу."));
 
         return new BookingGetDto(infoBooking, infoPlace, infoOffice);
     }
 
     private BookingGetDto getBookingDtoIncludingDeleted(Booking booking) {
-
-        var infoBooking = Optional.of(booking)
-            .map(infoMapper::bookingToDto)
-            .orElse(null);
-
-        if (infoBooking == null) {
-            return null;
-        }
 
         var infoPlace = Optional.of(booking)
             .map(Booking::getWorkPlace)
@@ -549,6 +556,16 @@ public class BookingController {
             .map(Floor::getOffice)
             .map(infoMapper::officeToDto)
             .orElse(null);
+
+        var zoneId = Optional.ofNullable(infoOffice)
+            .map(InfoOfficeDto::getZoneId)
+            .map(ZoneId::of)
+            .orElse(UTC);
+
+        var infoBooking = Optional.of(booking)
+            .map(b -> infoMapper.bookingToDto(b, zoneId))
+            .orElseThrow(() -> new IncorrectArgumentException(
+                "Найденная бронь пуста (null). Невозможно сформировать ответ к запросу."));
 
         return new BookingGetDto(infoBooking, infoPlace, infoOffice);
     }

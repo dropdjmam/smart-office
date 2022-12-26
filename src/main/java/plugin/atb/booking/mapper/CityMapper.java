@@ -9,11 +9,11 @@ import plugin.atb.booking.model.*;
 public class CityMapper {
 
     public CityDto cityToDto(City city) {
-        return new CityDto(city.getId(), city.getName());
+        return new CityDto(city.getId(), city.getName(), city.getZoneId());
     }
 
     public City dtoToCity(CityDto dto) {
-        return new City(dto.getId(), dto.getName());
+        return new City(dto.getId(), dto.getName(), dto.getZoneId());
     }
 
 }

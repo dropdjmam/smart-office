@@ -11,6 +11,8 @@ public class InfoOfficeDto {
 
     private String city;
 
+    private String zoneId;
+
     private String address;
 
 }

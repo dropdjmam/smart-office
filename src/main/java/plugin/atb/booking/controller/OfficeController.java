@@ -16,9 +16,10 @@ import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
 @RestController
-@Tag(name = "Офис")
 @RequiredArgsConstructor
 @RequestMapping("/office")
+@Tag(name = "Офис", description = "Интервал работы офиса принимается и хранится в LocalTime " +
+                                  "в соответствии с тайм зоной города, в котором находится.")
 public class OfficeController {
 
     private final OfficeService officeService;

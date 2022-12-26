@@ -1,5 +1,7 @@
 package plugin.atb.booking.mapper;
 
+import static java.time.ZoneOffset.*;
+
 import org.springframework.stereotype.*;
 import plugin.atb.booking.dto.*;
 import plugin.atb.booking.model.*;
@@ -17,8 +19,8 @@ public class BookingMapper {
             .setHolder(holder)
             .setMaker(maker)
             .setWorkPlace(workPlace)
-            .setDateTimeOfStart(dto.getStart())
-            .setDateTimeOfEnd(dto.getEnd())
+            .setDateTimeOfStart(dto.getStart().withZoneSameInstant(UTC).toLocalDateTime())
+            .setDateTimeOfEnd(dto.getEnd().withZoneSameInstant(UTC).toLocalDateTime())
             .setGuests(dto.getGuests())
             .setIsDeleted(false);
     }
@@ -33,8 +35,8 @@ public class BookingMapper {
             .setHolder(holder)
             .setMaker(maker)
             .setWorkPlace(workPlace)
-            .setDateTimeOfStart(dto.getStart())
-            .setDateTimeOfEnd(dto.getEnd())
+            .setDateTimeOfStart(dto.getStart().withZoneSameInstant(UTC).toLocalDateTime())
+            .setDateTimeOfEnd(dto.getEnd().withZoneSameInstant(UTC).toLocalDateTime())
             .setGuests(dto.getGuests())
             .setIsDeleted(false);
     }
@@ -50,8 +52,8 @@ public class BookingMapper {
             .setHolder(holder)
             .setMaker(maker)
             .setWorkPlace(workPlace)
-            .setDateTimeOfStart(dto.getStart())
-            .setDateTimeOfEnd(dto.getEnd())
+            .setDateTimeOfStart(dto.getStart().withZoneSameInstant(UTC).toLocalDateTime())
+            .setDateTimeOfEnd(dto.getEnd().withZoneSameInstant(UTC).toLocalDateTime())
             .setGuests(dto.getGuests())
             .setIsDeleted(false);
     }

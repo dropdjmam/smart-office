@@ -1,5 +1,6 @@
 package plugin.atb.booking.service;
 
+import java.time.*;
 import java.util.*;
 
 import lombok.*;
@@ -18,15 +19,11 @@ public class CityService {
 
     private final CityRepository cityRepository;
 
-    public void add(String name) {
+    public void add(String name, String zoneId) {
 
-        if (name.isBlank()) {
-            throw new IncorrectArgumentException(
-                "Имя города не может быть пустым или состоять только из пробелов");
-        }
+        validate(name, zoneId);
 
         boolean exists = cityRepository.existsByName(name);
-
         if (exists) {
             throw new AlreadyExistsException(
                 "Город " + name + "уже существует!");
@@ -63,16 +60,12 @@ public class CityService {
     }
 
     public void update(City city) {
-        String newName = city.getName();
-
-        boolean exists = cityRepository.existsByName(newName);
-        if (exists) {
-            throw new AlreadyExistsException("Город  " + newName + " уже существует!");
-        }
 
         if (getById(city.getId()) == null) {
             throw new NotFoundException("Город  с id " + city.getId() + " не найден!");
         }
+
+        validate(city.getName(), city.getZoneId());
 
         cityRepository.save(city);
     }
@@ -84,6 +77,26 @@ public class CityService {
         }
 
         cityRepository.deleteById(id);
+    }
+
+    private void validate(String name, String zoneId) {
+        if (name.isBlank()) {
+            throw new IncorrectArgumentException(
+                "Имя города не может быть пустым или состоять только из пробелов");
+        }
+
+        if (zoneId.isBlank()) {
+            throw new IncorrectArgumentException(
+                "Строка с тайм зоной не может быть пустой или состоять только из пробелов");
+        }
+
+        try {
+            ZoneId.of(zoneId);
+        } catch (DateTimeException e) {
+            throw new IncorrectArgumentException(
+                "Неверный формат или значение тайм зоны, пример: [Asia/Vladivostok]");
+        }
+
     }
 
 }

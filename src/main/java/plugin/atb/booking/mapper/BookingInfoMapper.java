@@ -1,5 +1,7 @@
 package plugin.atb.booking.mapper;
 
+import java.time.*;
+
 import org.springframework.stereotype.*;
 import plugin.atb.booking.dto.*;
 import plugin.atb.booking.model.*;
@@ -7,15 +9,15 @@ import plugin.atb.booking.model.*;
 @Component
 public class BookingInfoMapper {
 
-    public InfoBookingDto bookingToDto(Booking booking) {
+    public InfoBookingDto bookingToDto(Booking booking, ZoneId zoneId) {
         return new InfoBookingDto(
             booking.getId(),
             booking.getMaker().getId(),
             booking.getMaker().getFullName(),
             booking.getHolder().getId(),
             booking.getHolder().getFullName(),
-            booking.getDateTimeOfStart(),
-            booking.getDateTimeOfEnd(),
+            booking.getDateTimeOfStart().atZone(zoneId).toLocalDateTime(),
+            booking.getDateTimeOfEnd().atZone(zoneId).toLocalDateTime(),
             booking.getGuests(),
             booking.getIsDeleted()
         );
@@ -33,6 +35,7 @@ public class BookingInfoMapper {
         return new InfoOfficeDto(
             office.getId(),
             office.getCity().getName(),
+            office.getCity().getZoneId(),
             office.getAddress()
         );
     }

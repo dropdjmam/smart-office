@@ -16,4 +16,7 @@ public class CityDto {
     @NotBlank(message = "Имя города не может быть пустым или состоять только из пробелов")
     private String name;
 
+    @NotBlank(message = "Строка тайм зоны не может быть пустой или состоять только из пробелов")
+    private String zoneId;
+
 }
