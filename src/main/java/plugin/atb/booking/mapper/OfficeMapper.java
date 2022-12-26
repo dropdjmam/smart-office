@@ -12,6 +12,7 @@ public class OfficeMapper {
             office.getId(),
             office.getCity().getId(),
             office.getCity().getName(),
+            office.getCity().getZoneId(),
             office.getAddress(),
             office.getWorkNumber(),
             office.getStartOfDay(),

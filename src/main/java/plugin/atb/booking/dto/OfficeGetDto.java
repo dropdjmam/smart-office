@@ -15,6 +15,8 @@ public class OfficeGetDto {
 
     private String cityName;
 
+    private String zoneId;
+
     private String address;
 
     private String workNumber;

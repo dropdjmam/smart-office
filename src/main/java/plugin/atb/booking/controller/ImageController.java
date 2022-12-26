@@ -174,7 +174,7 @@ public class ImageController {
         var isJpeg = Objects.equals(file.getContentType(), MediaType.IMAGE_JPEG_VALUE);
         var isPng = Objects.equals(file.getContentType(), MediaType.IMAGE_PNG_VALUE);
 
-        if (!isJpeg || !isPng) {
+        if (!(isJpeg || isPng)) {
             throw new IncorrectArgumentException(
                 "Переданный файл не является JPEG или PNG изображением");
         }

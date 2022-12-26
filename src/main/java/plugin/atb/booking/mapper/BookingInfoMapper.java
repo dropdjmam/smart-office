@@ -2,6 +2,8 @@ package plugin.atb.booking.mapper;
 
 import java.time.*;
 
+import static java.time.ZoneOffset.*;
+
 import org.springframework.stereotype.*;
 import plugin.atb.booking.dto.*;
 import plugin.atb.booking.model.*;
@@ -16,8 +18,8 @@ public class BookingInfoMapper {
             booking.getMaker().getFullName(),
             booking.getHolder().getId(),
             booking.getHolder().getFullName(),
-            booking.getDateTimeOfStart().atZone(zoneId).toLocalDateTime(),
-            booking.getDateTimeOfEnd().atZone(zoneId).toLocalDateTime(),
+            booking.getDateTimeOfStart().atZone(UTC).withZoneSameInstant(zoneId).toLocalDateTime(),
+            booking.getDateTimeOfEnd().atZone(UTC).withZoneSameInstant(zoneId).toLocalDateTime(),
             booking.getGuests(),
             booking.getIsDeleted()
         );
