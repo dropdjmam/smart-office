@@ -32,4 +32,8 @@ public class WorkPlace {
 
     private Integer capacity;
 
+    @Column(name = "place_name", nullable = false,
+        columnDefinition = "varchar(255) default concat('№ ', lastval())")
+    private String placeName;
+
 }

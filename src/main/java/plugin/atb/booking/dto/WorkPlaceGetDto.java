@@ -9,6 +9,8 @@ public class WorkPlaceGetDto {
 
     private Long id;
 
+    private String placeName;
+
     private String typeName;
 
     private Long floorId;

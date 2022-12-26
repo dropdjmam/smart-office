@@ -13,6 +13,9 @@ public class WorkPlaceUpdateDto {
     @Min(value = 1L, message = "Id места не может быть меньше 1")
     private Long id;
 
+    @NotBlank(message = "Наименование места не может быть пустым или состоять только из пробелов")
+    private String name;
+
     @NotNull(message = "Не указан id типа места")
     @Min(value = 1L, message = "Id типа места не может быть меньше 1")
     private Long typeId;

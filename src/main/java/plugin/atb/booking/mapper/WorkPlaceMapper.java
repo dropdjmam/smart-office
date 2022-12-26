@@ -10,22 +10,29 @@ public class WorkPlaceMapper {
     public WorkPlaceGetDto workPlaceToDto(WorkPlace workPlace) {
         return new WorkPlaceGetDto(
             workPlace.getId(),
+            workPlace.getPlaceName(),
             workPlace.getType().getName(),
             workPlace.getFloor().getId(),
             workPlace.getCapacity()
         );
     }
 
-    public WorkPlace dtoToWorkPlace(WorkPlaceType type, Floor floor, Integer capacity) {
+    public WorkPlace dtoToWorkPlace(
+        WorkPlaceCreateDto dto,
+        WorkPlaceType type,
+        Floor floor
+    ) {
         return new WorkPlace()
+            .setPlaceName(dto.getPlaceName())
             .setType(type)
             .setFloor(floor)
-            .setCapacity(capacity);
+            .setCapacity(dto.getCapacity());
     }
 
     public WorkPlace dtoToWorkPlace(WorkPlaceUpdateDto dto, WorkPlaceType type, Floor floor) {
         return new WorkPlace()
             .setId(dto.getId())
+            .setPlaceName(dto.getName())
             .setType(type)
             .setFloor(floor)
             .setCapacity(dto.getCapacity());
@@ -37,6 +44,7 @@ public class WorkPlaceMapper {
     ) {
         return new PlaceAvailabilityResponseDto(
             workPlace.getId(),
+            workPlace.getPlaceName(),
             workPlace.getType().getName(),
             workPlace.getFloor().getId(),
             workPlace.getCapacity(),

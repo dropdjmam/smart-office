@@ -15,16 +15,17 @@ import org.springframework.format.annotation.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
-@Tag(name = "Рабочее место")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/workplace")
+@Tag(name = "Рабочее место", description = "Места офиса, нахождение свободных/занятых мест, а также " +
+                                           "свободных интервалов для бронирования данных мест")
 public class WorkPlaceController {
 
     private final WorkPlaceTypeService workPlaceTypeService;
@@ -38,19 +39,18 @@ public class WorkPlaceController {
     private final BookingService bookingService;
 
     @PostMapping("/")
-    @Operation(summary = "Создание рабочего места", description = "Все поля обязательны")
-    public ResponseEntity<Long> createWorkPlace(@Valid @RequestBody WorkPlaceCreateDto dto) {
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Создание рабочего места",
+        description = "Все поля кроме имени обязательны, имя по дефолту \"№ \"{newId}\"\"")
+    public Long createWorkPlace(@Valid @RequestBody WorkPlaceCreateDto dto) {
 
         var type = validateType(dto.getTypeId());
 
         var floor = validateFloor(dto.getFloorId());
 
-        var newId = workPlaceService.add(workPlaceMapper.dtoToWorkPlace(
-            type,
-            floor,
-            dto.getCapacity()));
+        var newPlace = workPlaceMapper.dtoToWorkPlace(dto, type, floor);
 
-        return ResponseEntity.ok(newId);
+        return workPlaceService.add(newPlace);
     }
 
     @GetMapping("/countOnFloor/{floorId}")
@@ -69,8 +69,9 @@ public class WorkPlaceController {
     }
 
     @GetMapping("/all")
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Все рабочие места", description = "1 <= size <= 20 (default 20)")
-    public ResponseEntity<Page<WorkPlaceGetDto>> getPage(@ParameterObject Pageable pageable) {
+    public Page<WorkPlaceGetDto> getPage(@ParameterObject Pageable pageable) {
 
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
 
@@ -80,15 +81,15 @@ public class WorkPlaceController {
             .map(workPlaceMapper::workPlaceToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
     @GetMapping("/allByFloor")
-    @Operation(summary = "Все рабочие места на указанном этаже", description = "1 <= size <= 20 (default 20)")
-    public ResponseEntity<Page<WorkPlaceGetDto>> getPageByFloor(
-        @RequestParam Long floorId,
-        @RequestParam Long typeId,
-        @ParameterObject Pageable pageable
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить рабочие места указанного типа на указанном этаже",
+        description = "1 <= size <= 20 (default 20)")
+    public Page<WorkPlaceGetDto> getPageByFloor(
+        @RequestParam Long floorId, @RequestParam Long typeId, @ParameterObject Pageable pageable
     ) {
         ValidationUtils.checkId(floorId);
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
@@ -103,15 +104,16 @@ public class WorkPlaceController {
             .map(workPlaceMapper::workPlaceToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/allIsFreeByFloor")
     @Operation(summary = "Все места одного типа на указанном этаже помеченные как занятые/свободные",
         description = "Для запроса необходим id этажа, id типа места, " +
                       "начало временного интервала и конец, а также " +
                       "параметры пагинации. 1 <= size <= 20 (default 20)")
-    public ResponseEntity<Page<PlaceAvailabilityResponseDto>> getIsFreeByFloor(
+    public Page<PlaceAvailabilityResponseDto> getIsFreeByFloor(
         @Valid @ModelAttribute @ParameterObject PlaceAvailabilityRequestDto dto,
         @ParameterObject Pageable pageable
     ) {
@@ -124,7 +126,7 @@ public class WorkPlaceController {
         var floorPlaces = workPlaceService.getPageByFloorAndType(floor, type, pageable);
 
         if (floorPlaces.isEmpty()) {
-            return ResponseEntity.ok(Page.empty(floorPlaces.getPageable()));
+            return Page.empty(floorPlaces.getPageable());
         }
 
         var bookedPlaces = workPlaceService.getAllBookedInPeriod(
@@ -142,16 +144,17 @@ public class WorkPlaceController {
                 !bookedIds.contains(p.getId())))
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(
+        return new PageImpl<>(
             responseDtos,
             floorPlaces.getPageable(),
-            floorPlaces.getTotalElements()));
+            floorPlaces.getTotalElements());
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/freeIntervals")
-    @Operation(summary = "Получение свободных промежутков для бронирования места",
-        description = "Свободные промежутки составляются с учетом рабочего времени офиса.")
-    public ResponseEntity<List<TimeIntervalDto>> getFreeIntervalsForPlace(
+    @Operation(summary = "Получить свободные промежутки для бронирования места",
+        description = "Свободные промежутки составляются с учетом рабочего времени офиса")
+    public List<TimeIntervalDto> getFreeIntervalsForPlace(
         @RequestParam Long placeId,
         @Parameter(example = "2022-11-13", description = "Формат: yyyy-MM-dd")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE, pattern = "yyyy-MM-dd")
@@ -206,7 +209,7 @@ public class WorkPlaceController {
         var bookings = bookingsPage.getContent();
 
         if (bookings.isEmpty()) {
-            return ResponseEntity.ok(List.of(new TimeIntervalDto(workDayStart, workDayEnd)));
+            return List.of(new TimeIntervalDto(workDayStart, workDayEnd));
         }
 
         var size = bookings.size();
@@ -231,24 +234,25 @@ public class WorkPlaceController {
             response.add(size, new TimeIntervalDto(ends.get(size - 1), workDayEnd));
         }
 
-        return ResponseEntity.ok(response);
+        return response;
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Получение указанного места")
-    public ResponseEntity<WorkPlaceGetDto> getWorkPlaceById(@PathVariable Long id) {
-
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить указанное места")
+    public WorkPlaceGetDto getWorkPlaceById(@PathVariable Long id) {
         var workPlace = workPlaceService.getById(id);
         if (workPlace == null) {
             throw new NotFoundException("Не найдено место с id: " + id);
         }
 
-        return ResponseEntity.ok(workPlaceMapper.workPlaceToDto(workPlace));
+        return workPlaceMapper.workPlaceToDto(workPlace);
     }
 
     @PutMapping("/")
-    @Operation(summary = "Изменение указанного места", description = "Все поля обязательны")
-    public ResponseEntity<String> update(@Valid @RequestBody WorkPlaceUpdateDto dto) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Изменить указанное место", description = "Все поля обязательны")
+    public String update(@Valid @RequestBody WorkPlaceUpdateDto dto) {
 
         var type = validateType(dto.getTypeId());
 
@@ -256,16 +260,17 @@ public class WorkPlaceController {
 
         workPlaceService.update(workPlaceMapper.dtoToWorkPlace(dto, type, floor));
 
-        return ResponseEntity.ok("Место успешно обновлено");
+        return "Место успешно обновлено";
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Удаление указанного места")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Удалить указанное место")
+    public String delete(@PathVariable Long id) {
 
         workPlaceService.delete(id);
 
-        return ResponseEntity.ok("Место успешно удалено");
+        return "Место успешно удалено";
     }
 
     private Floor validateFloor(long id) {

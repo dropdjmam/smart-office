@@ -9,6 +9,8 @@ import lombok.*;
 @AllArgsConstructor
 public class WorkPlaceCreateDto {
 
+    private String placeName;
+
     @NotNull(message = "Не указан id типа места")
     @Min(value = 1L, message = "Id типа места не может быть меньше 1")
     private Long typeId;

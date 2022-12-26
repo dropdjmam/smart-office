@@ -28,6 +28,7 @@ public class BookingInfoMapper {
     public InfoPlaceDto placeToDto(WorkPlace workPlace) {
         return new InfoPlaceDto(
             workPlace.getId(),
+            workPlace.getPlaceName(),
             workPlace.getType().getName(),
             workPlace.getFloor().getFloorNumber()
         );
