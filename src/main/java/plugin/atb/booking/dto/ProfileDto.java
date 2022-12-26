@@ -11,6 +11,6 @@ public class ProfileDto {
 
     private BookingGetDto firstBooking;
 
-    private TeamGetDto firstTeam;
+    private TeamMemberInfoTeamDto firstTeam;
 
 }

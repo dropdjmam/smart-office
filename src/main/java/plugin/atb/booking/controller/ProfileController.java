@@ -31,9 +31,9 @@ public class ProfileController {
 
     private final TeamMemberService teamMemberService;
 
-    private final TeamMapper teamMapper;
-
     private final BookingInfoMapper bookingInfoMapper;
+
+    private final TeamMemberMapper teamMemberMapper;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -46,16 +46,15 @@ public class ProfileController {
                 .getAuthentication()
                 .getName());
 
-        TeamGetDto firstTeam = null;
+        TeamMemberInfoTeamDto firstTeam = null;
         var teamMemberPage = teamMemberService.getAllByEmployee(self, Pageable.ofSize(1));
         if (!teamMemberPage.isEmpty()) {
-            firstTeam = Optional.of(teamMemberPage.getContent().get(0))
-                .map(TeamMember::getTeam)
-                .map(teamMapper::teamToGetDto)
-                .orElse(null);
-            if (firstTeam == null) {
-                log.debug("Not found Team from {}", teamMemberPage.getContent().get(0));
-            }
+            var member = teamMemberPage.getContent().get(0);
+
+            var membersPage = teamMemberService.getAllByTeam(member.getTeam(), Pageable.unpaged());
+            var membersNumber = membersPage.getTotalElements();
+
+            firstTeam = teamMemberMapper.teamMemberToInfoTeamDto(member, membersNumber);
         }
 
         var bookingPage = bookingService.getAllActual(self, Pageable.ofSize(1));
