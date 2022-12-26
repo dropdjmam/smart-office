@@ -113,7 +113,7 @@ public class EmployeeService {
             throw new NotFoundException("Не найден сотрудник с id: " + id);
         }
 
-        var teamMembers = teamMemberService.getAllTeamMemberByEmployee(
+        var teamMembers = teamMemberService.getAllByEmployee(
             employee, Pageable.unpaged());
 
         if (!teamMembers.isEmpty()) {

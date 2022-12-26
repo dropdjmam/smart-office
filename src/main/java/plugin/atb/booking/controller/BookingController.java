@@ -81,7 +81,7 @@ public class BookingController {
                       "брони назначается лидер команды")
     public String createBookingForTeam(@Valid @RequestBody BookingCreateDto dto) {
 
-        var teamMembers = teamMemberService.getAllTeamMemberByTeamId(
+        var teamMembers = teamMemberService.getAllByTeamId(
             dto.getHolderId(),
             Pageable.unpaged());
 

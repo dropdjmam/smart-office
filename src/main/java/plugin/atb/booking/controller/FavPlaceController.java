@@ -14,16 +14,16 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/favPlace")
-@Tag(name = "Избранное место")
+@Tag(name = "Избранное место", description = "Содержит связь сотрудника и избранного им места")
 public class FavPlaceController {
 
     private final EmployeeService employeeService;
@@ -37,8 +37,9 @@ public class FavPlaceController {
     private final FloorService floorService;
 
     @PostMapping("/")
-    @Operation(summary = "Добавление места в избранное")
-    public ResponseEntity<String> add(@RequestParam Long placeId) {
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Добавление места в избранное пользователем сессии")
+    public String add(@RequestParam Long placeId) {
         ValidationUtils.checkId(placeId);
         var employee = getSessionUser();
 
@@ -48,12 +49,13 @@ public class FavPlaceController {
             .setEmployee(employee)
             .setPlace(place));
 
-        return ResponseEntity.ok("Место успешно добавлено в избранное");
+        return "Место успешно добавлено в избранное";
     }
 
-    @Operation(summary = "Получение своих (пользователя сессии) избранных мест")
     @GetMapping("/allSelf")
-    public ResponseEntity<Page<WorkPlaceGetDto>> getAllSelf(@ParameterObject Pageable pageable) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить свои (пользователя сессии) избранные места (DTO рабочего места)")
+    public Page<WorkPlaceGetDto> getAllSelf(@ParameterObject Pageable pageable) {
 
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
         var employee = getSessionUser();
@@ -65,13 +67,14 @@ public class FavPlaceController {
             .map(workPlaceMapper::workPlaceToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dtos, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
-    @Operation(summary = "Получение своих (пользователя сессии) избранных мест на этаже " +
-                         "для бронирования - т.е. свободные/занятые")
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/allSelfIsFree")
-    public ResponseEntity<List<PlaceAvailabilityResponseDto>> getAllSelfIsFree(
+    @Operation(summary = "Получить свои (пользователя сессии) избранные места на этаже " +
+                         "для бронирования - т.е. свободные/занятые (DTO места с пометкой о занятости)")
+    public List<PlaceAvailabilityResponseDto> getAllSelfIsFree(
         @RequestParam
         Long floorId,
         @RequestParam
@@ -98,7 +101,7 @@ public class FavPlaceController {
         var floorFavPlaces = new ArrayList<>(floorPlacesPage.getContent());
         floorFavPlaces.retainAll(favPlacesSet);
         if (floorFavPlaces.isEmpty()) {
-            return ResponseEntity.ok(List.of());
+            return List.of();
         }
 
         var bookedFavPlaces = workPlaceService.getAllBookedInPeriod(
@@ -110,17 +113,16 @@ public class FavPlaceController {
             .map(WorkPlace::getId)
             .collect(Collectors.toSet());
 
-        var responseDtos = floorFavPlaces.stream()
+        return floorFavPlaces.stream()
             .map(p -> workPlaceMapper.placeToPlaceAvailabilityDto(
                 p,
                 !bookedIds.contains(p.getId())))
             .toList();
-
-        return ResponseEntity.ok(responseDtos);
     }
 
-    @Operation(summary = "Получение всех избранных мест указанного сотрудника")
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/allOfEmployee/{employeeId}")
+    @Operation(summary = "Получить все избранные места указанного сотрудника")
     public ResponseEntity<Page<WorkPlaceGetDto>> getAllByEmployee(
         @PathVariable Long employeeId,
         @ParameterObject Pageable pageable
@@ -140,8 +142,9 @@ public class FavPlaceController {
         return ResponseEntity.ok(new PageImpl<>(dtos, page.getPageable(), page.getTotalElements()));
     }
 
-    @Operation(summary = "Удаление своего избранного места по id места")
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/self/{placeId}")
+    @Operation(summary = "Убрать место по его id из своих (пользователя сессии) избранных")
     public ResponseEntity<String> delete(@PathVariable Long placeId) {
 
         ValidationUtils.checkId(placeId);
@@ -154,12 +157,10 @@ public class FavPlaceController {
         return ResponseEntity.ok("Место успешно удалено из избранного");
     }
 
-    @Operation(summary = "Удаление избранного места по id сотрудника и id места")
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/{employeeId}/place/{placeId}")
-    public ResponseEntity<String> delete(
-        @PathVariable Long employeeId,
-        @PathVariable Long placeId
-    ) {
+    @Operation(summary = "Убрать место из избранного по его id и id сотрудника")
+    public String delete(@PathVariable Long employeeId, @PathVariable Long placeId) {
         ValidationUtils.checkId(employeeId);
         ValidationUtils.checkId(placeId);
 
@@ -168,7 +169,7 @@ public class FavPlaceController {
 
         favPlaceService.delete(employee, place);
 
-        return ResponseEntity.ok("Место успешно удалено из избранного");
+        return "Место успешно удалено из избранного";
     }
 
     private Employee getSessionUser() {

@@ -1,9 +1,9 @@
 package plugin.atb.booking.controller;
 
 import javax.validation.*;
-import javax.validation.constraints.*;
 
 import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
@@ -18,6 +18,7 @@ import plugin.atb.booking.utils.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/team_member")
+@Tag(name = "Участник команды")
 public class TeamMemberController {
 
     private final TeamMemberService teamMemberService;
@@ -29,7 +30,9 @@ public class TeamMemberController {
     private final TeamService teamService;
 
     @PostMapping("/")
-    public ResponseEntity<String> createTeamMember(@Valid @RequestBody TeamMemberCreateDto dto) {
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Создание участника команды/добавление сотрудника к команде")
+    public String createTeamMember(@Valid @RequestBody TeamMemberCreateDto dto) {
 
         var employee = employeeService.getById(dto.getEmployeeId());
         if (employee == null) {
@@ -45,16 +48,13 @@ public class TeamMemberController {
 
         teamMemberService.add(teamMember);
 
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .build();
+        return "Сотрудник успешно добавлен в команду";
     }
 
-    @Operation(summary = "Получить всех участников команд")
     @GetMapping("/all")
-    public ResponseEntity<Page<TeamMemberDto>> getAll(
-        @ParameterObject Pageable pageable
-    ) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить всех участников команд")
+    public Page<TeamMemberDto> getAll(@ParameterObject Pageable pageable) {
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
 
         var page = teamMemberService.getAll(
@@ -65,19 +65,18 @@ public class TeamMemberController {
             .map(teamMemberMapper::teamMemberToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(
-            dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
-    @Operation(summary = "Получить всех участников команды по id команды")
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/all/team/{teamId}")
-    public ResponseEntity<Page<TeamMemberInfoDto>> getAllTeamMemberByTeamId(
-        @PathVariable Long teamId,
-        @ParameterObject Pageable pageable
+    @Operation(summary = "Получить всех участников команды по id команды")
+    public Page<TeamMemberInfoDto> getAllTeamMemberByTeamId(
+        @PathVariable Long teamId, @ParameterObject Pageable pageable
     ) {
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
         ValidationUtils.checkId(teamId);
-        var page = teamMemberService.getAllTeamMemberByTeamId(
+        var page = teamMemberService.getAllByTeamId(
             teamId, pageable);
 
         var infoDto = page
@@ -85,34 +84,13 @@ public class TeamMemberController {
             .map(teamMemberMapper::teamMemberToInfoDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(
-            infoDto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(infoDto, page.getPageable(), page.getTotalElements());
     }
 
-    @Operation(summary = "Получить всех участников команды по названию команды")
-    @GetMapping("/all/team/name")
-    public ResponseEntity<Page<TeamMemberDto>> getAllTeamMemberByTeamName(
-        @Valid
-        @NotBlank(message = "Название команды не может быть пустым или состоять только из пробелов")
-        @RequestParam String name,
-        @ParameterObject Pageable pageable
-    ) {
-        ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
-
-        var page = teamMemberService.getAllTeamMemberByTeamName(
-            name, pageable);
-
-        var dto = page
-            .stream()
-            .map(teamMemberMapper::teamMemberToDto)
-            .toList();
-
-        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
-    }
-
-    @Operation(summary = "Получить все команды по id сотрудника")
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/all/employee/{employeeId}")
-    public ResponseEntity<Page<TeamMemberInfoTeamDto>> getAllTeamByEmployeeId(
+    @Operation(summary = "Получить все команды по id сотрудника")
+    public Page<TeamMemberInfoTeamDto> getAllTeamByEmployeeId(
         @PathVariable Long employeeId,
         @ParameterObject Pageable pageable
     ) {
@@ -124,89 +102,20 @@ public class TeamMemberController {
             throw new NotFoundException("Не найден сотрудник по id: " + employeeId);
         }
 
-        var page = teamMemberService.getAllTeamMemberByEmployee(employee, pageable);
+        var page = teamMemberService.getAllByEmployee(employee, pageable);
 
         var dto = page
             .stream()
             .map(teamMemberMapper::teamMemberToInfoTeamDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(
-            dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
-    @Operation(summary = "Получить участника команды по id команды")
-    @GetMapping("/team/{teamId}")
-    public ResponseEntity<TeamMemberDto> getByTeamId(
-        @PathVariable Long teamId
-    ) {
-        ValidationUtils.checkId(teamId);
-        var teamMember = teamMemberService.getByTeamId(teamId);
-
-        if (teamMember == null) {
-            throw new NotFoundException(String.format(
-                "Не найдена команда с id: %s", teamId));
-        }
-
-        return ResponseEntity.ok(teamMemberMapper.teamMemberToDto(teamMember));
-    }
-
-    @Operation(summary = "Получить участника команды по названию команды")
-    @GetMapping("/team/name")
-    public ResponseEntity<TeamMemberDto> getByTeamName(
-        @RequestParam String name
-    ) {
-        var teamMember = teamMemberService.getByTeamName(name);
-
-        if (teamMember == null) {
-            throw new NotFoundException(String.format(
-                "Не найдена команда с названием: %s", name));
-        }
-
-        return ResponseEntity.ok(teamMemberMapper.teamMemberToDto(teamMember));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<TeamMemberDto> getById(
-        @PathVariable Long id
-    ) {
-        ValidationUtils.checkId(id);
-        var member = teamMemberService.getById(id);
-
-        if (member == null) {
-            throw new NotFoundException(String.format("Не найден участник команды с id: %s", id));
-        }
-
-        return ResponseEntity.ok(teamMemberMapper.teamMemberToDto(member));
-    }
-
-    @Operation(summary = "Изменить данные(команду/сотрудника) участника команды")
-    @PutMapping("/")
-    public ResponseEntity<String> update(@Valid @RequestBody TeamMemberDto dto) {
-
-        var employee = employeeService.getById(dto.getEmployeeId());
-        if (employee == null) {
-            throw new NotFoundException(String.format(
-                "Сотрудник с id:%s не найден", dto.getEmployeeId()));
-        }
-        var team = teamService.getById(dto.getTeamId());
-        if (team == null) {
-            throw new NotFoundException(String.format(
-                "Команда с id:%s не найдена", dto.getTeamId()));
-        }
-
-        var teamMember = teamMemberMapper.dtoToTeamMember(dto, team, employee);
-
-        teamMemberService.update(teamMember);
-
-        return ResponseEntity.ok("Данные участника команды успешно измененны");
-    }
-
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/employee/{employeeId}/team/{teamId}")
-    public ResponseEntity<String> delete(
-        @PathVariable Long employeeId,
-        @PathVariable Long teamId
-    ) {
+    @Operation(summary = "Удаление сотрудника из команды по его id и id команды")
+    public String delete(@PathVariable Long employeeId, @PathVariable Long teamId) {
 
         var employee = employeeService.getById(employeeId);
         if (employee == null) {
@@ -219,12 +128,12 @@ public class TeamMemberController {
         var teamMember = teamMemberService.getByEmployeeAndTeam(employee, team);
         if (teamMember == null) {
             throw new NotFoundException(String.format(
-                "Не найдена участник команды по сотруднику с id: %s, команде с id: %s",
+                "Не найден участник команды по сотруднику с id: %s, команде с id: %s",
                 employeeId, teamId));
         }
         teamMemberService.delete(teamMember);
 
-        return ResponseEntity.ok("Участник команды успешно удален");
+        return "Участник команды успешно удален";
     }
 
 }

@@ -65,7 +65,9 @@ public class TeamService {
     @Transactional
     public void update(Team team) {
 
-        if (getById(team.getId()) == null) {
+        var teamUpdate = getById(team.getId());
+
+        if (teamUpdate == null) {
             throw new NotFoundException("Команда не найдена.");
         }
 
@@ -79,7 +81,15 @@ public class TeamService {
                 team.getLeader().getId(), team.getName()));
         }
 
+        var oldMember = teamMemberService.getByEmployeeAndTeam(teamUpdate.getLeader(), teamUpdate);
+        teamMemberService.delete(oldMember);
+        var isMember = teamMemberService.getByEmployeeAndTeam(newLeader, teamUpdate);
+
         teamRepository.save(team);
+        if (isMember == null) {
+            var newTeamMember = new TeamMember().setTeam(team).setEmployee(newLeader);
+            teamMemberService.add(newTeamMember);
+        }
     }
 
     @Transactional

@@ -1,5 +1,7 @@
 package plugin.atb.booking.controller;
 
+import java.util.*;
+
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
@@ -13,9 +15,9 @@ import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
 @RestController
-@Tag(name = "Изображение")
 @RequiredArgsConstructor
 @RequestMapping("/image")
+@Tag(name = "Изображение", description = "Фото профиля пользователя и карта этажа")
 public class ImageController {
 
     private final ImageService imageService;
@@ -27,27 +29,16 @@ public class ImageController {
     private final EmployeeService employeeService;
 
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Загрузка изображения - размер одного файла: max 10Мб")
-    @PostMapping(value = "/", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public String uploadImage(@RequestParam MultipartFile multipartImage) throws Exception {
-
-        var image = imageMapper.dtoToImage(multipartImage);
-        if (image == null) {
-            throw new NotFoundException("Изображение не найдено");
-        }
-        imageService.add(image);
-
-        return "Изображение успешно загружено";
-    }
-
-    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Сотрудник: Загрузка изображения - размер одного файла: max 10Мб")
     @PostMapping(value = "/employee/{employeeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public String uploadEmployeeImage(
-        @PathVariable Long employeeId, @RequestParam MultipartFile multipartImage
+        @PathVariable Long employeeId, @RequestParam MultipartFile file
     ) throws Exception {
 
-        var image = imageMapper.dtoToImage(multipartImage);
+        ValidationUtils.checkId(employeeId);
+        validate(file);
+
+        var image = imageMapper.dtoToImage(file);
         if (image == null) {
             throw new NotFoundException("Изображение не найдено");
         }
@@ -73,9 +64,13 @@ public class ImageController {
     @Operation(summary = "Этаж: Загрузка изображения - размер одного файла: max 10Мб")
     @PostMapping(value = "/floor/{floorId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public String uploadFloorImage(
-        @PathVariable Long floorId, @RequestParam MultipartFile multipartImage
+        @PathVariable Long floorId, @RequestParam MultipartFile file
     ) throws Exception {
-        var image = imageMapper.dtoToImage(multipartImage);
+
+        ValidationUtils.checkId(floorId);
+        validate(file);
+
+        var image = imageMapper.dtoToImage(file);
         if (image == null) {
             throw new NotFoundException("Изображение не найдено");
         }
@@ -97,10 +92,12 @@ public class ImageController {
         return "Карта этажа успешно загружена";
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Получение изображения")
-    @GetMapping(value = "/{id}", produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
+    @GetMapping(value = "/{id}", produces = {"image/*"})
     Resource downloadImage(@PathVariable Long id) {
         ValidationUtils.checkId(id);
+
         var image = imageService.getById(id);
         if (image == null) {
             throw new NotFoundException("Не найдено изображение по id: " + id);
@@ -114,26 +111,25 @@ public class ImageController {
         return new ByteArrayResource(content);
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Изменение изображения")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> update(
-        @PathVariable Long id,
-        @RequestParam MultipartFile multipartImage
-    )
-        throws Exception {
+    public String update(@PathVariable Long id, @RequestParam MultipartFile file) throws Exception {
 
         ValidationUtils.checkId(id);
+        validate(file);
 
-        var image = imageMapper.dtoToImage(multipartImage).setId(id);
+        var image = imageMapper.dtoToImage(file).setId(id);
 
         imageService.update(image);
 
-        return ResponseEntity.ok("Изображение изменено.");
+        return "Изображение изменено";
     }
 
-    @Operation(summary = "Удаление изображения из сотрудника")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Удаление фото сотрудника")
     @DeleteMapping(value = "/employee/{employeeId}")
-    public ResponseEntity<String> deleteFromEmployee(@PathVariable Long employeeId) {
+    public String deleteFromEmployee(@PathVariable Long employeeId) {
         ValidationUtils.checkId(employeeId);
 
         var employee = employeeService.getById(employeeId);
@@ -149,12 +145,14 @@ public class ImageController {
         employee.setPhoto(null);
         imageService.delete(image.getId());
         employeeService.update(employee);
-        return ResponseEntity.ok("Изображение удалено");
+
+        return "Изображение удалено";
     }
 
-    @Operation(summary = "Удаление изображения из этажа")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Удаление карты этажа")
     @DeleteMapping(value = "/floor/{floorId}")
-    public ResponseEntity<String> deleteFromFloor(@PathVariable Long floorId) {
+    public String deleteFromFloor(@PathVariable Long floorId) {
         ValidationUtils.checkId(floorId);
         var floor = floorService.getById(floorId);
         if (floor == null) {
@@ -169,22 +167,17 @@ public class ImageController {
         imageService.delete(image.getId());
         floorService.update(floor);
 
-        return ResponseEntity.ok("Изображение удалено");
+        return "Изображение удалено";
     }
 
-    @Operation(summary = "Удаление изображения по id")
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        ValidationUtils.checkId(id);
+    private void validate(MultipartFile file) {
+        var isJpeg = Objects.equals(file.getContentType(), MediaType.IMAGE_JPEG_VALUE);
+        var isPng = Objects.equals(file.getContentType(), MediaType.IMAGE_PNG_VALUE);
 
-        var image = imageService.getById(id);
-
-        if (image == null) {
-            throw new NotFoundException(String.format("Изображение с id:%s не найдено", id));
+        if (!isJpeg || !isPng) {
+            throw new IncorrectArgumentException(
+                "Переданный файл не является JPEG или PNG изображением");
         }
-
-        imageService.delete(image.getId());
-        return ResponseEntity.ok("Изображение удалено");
     }
 
 }

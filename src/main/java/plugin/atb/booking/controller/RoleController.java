@@ -16,8 +16,8 @@ import plugin.atb.booking.service.*;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Роль")
 @RequestMapping("/role")
+@Tag(name = "Роль", description = "Изначально имеется 3 роли: сотрудник, админ и тимлид")
 public class RoleController {
 
     private final RoleService roleService;
@@ -25,8 +25,9 @@ public class RoleController {
     private final RoleMapper roleMapper;
 
     @PostMapping("/")
-    @Operation(summary = "Добавление роли")
-    public ResponseEntity<String> createRole(@RequestParam String name) {
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Добавить роль")
+    public String createRole(@RequestParam String name) {
         if (name.isBlank()) {
             throw new IncorrectArgumentException(
                 "Имя роли не может быть пустым или состоять только из пробелов");
@@ -34,49 +35,50 @@ public class RoleController {
 
         roleService.add(name);
 
-        return ResponseEntity.ok("Роль успешно создана");
+        return "Роль успешно создана";
     }
 
     @GetMapping("/all")
-    @Operation(summary = "Метод возвращает все роли")
-    public ResponseEntity<List<RoleDto>> getRoles() {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить все роли")
+    public List<RoleDto> getRoles() {
 
-        var roles = roleService.getAll()
-            .stream()
+        return roleService.getAll().stream()
             .map(roleMapper::roleToDto)
             .toList();
-
-        return ResponseEntity.ok(roles);
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Метод возвращает роль по ее id")
-    public ResponseEntity<RoleDto> getRoleById(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить роль по ее id")
+    public RoleDto getRoleById(@PathVariable Long id) {
 
         var role = roleService.getById(id);
         if (role == null) {
             throw new NotFoundException("Не найдена роль с id: " + id);
         }
 
-        return ResponseEntity.ok(roleMapper.roleToDto(role));
+        return roleMapper.roleToDto(role);
     }
 
     @PutMapping("/")
-    @Operation(summary = "Изменение роли")
-    public ResponseEntity<String> update(@Valid @RequestBody RoleDto dtoWithNewName) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Изменить имя роли")
+    public String update(@Valid @RequestBody RoleDto dtoWithNewName) {
 
         roleService.update(roleMapper.dtoToRole(dtoWithNewName));
 
-        return ResponseEntity.ok("Успешно! Новое имя роли: " + dtoWithNewName.getName());
+        return "Успешно! Новое имя роли: " + dtoWithNewName.getName();
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Удаление роли")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Удалить роль")
+    public String delete(@PathVariable Long id) {
 
         roleService.delete(id);
 
-        return ResponseEntity.ok("Роль успешно удалена");
+        return "Роль успешно удалена";
     }
 
 }

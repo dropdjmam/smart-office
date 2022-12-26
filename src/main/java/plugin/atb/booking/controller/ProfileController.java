@@ -46,7 +46,7 @@ public class ProfileController {
                 .getName());
 
         TeamGetDto firstTeam = null;
-        var teamMemberPage = teamMemberService.getAllTeamMemberByEmployee(self, Pageable.ofSize(1));
+        var teamMemberPage = teamMemberService.getAllByEmployee(self, Pageable.ofSize(1));
         if (!teamMemberPage.isEmpty()) {
             firstTeam = Optional.of(teamMemberPage.getContent().get(0))
                 .map(TeamMember::getTeam)
