@@ -94,7 +94,7 @@ public class ImageController {
 
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Получение изображения")
-    @GetMapping(value = "/{id}", produces = {"image/*"})
+    @GetMapping(value = "/{id}", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
     Resource downloadImage(@PathVariable Long id) {
         ValidationUtils.checkId(id);
 
