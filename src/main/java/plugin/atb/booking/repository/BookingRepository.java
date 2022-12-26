@@ -14,20 +14,51 @@ import plugin.atb.booking.model.*;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
+    /**
+     * Удаляет брони связанные с указанным местом, которое планируется удалить,
+     * и возвращает набор удаленных бронирований.
+     * <ul>
+     *     Устанавливает статус об удалении - true и внешний ключ места - null, при условии
+     *     соответствия внешнего ключа с переданным параметром
+     * </ul>
+     *
+     * @param place место
+     *
+     * @return набор броней
+     */
     @Modifying
     @Transactional
-    @Query("update Booking b set b.isDeleted = true, b.workPlace = null where b.workPlace = ?1")
-    Set<Booking> deleteAllByWorkPlace(@NonNull WorkPlace workPlace);
+    @Query(nativeQuery = true,
+        value = "with deleted_bookings as " +
+                "(update bookings " +
+                "set is_deleted = true, workplace_id = null " +
+                "where workplace_id = ?1 returning *) " +
+                "select * from deleted_bookings")
+    Set<Booking> deleteAllByWorkPlace(@Param("place") @NonNull WorkPlace place);
 
+    /**
+     * Удаляет брони связанные с указанным держателем брони, которого планируется удалить,
+     * и возвращает набор удаленных бронирований.
+     * <ul>
+     *     Устанавливает статус об удалении - true и внешний ключ держателя  брони - null,
+     *     при условии соответствия внешнего ключа с переданным параметром
+     * </ul>
+     *
+     * @param holder сотрудник/держатель брони
+     *
+     * @return набор броней
+     */
     @Modifying
     @Transactional
-    @Query("update Booking b set b.isDeleted = true, b.holder = null where b.holder = ?1")
-    Set<Booking> deleteAllByHolder(@NonNull Employee holder);
+    @Query(nativeQuery = true,
+        value = "with deleted_bookings as " +
+                "(update bookings " +
+                "set is_deleted = true, holder_id = null " +
+                "where holder_id = ?1 returning *) " +
+                "select * from deleted_bookings")
+    Set<Booking> deleteAllByHolder(@Param("holder") @NonNull Employee holder);
 
-    Page<Booking> findAllByHolderAndIsDeletedIsFalse(
-        Employee holder,
-        Pageable pageable
-    );
+    Page<Booking> findAllByHolderAndIsDeletedIsFalse(Employee holder, Pageable pageable);
 
     /**
      * Возвращает отсортированную страницу сущностей (бронирований),

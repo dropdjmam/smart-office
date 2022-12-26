@@ -9,10 +9,12 @@ import lombok.*;
 @AllArgsConstructor
 public class TeamMemberCreateDto {
 
-    @NotNull
+    @NotNull(message = "Не указан id команды")
+    @Min(value = 1L, message = "Id команды не может быть меньше 1")
     private Long teamId;
 
-    @NotNull
+    @NotNull(message = "Не указан id сотрудника - нового участника команды")
+    @Min(value = 1L, message = "Id сотрудника - нового участника команды не может быть меньше 1")
     private Long employeeId;
 
 }

@@ -10,7 +10,7 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
 
     TeamMember findByEmployeeAndTeam(Employee employee, Team team);
 
-    Page<TeamMember> findAllByTeamId(Long teamId, Pageable pageable);
+    Page<TeamMember> findAllByTeam(Team team, Pageable pageable);
 
     Page<TeamMember> findAllByEmployee(Employee employee, Pageable pageable);
 

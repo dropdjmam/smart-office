@@ -1,5 +1,7 @@
 package plugin.atb.booking.controller;
 
+import java.util.stream.*;
+
 import javax.validation.*;
 
 import io.swagger.v3.oas.annotations.*;
@@ -7,11 +9,13 @@ import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
+import org.springframework.data.web.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
@@ -76,8 +80,14 @@ public class TeamMemberController {
     ) {
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
         ValidationUtils.checkId(teamId);
-        var page = teamMemberService.getAllByTeamId(
-            teamId, pageable);
+
+        var team = teamService.getById(teamId);
+
+        if (team == null) {
+            throw new NotFoundException("Не найдена команда с id: " + teamId);
+        }
+
+        var page = teamMemberService.getAllByTeam(team, pageable);
 
         var infoDto = page
             .stream()
@@ -89,10 +99,10 @@ public class TeamMemberController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/all/employee/{employeeId}")
-    @Operation(summary = "Получить все команды по id сотрудника")
+    @Operation(summary = "Получить все команды, в которых состоит сотрудник, по id сотрудника")
     public Page<TeamMemberInfoTeamDto> getAllTeamByEmployeeId(
         @PathVariable Long employeeId,
-        @ParameterObject Pageable pageable
+        @PageableDefault(sort = "teamId") @ParameterObject Pageable pageable
     ) {
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
         ValidationUtils.checkId(employeeId);
@@ -103,10 +113,18 @@ public class TeamMemberController {
         }
 
         var page = teamMemberService.getAllByEmployee(employee, pageable);
+        var teamMemberShip = page.getContent();
 
-        var dto = page
-            .stream()
-            .map(teamMemberMapper::teamMemberToInfoTeamDto)
+        var membersNumberByTeam = teamMemberShip.stream()
+            .map(TeamMember::getTeam)
+            .map(t -> teamMemberService.getAllByTeam(t, Pageable.unpaged()))
+            .map(Page::getTotalElements)
+            .toList();
+
+        var dto = IntStream.range(0, membersNumberByTeam.size())
+            .mapToObj(i -> teamMemberMapper.teamMemberToInfoTeamDto(
+                teamMemberShip.get(i),
+                membersNumberByTeam.get(i)))
             .toList();
 
         return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());

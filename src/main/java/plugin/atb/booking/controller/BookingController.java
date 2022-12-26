@@ -52,6 +52,8 @@ public class BookingController {
 
     private final WorkPlaceTypeService workPlaceTypeService;
 
+    private final TeamService teamService;
+
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Создать бронь места на указанного сотрудника",
@@ -83,9 +85,13 @@ public class BookingController {
                       "брони назначается лидер команды")
     public String createBookingForTeam(@Valid @RequestBody BookingCreateDto dto) {
 
-        var teamMembers = teamMemberService.getAllByTeamId(
-            dto.getHolderId(),
-            Pageable.unpaged());
+        var team = teamService.getById(dto.getHolderId());
+
+        if (team == null) {
+            throw new NotFoundException("Не найдена команда с id: " + dto.getHolderId());
+        }
+
+        var teamMembers = teamMemberService.getAllByTeam(team, Pageable.unpaged());
 
         var count = teamMembers.getSize() + dto.getGuests();
 

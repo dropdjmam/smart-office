@@ -43,8 +43,8 @@ public class TeamMemberService {
         return teamMemberRepository.findByEmployeeAndTeam(employee, team);
     }
 
-    public Page<TeamMember> getAllByTeamId(Long teamId, Pageable pageable) {
-        return teamMemberRepository.findAllByTeamId(teamId, pageable);
+    public Page<TeamMember> getAllByTeam(Team team, Pageable pageable) {
+        return teamMemberRepository.findAllByTeam(team, pageable);
     }
 
     public Page<TeamMember> getAllByEmployee(Employee employee, Pageable pageable) {

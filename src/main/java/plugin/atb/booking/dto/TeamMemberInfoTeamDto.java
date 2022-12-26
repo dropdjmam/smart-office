@@ -1,7 +1,5 @@
 package plugin.atb.booking.dto;
 
-import javax.validation.constraints.*;
-
 import lombok.*;
 
 @Getter
@@ -9,16 +7,14 @@ import lombok.*;
 @AllArgsConstructor
 public class TeamMemberInfoTeamDto {
 
-    @NotNull
     private Long id;
 
-    @NotNull
     private Long leaderId;
 
-    @NotBlank
     private String leaderName;
 
-    @NotBlank
     private String name;
+
+    private Long membersNumber;
 
 }

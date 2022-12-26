@@ -23,19 +23,13 @@ public class TeamMemberMapper {
             member.getEmployee().getRole().getName());
     }
 
-    public TeamMemberInfoTeamDto teamMemberToInfoTeamDto(TeamMember member) {
+    public TeamMemberInfoTeamDto teamMemberToInfoTeamDto(TeamMember member, Long membersNumber) {
         return new TeamMemberInfoTeamDto(
             member.getTeam().getId(),
             member.getTeam().getLeader().getId(),
             member.getTeam().getLeader().getFullName(),
-            member.getTeam().getName());
-    }
-
-    public TeamMember dtoToTeamMember(TeamMemberDto dto, Team team, Employee employee) {
-        return new TeamMember()
-            .setId(dto.getId())
-            .setTeam(team)
-            .setEmployee(employee);
+            member.getTeam().getName(),
+            membersNumber);
     }
 
     public TeamMember dtoToCreateTeamMember(Team team, Employee employee) {
