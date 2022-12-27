@@ -32,7 +32,7 @@ public class WorkPlaceMapper {
     public WorkPlace dtoToWorkPlace(WorkPlaceUpdateDto dto, WorkPlaceType type, Floor floor) {
         return new WorkPlace()
             .setId(dto.getId())
-            .setPlaceName(dto.getName())
+            .setPlaceName(dto.getPlaceName())
             .setType(type)
             .setFloor(floor)
             .setCapacity(dto.getCapacity());

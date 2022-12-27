@@ -54,7 +54,7 @@ public class ImageController {
         employeeService.update(employee);
 
         if (oldImage != null) {
-            imageService.delete(image.getId());
+            imageService.delete(oldImage.getId());
         }
 
         return "Фотография пользователя успешно загружена";

@@ -14,7 +14,7 @@ public class WorkPlaceUpdateDto {
     private Long id;
 
     @NotBlank(message = "Наименование места не может быть пустым или состоять только из пробелов")
-    private String name;
+    private String placeName;
 
     @NotNull(message = "Не указан id типа места")
     @Min(value = 1L, message = "Id типа места не может быть меньше 1")
