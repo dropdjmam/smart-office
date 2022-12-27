@@ -29,8 +29,9 @@ public class OfficeController {
     private final OfficeMapper officeMapper;
 
     @PostMapping("/")
-    @Operation(summary = "Создание офиса", description = "Все поля обязательны")
-    public ResponseEntity<Long> createOffice(@Valid @RequestBody OfficeCreateDto dto) {
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Создать офис", description = "Все поля обязательны")
+    public Long createOffice(@Valid @RequestBody OfficeCreateDto dto) {
 
         var city = cityService.getById(dto.getCityId());
 
@@ -38,14 +39,13 @@ public class OfficeController {
             throw new NotFoundException("Не найден город с id: " + dto.getCityId());
         }
 
-        var newId = officeService.add(officeMapper.dtoToOffice(dto, city));
-
-        return ResponseEntity.ok(newId);
+        return officeService.add(officeMapper.dtoToOffice(dto, city));
     }
 
     @GetMapping("/all")
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Все офисы", description = "1 <= size <= 20 (default 20)")
-    public ResponseEntity<Page<OfficeGetDto>> getOffices(@ParameterObject Pageable pageable) {
+    public Page<OfficeGetDto> getOffices(@ParameterObject Pageable pageable) {
 
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
 
@@ -55,19 +55,16 @@ public class OfficeController {
             .map(officeMapper::officeToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(
-            dto, offices.getPageable(), offices.getTotalElements())
-        );
-
+        return new PageImpl<>(dto, offices.getPageable(), offices.getTotalElements());
     }
 
     @GetMapping("/allByAddress")
-    @Operation(summary = "Поиск среди офисов по адресу ", description = "1 <= size <= 20 (default 20)")
-    public ResponseEntity<Page<OfficeGetDto>> getOfficesByAddress(
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Поиск среди офисов по адресу", description = "1 <= size <= 20 (default 20)")
+    public Page<OfficeGetDto> getOfficesByAddress(
         @RequestParam String address,
         @ParameterObject Pageable pageable
     ) {
-
         if (address.isBlank()) {
             throw new IncorrectArgumentException(
                 "Адрес не может быть пустым или состоять только из пробелов");
@@ -82,26 +79,26 @@ public class OfficeController {
             .map(officeMapper::officeToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Получение указанного офиса")
-    public ResponseEntity<OfficeGetDto> getOfficeById(@PathVariable Long id) {
-
-        ValidationUtils.checkId(id);
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить указанный офис")
+    public OfficeGetDto getOfficeById(@PathVariable Long id) {
 
         var office = officeService.getById(id);
         if (office == null) {
             throw new NotFoundException("Не найден офис с id: " + id);
         }
 
-        return ResponseEntity.ok(officeMapper.officeToDto(office));
+        return officeMapper.officeToDto(office);
     }
 
     @PutMapping("/")
-    @Operation(summary = "Изменение указанного офиса", description = "Все поля обязательны")
-    public ResponseEntity<String> update(@Valid @RequestBody OfficeUpdateDto dto) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Изменить указанный офис", description = "Все поля обязательны")
+    public String update(@Valid @RequestBody OfficeUpdateDto dto) {
 
         var city = cityService.getById(dto.getCityId());
         if (city == null) {
@@ -110,16 +107,17 @@ public class OfficeController {
 
         officeService.update(officeMapper.dtoToOffice(dto, city));
 
-        return ResponseEntity.ok("Офис успешно обновлен");
+        return "Офис успешно изменен";
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Удаление указанного офиса")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Удалить указанный офис")
+    public String delete(@PathVariable Long id) {
 
         officeService.delete(id);
 
-        return ResponseEntity.ok("Офис успешно удален");
+        return "Офис успешно удален";
     }
 
 }

@@ -93,7 +93,7 @@ public class ImageController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Получение изображения")
+    @Operation(summary = "Получить изображение")
     @GetMapping(value = "/{id}", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
     Resource downloadImage(@PathVariable Long id) {
         ValidationUtils.checkId(id);
@@ -112,7 +112,7 @@ public class ImageController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Изменение изображения")
+    @Operation(summary = "Изменить изображение")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public String update(@PathVariable Long id, @RequestParam MultipartFile file) throws Exception {
 
@@ -127,7 +127,7 @@ public class ImageController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Удаление фото сотрудника")
+    @Operation(summary = "Удалить фото сотрудника")
     @DeleteMapping(value = "/employee/{employeeId}")
     public String deleteFromEmployee(@PathVariable Long employeeId) {
         ValidationUtils.checkId(employeeId);
@@ -150,7 +150,7 @@ public class ImageController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Удаление карты этажа")
+    @Operation(summary = "Удалить карту этажа")
     @DeleteMapping(value = "/floor/{floorId}")
     public String deleteFromFloor(@PathVariable Long floorId) {
         ValidationUtils.checkId(floorId);

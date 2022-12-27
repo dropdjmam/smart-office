@@ -27,45 +27,42 @@ public class WorkPlaceTypeController {
     private final WorkPlaceTypeMapper workPlaceTypeMapper;
 
     @PostMapping("/")
-    public ResponseEntity<String> createType(
-        @Valid
-        @RequestBody WorkPlaceTypeCreateDto dto
-    ) {
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Добавление нового типа места")
+    public String createType(@RequestParam String typeName) {
 
-        var type = workPlaceTypeMapper.createDtoToType(dto);
+        if (typeName.isBlank()) {
+            throw new IncorrectArgumentException(
+                "Имя типа места не может быть пустым или состоять только из пробелов");
+        }
 
-        workPlaceTypeService.add(type.getName());
+        workPlaceTypeService.add(typeName);
 
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .build();
+        return "Успешно добавлен новый тип места: " + typeName;
     }
 
-    @Operation(summary = "Получить все типы мест")
     @GetMapping("/all")
-    public ResponseEntity<Page<WorkPlaceTypeDto>> getAll(
-        @ParameterObject Pageable pageable
-    ) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить все типы мест")
+    public Page<WorkPlaceTypeDto> getAll(@ParameterObject Pageable pageable) {
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
-        var type = workPlaceTypeService.getAll(
-            pageable);
+
+        var type = workPlaceTypeService.getAll(pageable);
 
         var dto = type.stream()
             .map(workPlaceTypeMapper::typeToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(
-            dto, type.getPageable(), type.getTotalElements())
-        );
-
+        return new PageImpl<>(dto, type.getPageable(), type.getTotalElements());
     }
 
+    @GetMapping("/name")
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Получить тип места по названию")
-    @GetMapping("/type/name")
-    public ResponseEntity<Page<WorkPlaceTypeDto>> getByName(
+    public Page<WorkPlaceTypeDto> getByName(
         @Valid
         @NotBlank(message = "Название типа не может быть пустым или состоять только из пробелов")
-        @RequestBody String name,
+        @RequestParam String name,
         @ParameterObject Pageable pageable
     ) {
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
@@ -77,14 +74,13 @@ public class WorkPlaceTypeController {
             .map(workPlaceTypeMapper::typeToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(
-            dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<WorkPlaceTypeDto> getById(
-        @PathVariable Long id
-    ) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить тип места по id")
+    public WorkPlaceTypeDto getById(@PathVariable Long id) {
         ValidationUtils.checkId(id);
         var type = workPlaceTypeService.getById(id);
 
@@ -92,26 +88,29 @@ public class WorkPlaceTypeController {
             throw new NotFoundException(String.format("Не найден тип места c id: %s", id));
         }
 
-        return ResponseEntity.ok(workPlaceTypeMapper.typeToDto(type));
+        return workPlaceTypeMapper.typeToDto(type);
     }
 
     @PutMapping("/")
-    public ResponseEntity<String> update(@RequestBody WorkPlaceTypeDto dto) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Изменить тип места")
+    public String update(@Valid @RequestBody WorkPlaceTypeDto dto) {
 
         var type = workPlaceTypeMapper.dtoToType(dto);
 
         workPlaceTypeService.update(type);
 
-        return ResponseEntity.ok(String.format(
-            "Тип места успешно изменён: %s", type.getName()));
+        return String.format("Тип места успешно изменён: %s", type.getName());
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Удалить тип места")
+    public String delete(@PathVariable Long id) {
 
         workPlaceTypeService.delete(id);
 
-        return ResponseEntity.ok("Тип места успешно удален");
+        return "Тип места успешно удален";
     }
 
 }

@@ -19,9 +19,4 @@ public class WorkPlaceTypeMapper {
             .setName(dto.getName());
     }
 
-    public WorkPlaceType createDtoToType(WorkPlaceTypeCreateDto dto) {
-        return new WorkPlaceType()
-            .setName(dto.getName());
-    }
-
 }

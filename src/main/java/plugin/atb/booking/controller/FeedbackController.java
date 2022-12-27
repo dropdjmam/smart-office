@@ -32,8 +32,9 @@ public class FeedbackController {
     private final FeedbackMapper feedbackMapper;
 
     @PostMapping("/")
-    @Operation(summary = "Создание отзыва", description = "Ограничения по длине: title - 255, text - 500")
-    public ResponseEntity<String> add(@Valid @RequestBody FeedbackCreateDto dto) {
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Создать отзыв", description = "Ограничения по длине: title - 255, text - 500")
+    public String add(@Valid @RequestBody FeedbackCreateDto dto) {
 
         var employee = employeeService.getByLogin(
             SecurityContextHolder.getContext()
@@ -43,12 +44,13 @@ public class FeedbackController {
         var feedback = feedbackMapper.dtoToFeedback(dto, employee);
         feedbackService.add(feedback);
 
-        return ResponseEntity.ok("Отзыв успешно создан");
+        return "Отзыв успешно создан";
     }
 
     @GetMapping("/all")
-    @Operation(summary = "Получение всех отзывов", description = "1 <= size <= 20 (default 20)")
-    public ResponseEntity<Page<FeedbackGetDto>> getAll(@ParameterObject Pageable pageable) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить все отзывы", description = "1 <= size <= 20 (default 20)")
+    public Page<FeedbackGetDto> getAll(@ParameterObject Pageable pageable) {
 
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
 
@@ -58,13 +60,14 @@ public class FeedbackController {
             .map(feedbackMapper::feedbackToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dtos, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/allOfEmployee/{employeeId}")
-    @Operation(summary = "Получение всех отзывов указанного сотрудника",
+    @Operation(summary = "Получить все отзывы указанного сотрудника",
         description = "1 <= size <= 20 (default 20)")
-    public ResponseEntity<Page<FeedbackGetDto>> getAllByEmployeeId(
+    public Page<FeedbackGetDto> getAllByEmployeeId(
         @PathVariable Long employeeId,
         @ParameterObject Pageable pageable
     ) {
@@ -83,12 +86,13 @@ public class FeedbackController {
             .map(feedbackMapper::feedbackToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dtos, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Получение указанного отзыва")
-    public ResponseEntity<FeedbackGetDto> getById(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить указанный отзыв")
+    public FeedbackGetDto getById(@PathVariable Long id) {
 
         var feedback = feedbackService.getById(id);
         if (feedback == null) {
@@ -96,19 +100,19 @@ public class FeedbackController {
             throw new NotFoundException("Не найден отзыв с id: " + id);
         }
 
-        var dto = feedbackMapper.feedbackToDto(feedback);
-        return ResponseEntity.ok(dto);
+        return feedbackMapper.feedbackToDto(feedback);
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Удаление отзыва")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Удалить указанный отзыв")
+    public String delete(@PathVariable Long id) {
 
         ValidationUtils.checkId(id);
 
         feedbackService.delete(id);
 
-        return ResponseEntity.ok("Отзыв успешно удален");
+        return "Отзыв успешно удален";
     }
 
 }

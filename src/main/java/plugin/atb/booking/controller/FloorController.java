@@ -10,9 +10,9 @@ import org.springframework.data.domain.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
-import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
+import plugin.atb.booking.model.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
@@ -29,19 +29,19 @@ public class FloorController {
     private final FloorMapper floorMapper;
 
     @PostMapping("/")
-    @Operation(summary = "Добавление этажа", description = "Все поля кроме карты обязательны")
-    public ResponseEntity<Long> createFloor(@Valid @RequestBody FloorCreateDto dto) {
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Добавить этаж", description = "Все поля обязательны")
+    public Long createFloor(@Valid @RequestBody FloorCreateDto dto) {
 
         var office = validateOffice(dto.getOfficeId());
 
-        var newId = floorService.add(floorMapper.dtoToFloor(dto, office));
-
-        return ResponseEntity.ok(newId);
+        return floorService.add(floorMapper.dtoToFloor(dto, office));
     }
 
     @GetMapping("/all")
-    @Operation(summary = "Поиск всех этажей офиса")
-    public ResponseEntity<Page<FloorGetDto>> getFloors(
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить все этажи офиса")
+    public Page<FloorGetDto> getFloors(
         @RequestParam Long officeId,
         @ParameterObject Pageable pageable
     ) {
@@ -57,39 +57,42 @@ public class FloorController {
             .map(floorMapper::floorToDto)
             .toList();
 
-        return ResponseEntity.ok(new PageImpl<>(dto, page.getPageable(), page.getTotalElements()));
+        return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Получение указанного этажа")
-    public ResponseEntity<FloorGetDto> getFloorById(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получить указанный этаж")
+    public FloorGetDto getFloorById(@PathVariable Long id) {
 
         var floor = floorService.getById(id);
         if (floor == null) {
             throw new NotFoundException("Не найден этаж с id: " + id);
         }
 
-        return ResponseEntity.ok(floorMapper.floorToDto(floor));
+        return floorMapper.floorToDto(floor);
     }
 
     @PutMapping("/")
-    @Operation(summary = "Изменение указанного этажа", description = "Все поля кроме карты обязательны")
-    public ResponseEntity<String> updateFloor(@Valid @RequestBody FloorUpdateDto dto) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Изменить указанный этаж", description = "Все поля обязательны")
+    public String updateFloor(@Valid @RequestBody FloorUpdateDto dto) {
 
         var office = officeService.getById(dto.getOfficeId());
 
         floorService.update(floorMapper.dtoToFloor(dto, office));
 
-        return ResponseEntity.ok("Этаж успешно изменен");
+        return "Этаж успешно изменен";
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Удаление этажа")
-    public ResponseEntity<String> deleteFloor(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Удалить этаж")
+    public String deleteFloor(@PathVariable Long id) {
 
         floorService.delete(id);
 
-        return ResponseEntity.ok("Этаж успешно удален");
+        return "Этаж успешно удален";
     }
 
     private Office validateOffice(long id) {

@@ -12,15 +12,17 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
+import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.model.*;
 import plugin.atb.booking.service.*;
+import plugin.atb.booking.utils.*;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/profile")
-@Tag(name = "Профиль сотрудника")
+@Tag(name = "Профиль сотрудника", description = "Информация о сотруднике, ближайшая бронь и команда")
 public class ProfileController {
 
     private final EmployeeMapper employeeMapper;
@@ -37,7 +39,7 @@ public class ProfileController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Получение всей информации своего профиля сотрудника",
+    @Operation(summary = "Получение своего профиля сотрудника",
         description = "Включает в себя данные о сотруднике, ближайшую бронь и команду")
     public ProfileDto getProfile() {
 
@@ -46,8 +48,30 @@ public class ProfileController {
                 .getAuthentication()
                 .getName());
 
+        return getProfileDto(self);
+    }
+
+    @GetMapping("/{employeeId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Получение профиля указанного сотрудника",
+        description = "Включает в себя данные о сотруднике, ближайшую бронь и команду")
+    public ProfileDto getAnotherProfile(@PathVariable Long employeeId) {
+
+        ValidationUtils.checkId(employeeId);
+
+        var employee = employeeService.getById(employeeId);
+        if (employee == null) {
+            throw new NotFoundException("Не найден сотрудник с id: " + employeeId);
+        }
+
+        return getProfileDto(employee);
+    }
+
+    private ProfileDto getProfileDto(Employee employee) {
+
         TeamMemberInfoTeamDto firstTeam = null;
-        var teamMemberPage = teamMemberService.getAllByEmployee(self, Pageable.ofSize(1));
+
+        var teamMemberPage = teamMemberService.getAllByEmployee(employee, Pageable.ofSize(1));
         if (!teamMemberPage.isEmpty()) {
             var member = teamMemberPage.getContent().get(0);
 
@@ -57,9 +81,9 @@ public class ProfileController {
             firstTeam = teamMemberMapper.teamMemberToInfoTeamDto(member, membersNumber);
         }
 
-        var bookingPage = bookingService.getAllActual(self, Pageable.ofSize(1));
+        var bookingPage = bookingService.getAllActual(employee, Pageable.ofSize(1));
         if (bookingPage.isEmpty()) {
-            return new ProfileDto(employeeMapper.employeeToDto(self), null, firstTeam);
+            return new ProfileDto(employeeMapper.employeeToDto(employee), null, firstTeam);
         }
 
         var booking = bookingPage.getContent().get(0);
@@ -71,7 +95,7 @@ public class ProfileController {
 
         if (placeInfo == null) {
             log.debug("Not found WorkPlace while forming BookingGetDto from {}", booking);
-            return new ProfileDto(employeeMapper.employeeToDto(self), null, firstTeam);
+            return new ProfileDto(employeeMapper.employeeToDto(employee), null, firstTeam);
         }
 
         var officeInfo = Optional.of(booking)
@@ -84,7 +108,7 @@ public class ProfileController {
         if (officeInfo == null) {
             log.debug("Not found Floor in WorkPlace or Office in Floor while " +
                       "forming BookingGetDto from {}", booking);
-            return new ProfileDto(employeeMapper.employeeToDto(self), null, firstTeam);
+            return new ProfileDto(employeeMapper.employeeToDto(employee), null, firstTeam);
         }
 
         var bookingInfo = bookingInfoMapper.bookingToDto(
@@ -93,7 +117,7 @@ public class ProfileController {
 
         var firstBooking = new BookingGetDto(bookingInfo, placeInfo, officeInfo);
         log.info("Profile successfully formed");
-        return new ProfileDto(employeeMapper.employeeToDto(self), firstBooking, firstTeam);
+        return new ProfileDto(employeeMapper.employeeToDto(employee), firstBooking, firstTeam);
     }
 
 }

@@ -142,7 +142,7 @@ public class TeamController {
 
         teamService.delete(id);
 
-        return "Команда успешно удален";
+        return "Команда успешно удалена";
     }
 
 }
