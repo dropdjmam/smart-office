@@ -8,6 +8,7 @@ import lombok.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
 import plugin.atb.booking.exception.*;
@@ -20,6 +21,7 @@ import plugin.atb.booking.utils.*;
 @Tag(name = "Этаж")
 @RequiredArgsConstructor
 @RequestMapping("/floor")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class FloorController {
 
     private final OfficeService officeService;

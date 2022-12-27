@@ -13,6 +13,7 @@ import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.format.annotation.*;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
 import plugin.atb.booking.exception.*;
@@ -40,6 +41,7 @@ public class WorkPlaceController {
 
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Создание рабочего места",
         description = "Все поля кроме имени обязательны, имя по дефолту \"№ \"{newId}\"\"")
     public Long createWorkPlace(@Valid @RequestBody WorkPlaceCreateDto dto) {
@@ -53,8 +55,8 @@ public class WorkPlaceController {
         return workPlaceService.add(newPlace);
     }
 
-    @GetMapping("/countOnFloor/{floorId}")
     @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/countOnFloor/{floorId}")
     @Operation(summary = "Количество мест каждого типа на указанный этаж")
     public CountPlaceDto getPlacesCountByFloor(@PathVariable Long floorId) {
 
@@ -251,6 +253,7 @@ public class WorkPlaceController {
 
     @PutMapping("/")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Изменить указанное место", description = "Все поля обязательны")
     public String update(@Valid @RequestBody WorkPlaceUpdateDto dto) {
 
@@ -265,6 +268,7 @@ public class WorkPlaceController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Удалить указанное место")
     public String delete(@PathVariable Long id) {
 

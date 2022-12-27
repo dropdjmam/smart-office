@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
 import plugin.atb.booking.exception.*;
@@ -17,6 +18,7 @@ import plugin.atb.booking.service.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/city")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 @Tag(name = "Город", description = "Наименование и тайм зона города")
 public class CityController {
 

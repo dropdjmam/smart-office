@@ -8,6 +8,7 @@ import lombok.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
 import plugin.atb.booking.exception.*;
@@ -18,6 +19,7 @@ import plugin.atb.booking.utils.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/office")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 @Tag(name = "Офис", description = "Интервал работы офиса принимается и хранится в LocalTime " +
                                   "в соответствии с тайм зоной города, в котором находится.")
 public class OfficeController {

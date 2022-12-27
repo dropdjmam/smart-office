@@ -6,6 +6,7 @@ import lombok.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
 import plugin.atb.booking.exception.*;
@@ -17,6 +18,7 @@ import plugin.atb.booking.utils.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/administrating")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 @Tag(name = "Администрирование", description = "Администрирование - доступ админа к функционалу офиса")
 public class AdministratingController {
 
