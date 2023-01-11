@@ -37,7 +37,7 @@ public class CityController {
 
     @GetMapping("/all")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Получить список городов")
+    @Operation(summary = "Получить список всех городов")
     public List<CityDto> getCities() {
         var cities = cityService.getAll();
 
@@ -61,7 +61,7 @@ public class CityController {
 
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Получить список всех городов")
+    @Operation(summary = "Поиск городов по наименованию")
     public List<CityDto> getCitiesByName(@RequestParam String name) {
         var cities = cityService.getAllByName(name);
 
