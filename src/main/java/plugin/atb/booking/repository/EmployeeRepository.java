@@ -8,7 +8,7 @@ import plugin.atb.booking.model.*;
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
-    Page<Employee> findByFullNameContaining(String fullName, Pageable pageable);
+    Page<Employee> findByFullNameContainingIgnoreCase(String fullName, Pageable pageable);
 
     Employee findByLogin(String login);
 

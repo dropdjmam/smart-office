@@ -6,6 +6,7 @@ import javax.validation.constraints.*;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
@@ -16,6 +17,7 @@ import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/team")
@@ -41,6 +43,7 @@ public class TeamController {
         var team = teamMapper.dtoToCreateTeam(dto, leader);
         teamService.add(team);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Команда успешно создана";
     }
 
@@ -57,6 +60,7 @@ public class TeamController {
             .map(teamMapper::teamToGetDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, team.getPageable(), team.getTotalElements());
 
     }
@@ -79,6 +83,7 @@ public class TeamController {
             .map(teamMapper::teamToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
@@ -99,6 +104,7 @@ public class TeamController {
             .map(teamMapper::teamToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
@@ -113,6 +119,7 @@ public class TeamController {
             throw new NotFoundException(String.format("Не найдена команда c id: %s", id));
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return teamMapper.teamToDto(team);
     }
 
@@ -132,6 +139,7 @@ public class TeamController {
 
         teamService.update(team);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Изменение команды прошло успешно";
     }
 
@@ -142,6 +150,7 @@ public class TeamController {
 
         teamService.delete(id);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Команда успешно удалена";
     }
 

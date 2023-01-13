@@ -3,6 +3,7 @@ package plugin.atb.booking.controller;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
@@ -14,6 +15,7 @@ import plugin.atb.booking.model.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/conferee")
@@ -50,6 +52,7 @@ public class ConferenceMemberController {
 
         conferenceMemberService.add(conferenceMember);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Участник встречи успешно добавлен";
     }
 
@@ -66,8 +69,8 @@ public class ConferenceMemberController {
             .map(conferenceMemberMapper::createConferenceMemberToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
-
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -91,6 +94,7 @@ public class ConferenceMemberController {
             .map(employeeMapper::employeeToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -100,6 +104,7 @@ public class ConferenceMemberController {
     public ResponseEntity<String> delete(@PathVariable Long id) {
         conferenceMemberService.delete(id);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return ResponseEntity.ok("Участник встречи успешно удален");
     }
 

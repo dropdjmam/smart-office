@@ -7,13 +7,16 @@ import javax.validation.*;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
+import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/role")
@@ -35,6 +38,7 @@ public class RoleController {
 
         roleService.add(name);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Роль успешно создана";
     }
 
@@ -58,6 +62,7 @@ public class RoleController {
             throw new NotFoundException("Не найдена роль с id: " + id);
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return roleMapper.roleToDto(role);
     }
 
@@ -68,6 +73,7 @@ public class RoleController {
 
         roleService.update(roleMapper.dtoToRole(dtoWithNewName));
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Успешно! Новое имя роли: " + dtoWithNewName.getName();
     }
 
@@ -78,6 +84,7 @@ public class RoleController {
 
         roleService.delete(id);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Роль успешно удалена";
     }
 

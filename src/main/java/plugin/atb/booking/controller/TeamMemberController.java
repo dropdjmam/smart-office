@@ -7,6 +7,7 @@ import javax.validation.*;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.data.web.*;
@@ -19,6 +20,7 @@ import plugin.atb.booking.model.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/team_member")
@@ -52,6 +54,7 @@ public class TeamMemberController {
 
         teamMemberService.add(teamMember);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Сотрудник успешно добавлен в команду";
     }
 
@@ -69,6 +72,7 @@ public class TeamMemberController {
             .map(teamMemberMapper::teamMemberToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
@@ -94,6 +98,7 @@ public class TeamMemberController {
             .map(teamMemberMapper::teamMemberToInfoDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(infoDto, page.getPageable(), page.getTotalElements());
     }
 
@@ -127,6 +132,7 @@ public class TeamMemberController {
                 membersNumberByTeam.get(i)))
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
@@ -151,6 +157,7 @@ public class TeamMemberController {
         }
         teamMemberService.delete(teamMember);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Участник команды успешно удален";
     }
 

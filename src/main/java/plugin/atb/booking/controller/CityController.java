@@ -7,6 +7,7 @@ import javax.validation.*;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.*;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,9 @@ import plugin.atb.booking.dto.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
+import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/city")
@@ -32,6 +35,7 @@ public class CityController {
     public String createCity(@RequestParam String name, @RequestParam String zoneId) {
         cityService.add(name, zoneId);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Город " + name + "успешно добавлен";
     }
 
@@ -56,6 +60,7 @@ public class CityController {
             throw new NotFoundException("Не найден город с id: " + id);
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return cityMapper.cityToDto(city);
     }
 
@@ -65,6 +70,7 @@ public class CityController {
     public List<CityDto> getCitiesByName(@RequestParam String name) {
         var cities = cityService.getAllByName(name);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return cities.stream()
             .map(cityMapper::cityToDto)
             .toList();
@@ -76,6 +82,7 @@ public class CityController {
     public String update(@Valid @RequestBody CityDto dto) {
         cityService.update(cityMapper.dtoToCity(dto));
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Успешно! Город изменен: " + dto.getName();
     }
 
@@ -86,6 +93,7 @@ public class CityController {
 
         cityService.delete(id);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return ResponseEntity.ok("Город успешно удален.");
     }
 

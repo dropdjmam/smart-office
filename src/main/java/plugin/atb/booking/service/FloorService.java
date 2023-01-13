@@ -14,6 +14,7 @@ import plugin.atb.booking.utils.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FloorService {
 
     private final FloorRepository floorRepository;

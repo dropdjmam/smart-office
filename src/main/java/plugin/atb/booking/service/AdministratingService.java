@@ -13,6 +13,7 @@ import plugin.atb.booking.utils.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AdministratingService {
 
     private final AdministratingRepository administratingRepository;

@@ -5,6 +5,7 @@ import javax.validation.*;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
@@ -17,6 +18,7 @@ import plugin.atb.booking.model.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @Tag(name = "Этаж")
 @RequiredArgsConstructor
@@ -37,6 +39,7 @@ public class FloorController {
 
         var office = validateOffice(dto.getOfficeId());
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return floorService.add(floorMapper.dtoToFloor(dto, office));
     }
 
@@ -59,6 +62,7 @@ public class FloorController {
             .map(floorMapper::floorToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
@@ -72,6 +76,7 @@ public class FloorController {
             throw new NotFoundException("Не найден этаж с id: " + id);
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return floorMapper.floorToDto(floor);
     }
 
@@ -84,6 +89,7 @@ public class FloorController {
 
         floorService.update(floorMapper.dtoToFloor(dto, office));
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Этаж успешно изменен";
     }
 
@@ -94,6 +100,7 @@ public class FloorController {
 
         floorService.delete(id);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Этаж успешно удален";
     }
 

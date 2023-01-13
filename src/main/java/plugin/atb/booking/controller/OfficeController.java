@@ -5,6 +5,7 @@ import javax.validation.*;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
@@ -16,6 +17,7 @@ import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/office")
@@ -41,6 +43,7 @@ public class OfficeController {
             throw new NotFoundException("Не найден город с id: " + dto.getCityId());
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return officeService.add(officeMapper.dtoToOffice(dto, city));
     }
 
@@ -57,6 +60,7 @@ public class OfficeController {
             .map(officeMapper::officeToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, offices.getPageable(), offices.getTotalElements());
     }
 
@@ -81,6 +85,7 @@ public class OfficeController {
             .map(officeMapper::officeToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
@@ -94,6 +99,7 @@ public class OfficeController {
             throw new NotFoundException("Не найден офис с id: " + id);
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return officeMapper.officeToDto(office);
     }
 
@@ -109,6 +115,7 @@ public class OfficeController {
 
         officeService.update(officeMapper.dtoToOffice(dto, city));
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Офис успешно изменен";
     }
 
@@ -119,6 +126,7 @@ public class OfficeController {
 
         officeService.delete(id);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Офис успешно удален";
     }
 

@@ -14,12 +14,14 @@ import plugin.atb.booking.utils.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class WorkPlaceService {
 
     private final WorkPlaceRepository workPlaceRepository;
 
     private final BookingService bookingService;
 
+    @Transactional
     public Long add(WorkPlace workPlace) {
 
         validate(workPlace);
@@ -105,6 +107,7 @@ public class WorkPlaceService {
         return workPlaceRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public void update(WorkPlace workPlace) {
 
         if (getById(workPlace.getId()) == null) {

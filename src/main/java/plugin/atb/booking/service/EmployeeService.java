@@ -61,7 +61,7 @@ public class EmployeeService {
                 "Имя не может быть пустым или состоять только из пробелов");
         }
 
-        return employeeRepository.findByFullNameContaining(name, pageable);
+        return employeeRepository.findByFullNameContainingIgnoreCase(name, pageable);
     }
 
     public Employee getById(Long id) {

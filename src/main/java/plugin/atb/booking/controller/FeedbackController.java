@@ -44,6 +44,7 @@ public class FeedbackController {
         var feedback = feedbackMapper.dtoToFeedback(dto, employee);
         feedbackService.add(feedback);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Отзыв успешно создан";
     }
 
@@ -60,6 +61,7 @@ public class FeedbackController {
             .map(feedbackMapper::feedbackToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -76,7 +78,6 @@ public class FeedbackController {
 
         var employee = employeeService.getById(employeeId);
         if (employee == null) {
-            log.error("IN add METHOD - Not found employee by id: " + employeeId);
             throw new NotFoundException("Не найден сотрудник с id: " + employeeId);
         }
 
@@ -86,6 +87,7 @@ public class FeedbackController {
             .map(feedbackMapper::feedbackToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -96,10 +98,10 @@ public class FeedbackController {
 
         var feedback = feedbackService.getById(id);
         if (feedback == null) {
-            log.error("IN getById METHOD - Not found feedback by id: " + id);
             throw new NotFoundException("Не найден отзыв с id: " + id);
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return feedbackMapper.feedbackToDto(feedback);
     }
 
@@ -112,6 +114,7 @@ public class FeedbackController {
 
         feedbackService.delete(id);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Отзыв успешно удален";
     }
 

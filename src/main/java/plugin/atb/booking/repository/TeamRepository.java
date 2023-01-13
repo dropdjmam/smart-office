@@ -8,7 +8,7 @@ import plugin.atb.booking.model.*;
 @Repository
 public interface TeamRepository extends JpaRepository<Team, Long> {
 
-    Page<Team> findAllByName(String name, Pageable pageable);
+    Page<Team> findAllByNameContainingIgnoreCase(String name, Pageable pageable);
 
     Page<Team> findAllByLeaderId(Long leaderId, Pageable pageable);
 

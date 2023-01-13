@@ -5,6 +5,7 @@ import java.util.*;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springframework.core.io.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/image")
@@ -57,6 +59,7 @@ public class ImageController {
             imageService.delete(oldImage.getId());
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Фотография пользователя успешно загружена";
     }
 
@@ -89,6 +92,7 @@ public class ImageController {
             imageService.delete(oldImage.getId());
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Карта этажа успешно загружена";
     }
 
@@ -108,6 +112,7 @@ public class ImageController {
             throw new NotFoundException("Не найдено изображение");
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new ByteArrayResource(content);
     }
 
@@ -123,6 +128,7 @@ public class ImageController {
 
         imageService.update(image);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Изображение изменено";
     }
 
@@ -146,6 +152,7 @@ public class ImageController {
         imageService.delete(image.getId());
         employeeService.update(employee);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Изображение удалено";
     }
 
@@ -167,6 +174,7 @@ public class ImageController {
         imageService.delete(image.getId());
         floorService.update(floor);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Изображение удалено";
     }
 

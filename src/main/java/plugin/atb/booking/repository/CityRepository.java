@@ -9,7 +9,7 @@ import plugin.atb.booking.model.City;
 @Repository
 public interface CityRepository extends JpaRepository<City, Long> {
 
-    List<City> findAllByNameContainingOrderByName(String name);
+    List<City> findAllByNameContainingIgnoreCaseOrderByName(String name);
 
     boolean existsByName(String name);
 

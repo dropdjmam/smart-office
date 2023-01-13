@@ -3,6 +3,7 @@ package plugin.atb.booking.controller;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
@@ -15,6 +16,7 @@ import plugin.atb.booking.model.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/administrating")
@@ -52,7 +54,7 @@ public class AdministratingController {
         var administrating = administratingMapper.dtoToAdministrating(employee, office);
 
         administratingService.add(administrating);
-
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return String.format(
             "Доступ к офису с id: %s успешно предоставлен администратору с id: %s",
             office.getId(), employee.getId());
@@ -69,6 +71,7 @@ public class AdministratingController {
             .map(administratingMapper::administratingToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -89,6 +92,7 @@ public class AdministratingController {
             .map(officeMapper::officeToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -109,6 +113,7 @@ public class AdministratingController {
             .map(employeeMapper::employeeToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -119,6 +124,7 @@ public class AdministratingController {
 
         administratingService.delete(id);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Доступ к функционалу офиса успешно убран";
     }
 

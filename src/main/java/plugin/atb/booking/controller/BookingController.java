@@ -73,8 +73,8 @@ public class BookingController {
 
         var booking = bookingMapper.dtoToBooking(dto, holder, maker, place);
         bookingService.add(booking);
-        log.info("Booking successfully created");
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Место успешно забронировано";
     }
 
@@ -117,8 +117,8 @@ public class BookingController {
             .map(e -> new ConferenceMember().setBooking(newBooking).setEmployee(e))
             .collect(Collectors.toSet());
         conferenceMemberService.addAll(conferees);
-        log.info("Booking and conferees successfully created");
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Место успешно забронировано, участники брони созданы";
     }
 
@@ -152,8 +152,8 @@ public class BookingController {
             .map(m -> new ConferenceMember().setBooking(newBooking).setEmployee(m))
             .collect(Collectors.toSet());
         conferenceMemberService.addAll(conferees);
-        log.info("Booking and conferees successfully created");
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Место успешно забронировано, участники брони созданы";
     }
 
@@ -181,7 +181,7 @@ public class BookingController {
             .map(this::getBookingDto)
             .toList();
 
-        log.info("Page of conference place's bookings successfully formed");
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
 
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
@@ -205,8 +205,7 @@ public class BookingController {
             .map(this::getBookingDto)
             .toList();
 
-        log.info("Page of employee's actual bookings successfully formed");
-
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -226,8 +225,7 @@ public class BookingController {
             .map(this::getBookingDto)
             .toList();
 
-        log.info("Page of session user's actual bookings successfully formed");
-
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -265,8 +263,7 @@ public class BookingController {
                 getOfficeInfo(b)))
             .toList();
 
-        log.info("Page of bookings by place and date/time interval successfully formed");
-
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -284,8 +281,7 @@ public class BookingController {
             .map(this::getBookingDtoIncludingDeleted)
             .toList();
 
-        log.info("Page of all (include deleted) bookings successfully formed");
-
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -306,8 +302,7 @@ public class BookingController {
             .map(this::getBookingDto)
             .toList();
 
-        log.info("Page of employee's bookings successfully formed");
-
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -326,8 +321,7 @@ public class BookingController {
             .map(this::getBookingDto)
             .toList();
 
-        log.info("Page of session user's actual bookings successfully formed");
-
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -362,8 +356,7 @@ public class BookingController {
             .map(this::getBookingDtoIncludingDeleted)
             .toList();
 
-        log.info("Page of actual/all bookings of office successfully formed");
-
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -374,8 +367,7 @@ public class BookingController {
         var booking = bookingService.getById(id);
         var bookingDto = getBookingDto(booking);
 
-        log.info("Booking successfully found");
-
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return bookingDto;
     }
 
@@ -399,8 +391,7 @@ public class BookingController {
         var booking = bookingMapper.dtoToBooking(dto, holder, maker, place);
         bookingService.update(booking);
 
-        log.info("Booking successfully updated");
-
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Бронь успешно обновлена";
     }
 
@@ -410,8 +401,7 @@ public class BookingController {
     public String delete(@PathVariable Long id) {
         bookingService.delete(id);
 
-        log.info("Bookings successfully deleted");
-
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Бронь успешно удалена";
     }
 

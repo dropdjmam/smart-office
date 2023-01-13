@@ -5,6 +5,7 @@ import java.util.*;
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
+import org.springframework.transaction.annotation.*;
 import plugin.atb.booking.model.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.repository.*;
@@ -12,10 +13,12 @@ import plugin.atb.booking.utils.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RoleService {
 
     private final RoleRepository roleRepository;
 
+    @Transactional
     public void add(String name) {
         boolean exists = roleRepository.existsByName(name);
 
@@ -44,6 +47,7 @@ public class RoleService {
         return roleRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public void update(Role role) {
 
         if (role.getName().isBlank()) {
@@ -60,6 +64,7 @@ public class RoleService {
         roleRepository.save(role);
     }
 
+    @Transactional
     public void delete(Long id) {
 
         if (getById(id) == null) {

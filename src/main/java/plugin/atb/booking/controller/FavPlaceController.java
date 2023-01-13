@@ -7,6 +7,7 @@ import java.util.stream.*;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.format.annotation.*;
@@ -20,6 +21,7 @@ import plugin.atb.booking.model.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/favPlace")
@@ -49,6 +51,7 @@ public class FavPlaceController {
             .setEmployee(employee)
             .setPlace(place));
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Место успешно добавлено в избранное";
     }
 
@@ -67,6 +70,7 @@ public class FavPlaceController {
             .map(workPlaceMapper::workPlaceToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
@@ -113,6 +117,7 @@ public class FavPlaceController {
             .map(WorkPlace::getId)
             .collect(Collectors.toSet());
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return floorFavPlaces.stream()
             .map(p -> workPlaceMapper.placeToPlaceAvailabilityDto(
                 p,
@@ -139,6 +144,7 @@ public class FavPlaceController {
             .map(workPlaceMapper::workPlaceToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return ResponseEntity.ok(new PageImpl<>(dtos, page.getPageable(), page.getTotalElements()));
     }
 
@@ -154,6 +160,7 @@ public class FavPlaceController {
 
         favPlaceService.delete(employee, place);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return ResponseEntity.ok("Место успешно удалено из избранного");
     }
 
@@ -169,6 +176,7 @@ public class FavPlaceController {
 
         favPlaceService.delete(employee, place);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Место успешно удалено из избранного";
     }
 

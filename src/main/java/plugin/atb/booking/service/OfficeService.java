@@ -11,6 +11,7 @@ import plugin.atb.booking.utils.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OfficeService {
 
     private final OfficeRepository officeRepository;
@@ -57,7 +58,7 @@ public class OfficeService {
                 "Адрес не может быть пустым или состоять только из пробелов");
         }
 
-        return officeRepository.findAllByAddressContaining(address, pageable);
+        return officeRepository.findAllByAddressContainingIgnoreCase(address, pageable);
     }
 
     @Transactional

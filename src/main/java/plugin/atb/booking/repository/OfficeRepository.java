@@ -8,7 +8,7 @@ import plugin.atb.booking.model.*;
 @Repository
 public interface OfficeRepository extends JpaRepository<Office, Long> {
 
-    Page<Office> findAllByAddressContaining(String address, Pageable pageable);
+    Page<Office> findAllByAddressContainingIgnoreCase(String address, Pageable pageable);
 
     boolean existsByAddress(String address);
 

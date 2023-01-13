@@ -6,6 +6,7 @@ import java.util.*;
 import lombok.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.*;
+import org.springframework.transaction.annotation.*;
 import plugin.atb.booking.exception.*;
 import plugin.atb.booking.model.*;
 import plugin.atb.booking.repository.*;
@@ -15,10 +16,12 @@ import static org.springframework.data.domain.Sort.Direction.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CityService {
 
     private final CityRepository cityRepository;
 
+    @Transactional
     public void add(String name, String zoneId) {
 
         validate(name, zoneId);
@@ -56,9 +59,10 @@ public class CityService {
                 "Имя города не может быть пустым или состоять только из пробелов");
         }
 
-        return cityRepository.findAllByNameContainingOrderByName(name);
+        return cityRepository.findAllByNameContainingIgnoreCaseOrderByName(name);
     }
 
+    @Transactional
     public void update(City city) {
 
         if (getById(city.getId()) == null) {
@@ -70,6 +74,7 @@ public class CityService {
         cityRepository.save(city);
     }
 
+    @Transactional
     public void delete(Long id) {
 
         if (getById(id) == null) {

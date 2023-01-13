@@ -13,7 +13,6 @@ import lombok.experimental.*;
 @AllArgsConstructor
 @Accessors(chain = true)
 @Table(name = "workplacetypes")
-
 public class WorkPlaceType {
 
     @Id

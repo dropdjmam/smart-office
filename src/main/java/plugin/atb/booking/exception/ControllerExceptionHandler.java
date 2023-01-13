@@ -5,6 +5,7 @@ import java.util.stream.*;
 
 import io.swagger.v3.oas.annotations.media.*;
 import io.swagger.v3.oas.annotations.responses.*;
+import lombok.extern.slf4j.*;
 import org.springframework.http.*;
 import org.springframework.http.converter.*;
 import org.springframework.validation.*;
@@ -18,6 +19,7 @@ import plugin.atb.booking.dto.*;
  * таких handler-ов приводит к неверному отображению в swagger-е.
  */
 
+@Slf4j
 @ControllerAdvice
 public class ControllerExceptionHandler {
 
@@ -25,6 +27,7 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     @ApiResponse(responseCode = "404", useReturnTypeSchema = true, description = "Объект не найден")
     public @ResponseBody ExceptionDto notFoundExceptionHandler(NotFoundException ex) {
+        log.error("Object not found: {}, {}", ex.getMessage(), ex.getStackTrace()[0]);
         return new ExceptionDto(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
@@ -32,6 +35,7 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(AlreadyExistsException.class)
     @ApiResponse(responseCode = "409", useReturnTypeSchema = true, description = "Объект уже существует")
     public @ResponseBody ExceptionDto alreadyExistExceptionHandler(AlreadyExistsException ex) {
+        log.error("Object already exists: {}, {}", ex.getMessage(), ex.getStackTrace()[0]);
         return new ExceptionDto(HttpStatus.CONFLICT, ex.getMessage());
     }
 
@@ -52,12 +56,14 @@ public class ControllerExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(IncorrectArgumentException.class)
     public @ResponseBody ExceptionDto incorrectArgumentExceptionHandler(IncorrectArgumentException ex) {
+        log.error("Incorrect argument: {}, {}", ex.getMessage(), ex.getStackTrace());
         return new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseBody ExceptionsDto methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException ex) {
+    @ResponseBody
+    ExceptionsDto methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException ex) {
 
         var errors = ex.getBindingResult().getFieldErrors();
 
@@ -66,20 +72,24 @@ public class ControllerExceptionHandler {
                 FieldError::getField,
                 e -> Objects.requireNonNullElse(e.getDefaultMessage(), "Ошибка валидации")));
 
+        log.error("Validation Error: {}, {}", ex.getParameter().getExecutable(), errorsMap);
         return new ExceptionsDto(HttpStatus.BAD_REQUEST, errorsMap);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    @ResponseBody ExceptionDto methodMissingServletRequestParameterExceptionHandler(
+    @ResponseBody
+    ExceptionDto methodMissingServletRequestParameterExceptionHandler(
         MissingServletRequestParameterException ex
     ) {
+        log.error("Validation Error: {}, {}", ex.getMessage(), ex.getStackTrace()[0]);
         return new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(HttpMessageNotReadableException.class)
     ExceptionDto httpMessageNotReadableExceptionHandler(HttpMessageNotReadableException ex) {
+        log.error("Validation Error: {}, {}", ex.getMessage(), ex.getStackTrace());
         return new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 

@@ -7,6 +7,7 @@ import javax.validation.*;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
@@ -18,6 +19,7 @@ import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @Tag(name = "Сотрудник")
 @RequiredArgsConstructor
@@ -47,6 +49,7 @@ public class EmployeeController {
 
         employeeService.add(employeeMapper.dtoToEmployee(dto, role));
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Сотрудник успешно добавлен";
     }
 
@@ -63,6 +66,7 @@ public class EmployeeController {
             .map(employeeMapper::employeeToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
@@ -80,6 +84,7 @@ public class EmployeeController {
             .map(employeeMapper::employeeToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
@@ -94,6 +99,7 @@ public class EmployeeController {
             throw new NotFoundException("Не найден сотрудник с id: " + id);
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return employeeMapper.employeeToDto(employee);
     }
 
@@ -108,6 +114,7 @@ public class EmployeeController {
             throw new NotFoundException("Не найден сотрудник с логином: " + login);
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return employeeMapper.employeeToDto(employee);
     }
 
@@ -124,6 +131,7 @@ public class EmployeeController {
 
         employeeService.update(employeeMapper.dtoToEmployee(dto, role));
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Данные сотрудника успешно обновлены";
     }
 
@@ -136,6 +144,7 @@ public class EmployeeController {
 
         employeeService.delete(id);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Сотрудник успешно удален";
     }
 

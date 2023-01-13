@@ -11,6 +11,7 @@ import static java.time.ZoneOffset.*;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.format.annotation.*;
@@ -24,6 +25,7 @@ import plugin.atb.booking.model.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/workplace")
@@ -54,6 +56,7 @@ public class WorkPlaceController {
 
         var newPlace = workPlaceMapper.dtoToWorkPlace(dto, type, floor);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return workPlaceService.add(newPlace);
     }
 
@@ -69,6 +72,7 @@ public class WorkPlaceController {
         var commonAmount = workPlaceService.countPlacesByTypeAndFloor(commonType, floor);
         var conferenceAmount = workPlaceService.countPlacesByTypeAndFloor(conferenceType, floor);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new CountPlaceDto(commonAmount, conferenceAmount);
     }
 
@@ -85,6 +89,7 @@ public class WorkPlaceController {
             .map(workPlaceMapper::workPlaceToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
@@ -108,6 +113,7 @@ public class WorkPlaceController {
             .map(workPlaceMapper::workPlaceToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
@@ -157,6 +163,7 @@ public class WorkPlaceController {
                 !bookedIds.contains(p.getId())))
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(
             responseDtos,
             floorPlaces.getPageable(),
@@ -229,6 +236,7 @@ public class WorkPlaceController {
         var bookings = bookingsPage.getContent();
 
         if (bookings.isEmpty()) {
+            log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
             return List.of(new TimeIntervalDto(workDayStart, workDayEnd));
         }
 
@@ -254,6 +262,7 @@ public class WorkPlaceController {
             response.add(size, new TimeIntervalDto(ends.get(size - 1), workDayEnd));
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return response;
     }
 
@@ -266,6 +275,7 @@ public class WorkPlaceController {
             throw new NotFoundException("Не найдено место с id: " + id);
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return workPlaceMapper.workPlaceToDto(workPlace);
     }
 
@@ -281,6 +291,7 @@ public class WorkPlaceController {
 
         workPlaceService.update(workPlaceMapper.dtoToWorkPlace(dto, type, floor));
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Место успешно обновлено";
     }
 
@@ -292,6 +303,7 @@ public class WorkPlaceController {
 
         workPlaceService.delete(id);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Место успешно удалено";
     }
 

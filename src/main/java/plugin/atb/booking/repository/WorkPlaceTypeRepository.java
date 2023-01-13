@@ -8,7 +8,7 @@ import plugin.atb.booking.model.*;
 @Repository
 public interface WorkPlaceTypeRepository extends JpaRepository<WorkPlaceType, Long> {
 
-    Page<WorkPlaceType> findByName(String name, Pageable pageable);
+    Page<WorkPlaceType> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
     boolean existsByName(String name);
 

@@ -83,6 +83,7 @@ public class ProfileController {
 
         var bookingPage = bookingService.getAllActual(employee, Pageable.ofSize(1));
         if (bookingPage.isEmpty()) {
+            log.info("Operation successful, method {}", TraceUtils.getMethodName(2));
             return new ProfileDto(employeeMapper.employeeToDto(employee), null, firstTeam);
         }
 
@@ -116,7 +117,8 @@ public class ProfileController {
             ZoneId.of(officeInfo.getZoneId()));
 
         var firstBooking = new BookingGetDto(bookingInfo, placeInfo, officeInfo);
-        log.info("Profile successfully formed");
+
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(2));
         return new ProfileDto(employeeMapper.employeeToDto(employee), firstBooking, firstTeam);
     }
 

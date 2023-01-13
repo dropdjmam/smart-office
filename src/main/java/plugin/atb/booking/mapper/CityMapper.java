@@ -5,7 +5,6 @@ import plugin.atb.booking.dto.*;
 import plugin.atb.booking.model.*;
 
 @Component
-
 public class CityMapper {
 
     public CityDto cityToDto(City city) {

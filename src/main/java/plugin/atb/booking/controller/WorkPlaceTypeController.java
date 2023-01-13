@@ -6,6 +6,7 @@ import javax.validation.constraints.*;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
@@ -16,6 +17,7 @@ import plugin.atb.booking.mapper.*;
 import plugin.atb.booking.service.*;
 import plugin.atb.booking.utils.*;
 
+@Slf4j
 @RestController
 @Tag(name = "Тип места")
 @RequiredArgsConstructor
@@ -38,6 +40,7 @@ public class WorkPlaceTypeController {
 
         workPlaceTypeService.add(typeName);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Успешно добавлен новый тип места: " + typeName;
     }
 
@@ -53,6 +56,7 @@ public class WorkPlaceTypeController {
             .map(workPlaceTypeMapper::typeToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, type.getPageable(), type.getTotalElements());
     }
 
@@ -74,6 +78,7 @@ public class WorkPlaceTypeController {
             .map(workPlaceTypeMapper::typeToDto)
             .toList();
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return new PageImpl<>(dto, page.getPageable(), page.getTotalElements());
     }
 
@@ -88,6 +93,7 @@ public class WorkPlaceTypeController {
             throw new NotFoundException(String.format("Не найден тип места c id: %s", id));
         }
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return workPlaceTypeMapper.typeToDto(type);
     }
 
@@ -100,6 +106,7 @@ public class WorkPlaceTypeController {
 
         workPlaceTypeService.update(type);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return String.format("Тип места успешно изменён: %s", type.getName());
     }
 
@@ -110,6 +117,7 @@ public class WorkPlaceTypeController {
 
         workPlaceTypeService.delete(id);
 
+        log.info("Operation successful, method {}", TraceUtils.getMethodName(1));
         return "Тип места успешно удален";
     }
 

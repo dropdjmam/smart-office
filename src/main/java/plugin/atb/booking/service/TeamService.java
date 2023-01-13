@@ -51,7 +51,7 @@ public class TeamService {
 
     public Page<Team> getAllByName(String name, Pageable pageable) {
 
-        return teamRepository.findAllByName(name, pageable);
+        return teamRepository.findAllByNameContainingIgnoreCase(name, pageable);
     }
 
     public Team getById(Long id) {
