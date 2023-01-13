@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.*;
 import lombok.extern.slf4j.*;
 import org.springframework.http.*;
 import org.springframework.http.converter.*;
+import org.springframework.security.access.*;
 import org.springframework.validation.*;
 import org.springframework.web.bind.*;
 import org.springframework.web.bind.annotation.*;
@@ -78,8 +79,7 @@ public class ControllerExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    @ResponseBody
-    ExceptionDto methodMissingServletRequestParameterExceptionHandler(
+    @ResponseBody ExceptionDto methodMissingServletRequestParameterExceptionHandler(
         MissingServletRequestParameterException ex
     ) {
         log.error("Validation Error: {}, {}", ex.getMessage(), ex.getStackTrace()[0]);
@@ -91,6 +91,14 @@ public class ControllerExceptionHandler {
     ExceptionDto httpMessageNotReadableExceptionHandler(HttpMessageNotReadableException ex) {
         log.error("Validation Error: {}, {}", ex.getMessage(), ex.getStackTrace());
         return new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(AccessDeniedException.class)
+    @ApiResponse(responseCode = "403", useReturnTypeSchema = true, description = "Недостаточно прав")
+    public @ResponseBody ExceptionDto accessDeniedExceptionHandler(AccessDeniedException ex) {
+        log.error("Have no access: {}, {}", ex.getMessage(), ex.getStackTrace()[7]);
+        return new ExceptionDto(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
 }

@@ -45,6 +45,7 @@ public class FloorController {
 
     @GetMapping("/all")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Получить все этажи офиса")
     public Page<FloorGetDto> getFloors(
         @RequestParam Long officeId,
@@ -68,6 +69,7 @@ public class FloorController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Получить указанный этаж")
     public FloorGetDto getFloorById(@PathVariable Long id) {
 

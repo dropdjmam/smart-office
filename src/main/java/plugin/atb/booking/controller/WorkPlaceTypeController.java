@@ -10,6 +10,7 @@ import lombok.extern.slf4j.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
 import plugin.atb.booking.exception.*;
@@ -22,6 +23,7 @@ import plugin.atb.booking.utils.*;
 @Tag(name = "Тип места")
 @RequiredArgsConstructor
 @RequestMapping("/workPlaceType")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class WorkPlaceTypeController {
 
     private final WorkPlaceTypeService workPlaceTypeService;
@@ -46,6 +48,7 @@ public class WorkPlaceTypeController {
 
     @GetMapping("/all")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Получить все типы мест")
     public Page<WorkPlaceTypeDto> getAll(@ParameterObject Pageable pageable) {
         ValidationUtils.checkPageSize(pageable.getPageSize(), 20);
@@ -62,6 +65,7 @@ public class WorkPlaceTypeController {
 
     @GetMapping("/name")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Получить тип места по названию")
     public Page<WorkPlaceTypeDto> getByName(
         @Valid
@@ -84,6 +88,7 @@ public class WorkPlaceTypeController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Получить тип места по id")
     public WorkPlaceTypeDto getById(@PathVariable Long id) {
         ValidationUtils.checkId(id);

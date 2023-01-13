@@ -41,6 +41,7 @@ public class CityController {
 
     @GetMapping("/all")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Получить список всех городов")
     public List<CityDto> getCities() {
         var cities = cityService.getAll();
@@ -52,6 +53,7 @@ public class CityController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Получить город")
     public CityDto getCityById(@PathVariable Long id) {
         var city = cityService.getById(id);
@@ -66,6 +68,7 @@ public class CityController {
 
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Поиск городов по наименованию")
     public List<CityDto> getCitiesByName(@RequestParam String name) {
         var cities = cityService.getAllByName(name);

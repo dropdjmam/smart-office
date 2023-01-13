@@ -9,6 +9,7 @@ import lombok.extern.slf4j.*;
 import org.springdoc.api.annotations.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.*;
 import org.springframework.security.core.context.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
@@ -107,6 +108,7 @@ public class FeedbackController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Удалить указанный отзыв")
     public String delete(@PathVariable Long id) {
 

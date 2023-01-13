@@ -49,6 +49,7 @@ public class OfficeController {
 
     @GetMapping("/all")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Все офисы", description = "1 <= size <= 20 (default 20)")
     public Page<OfficeGetDto> getOffices(@ParameterObject Pageable pageable) {
 
@@ -66,6 +67,7 @@ public class OfficeController {
 
     @GetMapping("/allByAddress")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Поиск среди офисов по адресу", description = "1 <= size <= 20 (default 20)")
     public Page<OfficeGetDto> getOfficesByAddress(
         @RequestParam String address,
@@ -91,6 +93,7 @@ public class OfficeController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Получить указанный офис")
     public OfficeGetDto getOfficeById(@PathVariable Long id) {
 

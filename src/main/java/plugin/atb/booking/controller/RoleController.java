@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
 import lombok.extern.slf4j.*;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.*;
 import org.springframework.web.bind.annotation.*;
 import plugin.atb.booking.dto.*;
 import plugin.atb.booking.exception.*;
@@ -20,6 +21,7 @@ import plugin.atb.booking.utils.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/role")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 @Tag(name = "Роль", description = "Изначально имеется 3 роли: сотрудник, админ и тимлид")
 public class RoleController {
 
