@@ -19,7 +19,7 @@ import plugin.atb.booking.utils.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/office")
-@PreAuthorize("hasRole('ROLE_ADMIN')")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 @Tag(name = "Офис", description = "Интервал работы офиса принимается и хранится в LocalTime " +
                                   "в соответствии с тайм зоной города, в котором находится.")
 public class OfficeController {

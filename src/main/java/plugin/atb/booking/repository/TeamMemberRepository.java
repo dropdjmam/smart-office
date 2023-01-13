@@ -8,6 +8,8 @@ import plugin.atb.booking.model.*;
 @Repository
 public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
 
+    void deleteAllByEmployee(Employee employee);
+
     TeamMember findByEmployeeAndTeam(Employee employee, Team team);
 
     Page<TeamMember> findAllByTeam(Team team, Pageable pageable);

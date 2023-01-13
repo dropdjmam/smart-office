@@ -18,7 +18,7 @@ import plugin.atb.booking.utils.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/administrating")
-@PreAuthorize("hasRole('ROLE_ADMIN')")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 @Tag(name = "Администрирование", description = "Администрирование - доступ админа к функционалу офиса")
 public class AdministratingController {
 

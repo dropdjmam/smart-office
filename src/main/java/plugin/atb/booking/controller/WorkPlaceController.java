@@ -6,6 +6,8 @@ import java.util.stream.*;
 
 import javax.validation.*;
 
+import static java.time.ZoneOffset.*;
+
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import lombok.*;
@@ -41,7 +43,7 @@ public class WorkPlaceController {
 
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Создание рабочего места",
         description = "Все поля кроме имени обязательны, имя по дефолту \"№ \"{newId}\"\"")
     public Long createWorkPlace(@Valid @RequestBody WorkPlaceCreateDto dto) {
@@ -131,10 +133,19 @@ public class WorkPlaceController {
             return Page.empty(floorPlaces.getPageable());
         }
 
+        var office = floor.getOffice();
+        if (office == null) {
+            throw new NotFoundException(String.format(
+                "Не найден офис по этажу с id: %s",
+                floor.getId()
+            ));
+        }
+
+        var zoneId = ZoneId.of(office.getCity().getZoneId());
         var bookedPlaces = workPlaceService.getAllBookedInPeriod(
             floorPlaces.getContent(),
-            dto.getStart(),
-            dto.getEnd());
+            dto.getStart().atZone(zoneId).withZoneSameInstant(UTC).toLocalDateTime(),
+            dto.getEnd().atZone(zoneId).withZoneSameInstant(UTC).toLocalDateTime());
 
         var bookedIds = bookedPlaces.stream()
             .map(WorkPlace::getId)
@@ -202,10 +213,17 @@ public class WorkPlaceController {
         var workDayStart = office.getStartOfDay();
         var workDayEnd = office.getEndOfDay();
 
+        var zoneId = ZoneId.of(office.getCity().getZoneId());
         var bookingsPage = bookingService.getAllInPeriod(
             place,
-            LocalDateTime.of(date, workDayStart),
-            LocalDateTime.of(date, workDayEnd),
+            LocalDateTime.of(date, workDayStart)
+                .atZone(zoneId)
+                .withZoneSameInstant(UTC)
+                .toLocalDateTime(),
+            LocalDateTime.of(date, workDayEnd)
+                .atZone(zoneId)
+                .withZoneSameInstant(UTC)
+                .toLocalDateTime(),
             Pageable.unpaged());
 
         var bookings = bookingsPage.getContent();
@@ -217,11 +235,11 @@ public class WorkPlaceController {
         var size = bookings.size();
 
         var starts = bookings.stream()
-            .map(s -> s.getDateTimeOfStart().toLocalTime())
+            .map(s -> s.getDateTimeOfStart().atZone(UTC).withZoneSameInstant(zoneId).toLocalTime())
             .toList();
 
         var ends = bookings.stream()
-            .map(s -> s.getDateTimeOfEnd().toLocalTime())
+            .map(s -> s.getDateTimeOfEnd().atZone(UTC).withZoneSameInstant(zoneId).toLocalTime())
             .toList();
 
         var response = IntStream.range(1, size)
@@ -253,7 +271,7 @@ public class WorkPlaceController {
 
     @PutMapping("/")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Изменить указанное место", description = "Все поля обязательны")
     public String update(@Valid @RequestBody WorkPlaceUpdateDto dto) {
 
@@ -268,7 +286,7 @@ public class WorkPlaceController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Удалить указанное место")
     public String delete(@PathVariable Long id) {
 

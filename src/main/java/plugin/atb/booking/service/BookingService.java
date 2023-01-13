@@ -171,8 +171,9 @@ public class BookingService {
     }
 
     @Transactional
-    public void deleteAllByHolder(Employee holder) {
-        var deletedBookings = bookingRepository.deleteAllByHolder(holder);
+    public void deleteAllByEmployee(Employee employee) {
+        var deletedBookings = bookingRepository.deleteAllByHolder(employee);
+        deletedBookings.addAll(bookingRepository.deleteAllByMaker(employee));
 
         var conferenceMembers = deletedBookings.stream()
             .map(b -> conferenceMemberService.getAllByBookingId(b.getId(), Pageable.unpaged()))

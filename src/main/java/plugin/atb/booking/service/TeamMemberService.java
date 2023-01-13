@@ -76,6 +76,15 @@ public class TeamMemberService {
     }
 
     @Transactional
+    public void deleteAllByEmployee(Employee employee) {
+        if (employee == null) {
+            throw new IncorrectArgumentException("Сотрудник для удаления из участников не указан");
+        }
+
+        teamMemberRepository.deleteAllByEmployee(employee);
+    }
+
+    @Transactional
     public void deleteAllByTeam(Team team) {
         if (team == null) {
             throw new IncorrectArgumentException("Команда для удаления ее участников не указана");

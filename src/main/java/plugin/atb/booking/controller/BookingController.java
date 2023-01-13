@@ -69,7 +69,7 @@ public class BookingController {
 
         var end = dto.getEnd();
         validateByOfficeWorkTime(place, start.toLocalTime(), end.toLocalTime());
-        validateIsAlreadyBooked(place, start, end);
+        validateIsAlreadyBooked(place, start, end, null);
 
         var booking = bookingMapper.dtoToBooking(dto, holder, maker, place);
         bookingService.add(booking);
@@ -80,7 +80,7 @@ public class BookingController {
 
     @PostMapping("/team")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Создать бронь места (переговорки) для команды",
+    @Operation(summary = "Создать бронь места (переговорки) для всей команды",
         description = "В контексте данного метода holderId -> id команды, держателем " +
                       "брони назначается лидер команды")
     public String createBookingForTeam(@Valid @RequestBody BookingCreateDto dto) {
@@ -102,7 +102,7 @@ public class BookingController {
 
         var end = dto.getEnd();
         validateByOfficeWorkTime(place, start.toLocalTime(), end.toLocalTime());
-        validateIsAlreadyBooked(place, start, end);
+        validateIsAlreadyBooked(place, start, end, null);
 
         var maker = getSessionUser();
         var leaderAsHolder = teamMembers.getContent().get(0).getTeam().getLeader();
@@ -143,7 +143,7 @@ public class BookingController {
 
         var end = dto.getEnd();
         validateByOfficeWorkTime(place, start.toLocalTime(), end.toLocalTime());
-        validateIsAlreadyBooked(place, start, end);
+        validateIsAlreadyBooked(place, start, end, null);
 
         var booking = bookingMapper.dtoToBooking(dto, makerSameHolder, makerSameHolder, place);
         var newBooking = bookingService.add(booking);
@@ -394,7 +394,7 @@ public class BookingController {
 
         var end = dto.getEnd();
         validateByOfficeWorkTime(place, start.toLocalTime(), end.toLocalTime());
-        validateIsAlreadyBooked(place, start, end);
+        validateIsAlreadyBooked(place, start, end, dto.getId());
 
         var booking = bookingMapper.dtoToBooking(dto, holder, maker, place);
         bookingService.update(booking);
@@ -456,13 +456,22 @@ public class BookingController {
     private void validateIsAlreadyBooked(
         WorkPlace place,
         ZonedDateTime start,
-        ZonedDateTime end
+        ZonedDateTime end,
+        Long idForUpdateBooking
     ) {
         var utcStart = start.withZoneSameInstant(UTC).toLocalDateTime();
         var utcEnd = end.withZoneSameInstant(UTC).toLocalDateTime();
 
-        boolean isTimeFree = bookingService
-            .getAllInPeriod(place, utcStart, utcEnd, Pageable.ofSize(1)).isEmpty();
+        var checkBookings = bookingService
+            .getAllInPeriod(place, utcStart, utcEnd, Pageable.ofSize(1));
+
+        boolean isTimeFree = checkBookings.isEmpty();
+
+        if (!isTimeFree) {
+            isTimeFree = Objects.equals(
+                checkBookings.getContent().get(0).getId(),
+                idForUpdateBooking);
+        }
 
         if (!isTimeFree) {
             log.error("Conflict: cannot add booking — place already booked on this time {}-{}",

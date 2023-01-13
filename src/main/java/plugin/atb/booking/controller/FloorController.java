@@ -21,7 +21,7 @@ import plugin.atb.booking.utils.*;
 @Tag(name = "Этаж")
 @RequiredArgsConstructor
 @RequestMapping("/floor")
-@PreAuthorize("hasRole('ROLE_ADMIN')")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class FloorController {
 
     private final OfficeService officeService;

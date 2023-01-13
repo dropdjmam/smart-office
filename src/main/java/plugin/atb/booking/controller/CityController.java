@@ -18,7 +18,7 @@ import plugin.atb.booking.service.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/city")
-@PreAuthorize("hasRole('ROLE_ADMIN')")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 @Tag(name = "Город", description = "Наименование и тайм зона города")
 public class CityController {
 

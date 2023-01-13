@@ -90,7 +90,9 @@ public class EmployeeService {
 
         ValidationUtils.checkId(employee.getId());
 
-        if (getById(employee.getId()) == null) {
+        var employeeToUpdate = getById(employee.getId());
+
+        if (employeeToUpdate == null) {
             throw new NotFoundException("Не найден сотрудник с id: " + employee.getId());
         }
 
@@ -99,6 +101,10 @@ public class EmployeeService {
         }
 
         validate(employee);
+
+        employee
+            .setLogin(employeeToUpdate.getLogin())
+            .setPhoto(employeeToUpdate.getPhoto());
 
         employeeRepository.save(employee);
 
@@ -124,7 +130,8 @@ public class EmployeeService {
             teamService.deleteAll(teams);
         }
 
-        bookingService.deleteAllByHolder(employee);
+        teamMemberService.deleteAllByEmployee(employee);
+        bookingService.deleteAllByEmployee(employee);
 
         employeeRepository.delete(employee);
     }

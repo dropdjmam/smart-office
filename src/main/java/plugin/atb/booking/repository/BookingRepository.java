@@ -40,7 +40,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
      * Удаляет брони связанные с указанным держателем брони, которого планируется удалить,
      * и возвращает набор удаленных бронирований.
      * <ul>
-     *     Устанавливает статус об удалении - true и внешний ключ держателя  брони - null,
+     *     Устанавливает статус об удалении - true и внешний ключ держателя брони - null,
      *     при условии соответствия внешнего ключа с переданным параметром
      * </ul>
      *
@@ -57,6 +57,28 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                 "where holder_id = ?1 returning *) " +
                 "select * from deleted_bookings")
     Set<Booking> deleteAllByHolder(@Param("holder") @NonNull Employee holder);
+
+    /**
+     * Удаляет брони связанные с указанным создателем брони, которого планируется удалить,
+     * и возвращает набор удаленных бронирований.
+     * <ul>
+     *     Устанавливает статус об удалении - true и внешний ключ создателя брони - null,
+     *     при условии соответствия внешнего ключа с переданным параметром
+     * </ul>
+     *
+     * @param maker сотрудник/создатель брони
+     *
+     * @return набор броней
+     */
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true,
+        value = "with deleted_bookings as " +
+                "(update bookings " +
+                "set is_deleted = true, maker_id = null " +
+                "where maker_id = ?1 returning *) " +
+                "select * from deleted_bookings")
+    Set<Booking> deleteAllByMaker(@Param("maker") @NonNull Employee maker);
 
     Page<Booking> findAllByHolderAndIsDeletedIsFalse(Employee holder, Pageable pageable);
 
